@@ -64,7 +64,7 @@ const userLogin = async (req, res) => {
             _id: existingUser._id,
             name: existingUser.name,
             email: existingUser.email,
-            userToken: generateToken(res,existingUser._id,existingUser.isAdmin),
+            userToken: generateToken(res, existingUser._id, existingUser.isAdmin),
         });
 
     } catch (error) {
@@ -74,25 +74,58 @@ const userLogin = async (req, res) => {
 };
 
 //Logout user
-const logoutUser = async(req, res) => {
+const logoutUser = async (req, res) => {
     try {
-       await res.cookie("jwt", "", {
+        await res.cookie("jwt", "", {
             httyOnly: true,
             expires: new Date(0),
-          });
-        
-          res.status(200).json({ message: "Logged out successfully" });
-        
+        });
+
+        res.status(200).json({ message: "Logged out successfully" });
+
     } catch (error) {
         res.status(500)
         throw new Error("Problem in logging out")
     }
-    
-  };
+
+};
+
+//update user
+const updateUser = async (req, res) => {
+    try {
+        const { name, email, phone, currentPassword, newPassword, confirmPassword } = req.body; // Get the form data
+        if (newPassword !== confirmPassword) {
+            res.status(400)
+            throw new Error("Passwords should match")
+        }
+        //hash the users password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!user) {
+            res.status(404);
+            throw new Error(`User not found with  id ${req.params.id}`);
+        }
+        else {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone:user.phone,
+                password:hashedPassword,
+                
+            })
+        }
+    } catch (error) {
+         res.status(400)
+         throw new Error("internal server Error")
+    }
+
+
+}
 
 
 
 
-
-
-module.exports = { userSignup, userLogin }
+module.exports = { userSignup, userLogin, logoutUser }
