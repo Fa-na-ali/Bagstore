@@ -42,8 +42,7 @@ const userSignup = async (req, res) => {
             isAdmin: user.isAdmin
         })
     } catch (error) {
-        res.status(400)
-        throw new Error("Invalid user data")
+        res.status(500).json({message:error.message})
     }
 }
 
@@ -68,8 +67,8 @@ const userLogin = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Login Error:", error);
-        res.status(500).json({ message: "Server Error. Please try again later." });
+        
+        res.status(500).json({message:error.message})
     }
 };
 
@@ -84,8 +83,7 @@ const logoutUser = async (req, res) => {
         res.status(200).json({ message: "Logged out successfully" });
 
     } catch (error) {
-        res.status(500)
-        throw new Error("Problem in logging out")
+        res.status(500).json({message:error.message})
     }
 
 };
@@ -118,8 +116,8 @@ const updateUser = async (req, res) => {
             })
         }
     } catch (error) {
-         res.status(400)
-         throw new Error("internal server Error")
+         res.status(500).json({message:error.message})
+         
     }
 
 
