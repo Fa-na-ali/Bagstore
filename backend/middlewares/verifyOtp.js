@@ -1,0 +1,45 @@
+const User = require('../models/userModel');
+const { otpStore } = require('../controllers/userController');
+const {generateToken} = require('../middlewares/generateToken')
+
+const verifyOtp = async (req, res) => { 
+    const { email, otp } = req.body;
+
+    try {
+        console.log("Received OTP verification request:", { email, otp });
+
+        const storedOtp = otpStore.get(email);
+        console.log("Stored OTP:", storedOtp);
+
+        if (!storedOtp) {
+            return res.status(400).json({ message: "OTP expired or not found" });
+        }
+
+        if (parseInt(otp) !== storedOtp.otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        // OTP verified, generate JWT token
+        const user = await User.findOne({ email });
+        console.log("User found:", user);
+
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        const token = generateToken(res, user._id, user.isAdmin);
+        console.log("Generated Token:", token);
+
+        res.status(200).json({ message: "OTP verified", token });
+
+        // Clear OTP after verification
+        otpStore.delete(email);
+        console.log("OTP cleared from store");
+
+    } catch (error) {
+        console.error("Error in verifyOtp:", error); // Log the exact error
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = verifyOtp;

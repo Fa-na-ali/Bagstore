@@ -1,6 +1,9 @@
 const User = require("../models/userModel")
 const bcrypt = require("bcryptjs")
 const { generateToken } = require('../middlewares/generateToken')
+const transporter = require('../middlewares/otpMiddleware')
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 
 //user registration
@@ -47,30 +50,45 @@ const userSignup = async (req, res) => {
 }
 
 //user Login
-const userLogin = async (req, res) => {
+ const otpStore = new Map();
+
+ const userLogin = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const existingUser = await User.findOne({ email });
-        if (!existingUser) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
-        const isMatch = await bcrypt.compare(password, existingUser.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
-
-        res.status(200).json({
-            _id: existingUser._id,
-            name: existingUser.name,
-            email: existingUser.email,
-            userToken: generateToken(res, existingUser._id, existingUser.isAdmin),
-        });
-
+    
+      const { email, password } = req.body;
+      
+      const user = await User.findOne({ email });
+      if (!user) {
+        console.log("User not found!");
+        return res.status(400).json({ message: "User not found" });
+      }
+  
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        console.log("Invalid password!");
+        return res.status(400).json({ message: "Invalid password" });
+      }
+  
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      otpStore.set(email, { otp, expires: Date.now() + 300000 });
+  
+      console.log("Generated OTP:", otp);
+  
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Your OTP Code",
+        text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+      });
+  
+      console.log("OTP sent successfully to", email);
+      res.status(200).json({ message: "OTP sent to email" });
+  
     } catch (error) {
-        
-        res.status(500).json({message:error.message})
+      console.error("Login Error:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
     }
-};
+  };
 
 //Logout user
 const logoutUser = async (req, res) => {
@@ -126,4 +144,4 @@ const updateUser = async (req, res) => {
 
 
 
-module.exports = { userSignup, userLogin, logoutUser }
+module.exports = { userSignup, userLogin, logoutUser, otpStore }
