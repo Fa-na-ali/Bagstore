@@ -1,0 +1,14 @@
+.heading{
+    color:#cc664E;
+}
+.background{
+    background-color: #EDE6DF;
+}
+.caption{
+    color:#0B485D;
+}
+.button-custom {
+    background-color: #0B485D !important;
+    color: white !important;
+    border: none !important;
+  }
