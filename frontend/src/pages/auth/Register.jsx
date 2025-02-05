@@ -100,9 +100,9 @@ const Register = () => {
 
                 <Row className="mt-4">
                   <Col xs={12}>
-                    <p>Or continue with</p>
+                    <p className='text-secondary'>Or continue with</p>
                     <div className="d-grid gap-3">
-                      <Button variant="danger" className="d-flex align-items-center">
+                      <Button variant="danger" className="d-flex justify-content-center align-items-center">
                         <i className="bi bi-google me-2"></i> Sign in With Google
                       </Button>
                   

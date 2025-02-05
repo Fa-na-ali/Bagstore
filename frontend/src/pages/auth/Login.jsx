@@ -1,51 +1,84 @@
-import React from 'react'
+import React from "react";
+import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import loginImage from "../../assets/images/b1.webp"
+import logo from "../../assets/images/2.png"
+import '../auth/register.css'
+import { Link } from "react-router";
 
 const Login = () => {
-  return <>
-  
-  <section class="vh-100" style="background-color: #508bfc;">
-  <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-        <div class="card shadow-2-strong" style="border-radius: 1rem;">
-          <div class="card-body p-5 text-center">
+  return (
+    <section className="vh-100" style={{ backgroundColor: "#EDE6DF" }}>
+      <Container className="py-5 h-100">
+        <Row className="d-flex justify-content-center align-items-center h-100">
+          <Col xl={10}>
+            <Card style={{ borderRadius: "1rem" }}>
+              <Row className="g-0">
+                <Col md={6} lg={5} className="d-none d-md-block">
+                  <img
+                    src={loginImage}
+                    alt="login form"
+                    className="img-fluid w-100 h-100"
+                    style={{ borderRadius: "1rem 0 0 1rem",objectFit: "cover"  }}
+                  />
+                </Col>
+                <Col md={6} lg={7} className="d-flex align-items-center">
+                  <Card.Body className="p-4 p-lg-5 text-black">
+                    <Form>
+                      <div className="d-flex align-items-center mb-3 pb-1">
+                      <img
+                    src={logo}
+                    alt="login form"
+                    className="w-25 h-25"
+                  
+                  />
+                      </div>
+                      <h5 className="fw-normal mb-3 pb-3 heading" style={{ letterSpacing: "1px" }}>
+                        Sign into your account
+                      </h5>
 
-            <h3 class="mb-5">Sign in</h3>
+                      <Form.Group className="mb-4">                       
+                        <Form.Control type="email" placeholder="Enter email" name="email"/>
+                      </Form.Group>
 
-            <div data-mdb-input-init class="form-outline mb-4">
-              <input type="email" id="typeEmailX-2" class="form-control form-control-lg" />
-              <label class="form-label" for="typeEmailX-2">Email</label>
-            </div>
+                      <Form.Group className="mb-4">                      
+                       <Form.Control type="password" placeholder="Enter password" name="password"/>
+                      </Form.Group>
 
-            <div data-mdb-input-init class="form-outline mb-4">
-              <input type="password" id="typePasswordX-2" class="form-control form-control-lg" />
-              <label class="form-label" for="typePasswordX-2">Password</label>
-            </div>
+                      <div className="pt-1 mb-4">
+                        <Button className="button-custom w-100" size="lg" block>
+                          Login
+                        </Button>
+                      </div>
 
-            
-            <div class="form-check d-flex justify-content-start mb-4">
-              <input class="form-check-input" type="checkbox" value="" id="form1Example3" />
-              <label class="form-check-label" for="form1Example3"> Remember password </label>
-            </div>
+                     <Link to='/' className="text-decoration-none">Forgot Password?</Link>
+                      <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
+                        Don't have an account?{" "}
+                        <Link to='/register' className="text-decoration-none"> Register here</Link>
+                          
+                      </p>
+                      <p className="text-center" style={{ color: "#393f81" }}>or</p>
+                      <div className="pt-1 mb-4">
+                        <Button variant="danger" className=" w-100" size="lg" block>
+                          Sign in with Google
+                        </Button>
+                      </div>
 
-            <button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
+                      <Link to='' className="small text-muted text-decoration-none">
+                        Terms of use.
+                      </Link>
+                      <Link to='/' className="small text-muted ms-2 text-decoration-none">
+                        Privacy policy
+                      </Link>
+                    </Form>
+                  </Card.Body>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </section>
+  );
+};
 
-            <hr class="my-4"/>
-
-            <button data-mdb-button-init data-mdb-ripple-init class="btn btn-lg btn-block btn-primary" style="background-color: #dd4b39;"
-              type="submit"><i class="fab fa-google me-2"></i> Sign in with google</button>
-            <button data-mdb-button-init data-mdb-ripple-init class="btn btn-lg btn-block btn-primary mb-2" style="background-color: #3b5998;"
-              type="submit"><i class="fab fa-facebook-f me-2"></i>Sign in with facebook</button>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-  
-  
-  </>
-}
-
-export default Login
+export default Login;
