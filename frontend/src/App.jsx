@@ -20,6 +20,8 @@ import ProductManagement from './pages/admin/products/ProductManagement';
 import EditProduct from './pages/admin/products/EditProduct';
 import OrderManagement from './pages/admin/Orders/OrderManagement';
 import EditCategory from './pages/admin/Category/EditCategory';
+import AddCategory from './pages/admin/Category/AddCategory';
+import RequireAuth from './pages/auth/RequireAuth';
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -30,14 +32,14 @@ export const router = createBrowserRouter(
       <Route path="verify-otp" element={<OTPVerify />} />
 
 
-      <Route path="/admin" element={AdminDashboard}>
+      <Route path="/admin" element={<RequireAuth/>}>
         <Route path="users" element={<UserManagement />} />
         <Route path="categories" element={<CategoryManagement />} />
+        <Route path="categories/add" element={<AddCategory />} />
         <Route path="categories/edit/:_id" element={<EditCategory />} />
         <Route path="products" element={<ProductManagement />} />
         <Route path="products/add" element={<AddProduct />} />
-        <Route path="allproductslist" element={<AllProducts />} />
-        <Route path="product/edit/:_id" element={<EditProduct/>} />
+        <Route path="products/edit/:_id" element={<EditProduct/>} />
         <Route path="orders" element={<OrderManagement />} />
         <Route path="dashboard" element={<AdminDashboard />} />
       </Route>

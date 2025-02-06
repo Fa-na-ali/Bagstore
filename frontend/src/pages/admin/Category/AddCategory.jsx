@@ -1,29 +1,36 @@
 import React from 'react'
+import { Row, Col, Button, Container, Form } from 'react-bootstrap'
+import { MdOutlineAdd } from "react-icons/md";
+import AdminSidebar from '../../../components/AdminSidebar'
 
 const AddCategory = () => {
-  return (
-    <>
-     <Row className="g-0">
-          <Col lg={2} className="d-none d-lg-block">
-            <AdminSidebar />
-          </Col>
-          <Col sm={5}>
-          <h2>
-            User <b>Management</b>
-          </h2>
-        </Col>
-        <Col sm={7} className="text-end">
-          <Button variant="secondary" className="me-2">
-            <MdPersonAdd /> <span>Add New User</span>
-          </Button>
-          <Button variant="secondary">
-            <MdFileDownload /> <span>Export to Excel</span>
-          </Button>
-        </Col>
-    </Row>
-    
-    </>
-  )
+    return (
+        <>
+            <Container fluid>
+                <Row className="g-0 background-one">
+                    <Col lg={2} className="d-none d-lg-block">
+                        <AdminSidebar />
+                    </Col>
+                    <Col lg={6}>
+                        <h2 className='ms-5 my-5 heading'>
+                            ADD CATEGORY
+                        </h2>
+                        <Form className='ms-5'>
+                            <Form.Group controlId="categoryName">
+                                <Form.Label className='caption'>Category Name</Form.Label>
+                                <Form.Control type="text" placeholder="Enter category name" />
+                            </Form.Group>
+                        </Form>
+                    </Col>
+                    <Col lg={4} className="my-5">
+                        <Button className="me-2 button-custom">
+                            <MdOutlineAdd /> <span>Add New Category</span>
+                        </Button>
+                    </Col>
+                </Row>
+            </Container>
+        </>
+    )
 }
 
 export default AddCategory

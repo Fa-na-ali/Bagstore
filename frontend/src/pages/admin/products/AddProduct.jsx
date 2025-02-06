@@ -64,20 +64,20 @@ const AddProduct = () => {
                 <Form.Label className="mb-2 caption">Quantity</Form.Label>
                 <div className="d-flex align-items-center">
                   <Button className="px-3 me-2 button-custom">
-                  <MdOutlineRemove />
+                    <MdOutlineRemove />
                   </Button>
 
                   <Form.Control
                     type="number"
                     min="1"
                     value={1}
-                
+
                     className="text-center"
                     style={{ width: '70px' }}
                   />
 
-                  <Button  className="px-3 ms-2 button-custom">
-                  <MdOutlineAdd />
+                  <Button className="px-3 ms-2 button-custom">
+                    <MdOutlineAdd />
                   </Button>
                 </div>
               </div>
