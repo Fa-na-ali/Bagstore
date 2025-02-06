@@ -12,8 +12,14 @@ import Register from './pages/auth/Register';
 import ErrorBoundary from './ErrorBoundary';
 import OTPVerify from './pages/auth/OTPVerify';
 import AdminSidebar from './components/AdminSidebar';
-import UserManagement from './pages/admin/UserManagement';
+import UserManagement from './pages/admin/User/UserManagement';
 import AddProduct from './pages/admin/products/AddProduct';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import CategoryManagement from './pages/admin/Category/CategoryManagement';
+import ProductManagement from './pages/admin/products/ProductManagement';
+import EditProduct from './pages/admin/products/EditProduct';
+import OrderManagement from './pages/admin/Orders/OrderManagement';
+import EditCategory from './pages/admin/Category/EditCategory';
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,8 +28,20 @@ export const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="verify-otp" element={<OTPVerify />} />
-      <Route path="admin" element={<UserManagement/>} />
-      <Route path="admin/product" element={<AddProduct/>} />
+
+
+      <Route path="/admin" element={AdminDashboard}>
+        <Route path="users" element={<UserManagement />} />
+        <Route path="categories" element={<CategoryManagement />} />
+        <Route path="categories/edit/:_id" element={<EditCategory />} />
+        <Route path="products" element={<ProductManagement />} />
+        <Route path="products/add" element={<AddProduct />} />
+        <Route path="allproductslist" element={<AllProducts />} />
+        <Route path="product/edit/:_id" element={<EditProduct/>} />
+        <Route path="orders" element={<OrderManagement />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+      </Route>
+      
     </Route >
   )
 )

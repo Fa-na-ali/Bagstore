@@ -1,7 +1,7 @@
 import React from 'react'
 import {Col,Container,Row} from 'react-bootstrap'
-import AdminSidebar from '../../components/AdminSidebar'
-import Ttable from '../../components/Ttable'
+import AdminSidebar from '../../../components/AdminSidebar'
+import Ttable from '../../../components/Ttable'
 
 const UserManagement = () => {
   return (
