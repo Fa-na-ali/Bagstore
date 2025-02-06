@@ -6,6 +6,7 @@ const app=express();
 
 
 const userRouter = require('./routes/userRoutes')
+const categoryRoutes = require('./routes/categoryRoutes')
 const dbConnect = require('./config/db')
 
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 //routes
 app.use('/api/user',userRouter)
+app.use("/api/category", categoryRoutes);
 
 
 
