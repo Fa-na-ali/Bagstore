@@ -1,11 +1,32 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navbar, Nav, Badge, Container, Form, FormControl } from 'react-bootstrap';
 import { FaUser, FaShoppingCart, FaHeart, FaSignOutAlt } from 'react-icons/fa';
 import logo from "../assets/images/2.png"
 import '../pages/auth/register.css'
+import { logout } from "../redux/features/auth/authSlice";
+import { useLogoutMutation } from '../redux/api/usersApiSlice';
 
 const Header = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+  
+    // Get user info from Redux state
+    const { userInfo } = useSelector((state) => state.auth);
+    const [logoutApiCall] = useLogoutMutation();
+  
+    const logoutHandler = async () => {
+      try {
+        await logoutApiCall().unwrap();
+        dispatch(logout());
+        navigate("/login");
+      } catch (error) {
+        console.error(error);
+      }
+    };
+   
+
     return (
         <>
             <Navbar expand="lg" bg="white" className="sticky-top shadow shadow-sm">
@@ -60,7 +81,7 @@ const Header = () => {
                                 </Nav.Link>
                                 <Nav.Link as={Link} to="/" className='caption'><FaHeart /></Nav.Link>
                                 <Nav.Link as={Link} to="/" className='caption'>My Orders</Nav.Link>
-                                <Nav.Link as={Link} to="/" className="text-danger">
+                                <Nav.Link   onClick={logoutHandler} className="text-danger">
                                     <FaSignOutAlt /> Logout
                                 </Nav.Link>
                             </Nav>

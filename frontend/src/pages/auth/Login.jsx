@@ -1,11 +1,48 @@
 import React from "react";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import loginImage from "../../assets/images/b1.webp"
-import logo from "../../assets/images/2.png"
-import '../auth/register.css'
-import { Link } from "react-router";
+import loginImage from "../../assets/images/b1.webp";
+import logo from "../../assets/images/2.png";
+import "../auth/register.css";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useLoginMutation } from "../../redux/api/usersApiSlice"; 
+import { toast } from "react-toastify";
+
+//Validation schema
+const validationSchema = yup.object().shape({
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+});
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [login, { isLoading }] = useLoginMutation(); 
+  // React Hook Form setup
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ resolver: yupResolver(validationSchema) });
+
+  //  Submit handler
+  const onSubmit = async (data) => {
+    try {
+      const res = await login({ email: data.email, password: data.password }).unwrap();
+
+      if (res) {
+        toast.success("OTP has been sent to your email.");
+        navigate(`/verify-otp?email=${data.email}`); 
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error(err.data?.message || "Login failed. Please check your credentials.");
+    }
+  };
+
   return (
     <section className="vh-100" style={{ backgroundColor: "#EDE6DF" }}>
       <Container className="py-5 h-100">
@@ -18,57 +55,54 @@ const Login = () => {
                     src={loginImage}
                     alt="login form"
                     className="img-fluid w-100 h-100"
-                    style={{ borderRadius: "1rem 0 0 1rem",objectFit: "cover"  }}
+                    style={{ borderRadius: "1rem 0 0 1rem", objectFit: "cover" }}
                   />
                 </Col>
                 <Col md={6} lg={7} className="d-flex align-items-center">
                   <Card.Body className="p-4 p-lg-5 text-black">
-                    <Form>
+                    <Form onSubmit={handleSubmit(onSubmit)}>
                       <div className="d-flex align-items-center mb-3 pb-1">
-                      <img
-                    src={logo}
-                    alt="login form"
-                    className="w-25 h-25"
-                  
-                  />
+                        <img src={logo} alt="login form" className="w-25 h-25" />
                       </div>
                       <h5 className="fw-normal mb-3 pb-3 heading" style={{ letterSpacing: "1px" }}>
                         Sign into your account
                       </h5>
 
-                      <Form.Group className="mb-4">                       
-                        <Form.Control type="email" placeholder="Enter email" name="email"/>
+                      
+                      <Form.Group className="mb-4">
+                        <Form.Control type="email" placeholder="Enter email" {...register("email")} />
+                        {errors.email && <p className="text-danger">{errors.email.message}</p>}
                       </Form.Group>
 
-                      <Form.Group className="mb-4">                      
-                       <Form.Control type="password" placeholder="Enter password" name="password"/>
+                     
+                      <Form.Group className="mb-4">
+                        <Form.Control type="password" placeholder="Enter password" {...register("password")} />
+                        {errors.password && <p className="text-danger">{errors.password.message}</p>}
                       </Form.Group>
 
+                      
                       <div className="pt-1 mb-4">
-                        <Button className="button-custom w-100" size="lg" block>
-                          Login
+                        <Button className="button-custom w-100" size="lg" type="submit" disabled={isLoading}>
+                          {isLoading ? "Sending OTP..." : "Login"}
                         </Button>
                       </div>
 
-                     <Link to='/' className="text-decoration-none">Forgot Password?</Link>
+                      <Link to="/" className="text-decoration-none">Forgot Password?</Link>
                       <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
                         Don't have an account?{" "}
-                        <Link to='/register' className="text-decoration-none"> Register here</Link>
-                          
+                        <Link to="/register" className="text-decoration-none">Register here</Link>
                       </p>
                       <p className="text-center" style={{ color: "#393f81" }}>or</p>
+
+                     
                       <div className="pt-1 mb-4">
-                        <Button variant="danger" className=" w-100" size="lg" block>
+                        <Button variant="danger" className="w-100" size="lg">
                           Sign in with Google
                         </Button>
                       </div>
 
-                      <Link to='' className="small text-muted text-decoration-none">
-                        Terms of use.
-                      </Link>
-                      <Link to='/' className="small text-muted ms-2 text-decoration-none">
-                        Privacy policy
-                      </Link>
+                      <Link to="/" className="small text-muted text-decoration-none">Terms of use.</Link>
+                      <Link to="/" className="small text-muted ms-2 text-decoration-none">Privacy policy</Link>
                     </Form>
                   </Card.Body>
                 </Col>

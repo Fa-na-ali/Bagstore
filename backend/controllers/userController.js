@@ -14,7 +14,7 @@ const userSignup = async (req, res) => {
             res.status(400)
             throw new Error("Please fill all the inputs")
         }
-        //checking whether user exists
+        
         const userExists = await User.findOne({ email })
         if (userExists) {
             res.status(400).send("User already exists")
@@ -25,12 +25,9 @@ const userSignup = async (req, res) => {
             throw new Error("Passwords should match")
         }
 
-        //hash the users password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        //if not create a user
-
-
+        
         const user = await User.create({
             name,
             email,
@@ -159,50 +156,129 @@ const deleteUser = async (req, res) => {
     }
 };
 
-//function to get a specific user
-const getUser = async (req, res) => {
-    try{
+//function to search a specific user
+const searchUser = async (req, res) => {
+    try {
+        const { query, clear } = req.query;
+        if (clear === 'true') {
+            const users = await User.find({});
+            return res.json(users);
+        }
+        if (query) {
+            const users = await User.find({
+                $or: [
+                    { name: { $regex: query, $options: 'i' } },
+                    { email: { $regex: query, $options: 'i' } }
+                ]
+            });
 
-        const id = req.params.id;
-    // Validate the ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        res.status(400).json({ error: "Invalid ID format" });
-        return;
+            return res.json(users);
+        }
+        const users = await User.find({});
+        res.json(users);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message })
     }
-    const user = await User.findById(id);
-    if (user) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            gender: user.gender,
-        })
-    }
-    else {
-        res.status(404)
-        throw new Error("User not found")
-    }
-    }catch(error){
-        res.status(500).json({message:error.message})
-    }
-    
+
 };
 
 //function to get all users
 const getAllUsers = async (req, res) => {
-    try{
+    try {
         const users = await User.find({})
         res.json(users)
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({ message: error.message })
     }
-    
+
 }
 
 
+//forgot password
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 10 * 60 * 1000; 
+
+        otpStore.set(email, { otp, expiresAt });
+
+        const mailOptions = {
+            to: user.email,
+            from: process.env.EMAIL_USER,
+            subject: "Your Password Reset OTP",
+            html: `<p>Your OTP for password reset is <b>${otp}</b>. It is valid for 10 minutes.</p>`,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ message: "OTP sent to your email" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+//verify otp to reset password
+
+const verifyOtpPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword, confirmPassword } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+
+        const storedOtpData = otpStore.get(email);
+
+        if (!storedOtpData || storedOtpData.otp !== otp || storedOtpData.expiresAt < Date.now()) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+       
+        if (newPassword !== confirmPassword) {
+            res.status(400)
+            throw new Error("Passwords should match")
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+
+        await user.save();
+
+
+        otpStore.delete(email);
+
+        res.json({ message: "Password reset successful. You can now log in!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
 
 
 
-module.exports = { userSignup, userLogin, logoutUser, otpStore, getUser, getAllUsers }
+
+
+
+
+module.exports = {
+    userSignup,
+    userLogin,
+    logoutUser,
+    otpStore,
+    searchUser,
+    getAllUsers,
+    deleteUser,
+    updateUser,
+    forgotPassword,
+    verifyOtpPassword,
+}

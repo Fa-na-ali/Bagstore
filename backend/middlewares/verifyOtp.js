@@ -19,7 +19,6 @@ const verifyOtp = async (req, res) => {
             return res.status(400).json({ message: "Invalid OTP" });
         }
 
-        // OTP verified, generate JWT token
         const user = await User.findOne({ email });
         console.log("User found:", user);
 
@@ -32,12 +31,11 @@ const verifyOtp = async (req, res) => {
 
         res.status(200).json({ message: "OTP verified", token });
 
-        // Clear OTP after verification
         otpStore.delete(email);
         console.log("OTP cleared from store");
 
     } catch (error) {
-        console.error("Error in verifyOtp:", error); // Log the exact error
+        console.error("Error in verifyOtp:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };

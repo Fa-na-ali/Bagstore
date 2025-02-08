@@ -1,11 +1,10 @@
 import { useLocation, Navigate, Outlet } from "react-router-dom"
 import { useSelector } from "react-redux"
 
-
 const RequireAuth = () => {
-    const userInfo = true
+    const { userInfo } = useSelector((state) => state.auth)
     const location = useLocation();
-    
+
 
     return (
         userInfo
