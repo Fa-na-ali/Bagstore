@@ -7,7 +7,9 @@ const { userSignup,
     deleteUser, 
     updateUser, 
     forgotPassword, 
-    verifyOtpPassword ,
+    verifyOtpPassword, 
+    resendOtp,
+    googleLogin,
 } = require('../controllers/userController')
 const { authorizeAdmin, authenticate } = require('../middlewares/authMiddleware')
 const verifyOtp = require('../middlewares/verifyOtp')
@@ -15,6 +17,8 @@ const verifyOtp = require('../middlewares/verifyOtp')
 router.route('/register').post(userSignup)
 router.route('/login').post(userLogin)
 router.route('/verify-otp').post(verifyOtp)
+router.route('/resend-otp').post(resendOtp)
+router.route('/google').get(googleLogin)
 router.route('/forgotpassword').post(forgotPassword)
 router.route('/verify-otp-password').post(verifyOtpPassword)
 router.route('/:id').put(authenticate,updateUser)

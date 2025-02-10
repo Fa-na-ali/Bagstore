@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ToastContainer } from 'react-toastify';
 import { Outlet } from "react-router";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Route, RouterProvider, createRoutesFromElements, createBrowserRouter } from "react-router";
 import './App.css'
 import Header from './components/Header'
@@ -22,7 +23,15 @@ import OrderManagement from './pages/admin/Orders/OrderManagement';
 import EditCategory from './pages/admin/Category/EditCategory';
 import AddCategory from './pages/admin/Category/AddCategory';
 import RequireAuth from './pages/auth/RequireAuth';
+import GoolgeLogin from './pages/auth/GoogleLogin';
 
+
+
+export const GoogleWrapper = ()=>(
+  <GoogleOAuthProvider clientId="691232647580-japcu4npu0jvofkmk8traegt37io5j7e.apps.googleusercontent.com">
+    <GoolgeLogin />
+  </GoogleOAuthProvider>
+)
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -30,6 +39,7 @@ export const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="verify-otp" element={<OTPVerify />} />
+      <Route path="google" element={<GoogleWrapper />} />
 
 
       <Route path="/admin" element={<RequireAuth/>}>
@@ -49,6 +59,7 @@ export const router = createBrowserRouter(
 )
 
 function App() {
+
   return (
     <>
     

@@ -29,7 +29,7 @@ const verifyOtp = async (req, res) => {
         const token = generateToken(res, user._id, user.isAdmin);
         console.log("Generated Token:", token);
 
-        res.status(200).json({ message: "OTP verified", token });
+        res.status(200).json({ message: "OTP verified", user});
 
         otpStore.delete(email);
         console.log("OTP cleared from store");

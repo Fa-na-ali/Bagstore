@@ -7,8 +7,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useLoginMutation } from "../../redux/api/usersApiSlice"; 
+import { useLoginMutation } from "../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
+import GoolgeLogin from "./GoogleLogin";
+import { GoogleLogin } from "@react-oauth/google";
+import { GoogleWrapper } from "../../App";
 
 //Validation schema
 const validationSchema = yup.object().shape({
@@ -18,7 +21,7 @@ const validationSchema = yup.object().shape({
 
 const Login = () => {
   const navigate = useNavigate();
-  const [login, { isLoading }] = useLoginMutation(); 
+  const [login, { isLoading }] = useLoginMutation();
   // React Hook Form setup
   const {
     register,
@@ -33,7 +36,7 @@ const Login = () => {
 
       if (res) {
         toast.success("OTP has been sent to your email.");
-        navigate(`/verify-otp?email=${data.email}`); 
+        navigate(`/verify-otp?email=${data.email}`);
       } else {
         toast.error("Something went wrong. Please try again.");
       }
@@ -68,19 +71,19 @@ const Login = () => {
                         Sign into your account
                       </h5>
 
-                      
+
                       <Form.Group className="mb-4">
                         <Form.Control type="email" placeholder="Enter email" {...register("email")} />
                         {errors.email && <p className="text-danger">{errors.email.message}</p>}
                       </Form.Group>
 
-                     
+
                       <Form.Group className="mb-4">
                         <Form.Control type="password" placeholder="Enter password" {...register("password")} />
                         {errors.password && <p className="text-danger">{errors.password.message}</p>}
                       </Form.Group>
 
-                      
+
                       <div className="pt-1 mb-4">
                         <Button className="button-custom w-100" size="lg" type="submit" disabled={isLoading}>
                           {isLoading ? "Sending OTP..." : "Login"}
@@ -94,12 +97,7 @@ const Login = () => {
                       </p>
                       <p className="text-center" style={{ color: "#393f81" }}>or</p>
 
-                     
-                      <div className="pt-1 mb-4">
-                        <Button variant="danger" className="w-100" size="lg">
-                          Sign in with Google
-                        </Button>
-                      </div>
+                      <GoogleWrapper />
 
                       <Link to="/" className="small text-muted text-decoration-none">Terms of use.</Link>
                       <Link to="/" className="small text-muted ms-2 text-decoration-none">Privacy policy</Link>

@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs")
 const { generateToken } = require('../middlewares/generateToken')
 const transporter = require('../middlewares/otpMiddleware')
 const nodemailer = require("nodemailer");
+const { oauth2Client } = require('../utils/googleClient');
+const axios = require('axios');
 require("dotenv").config();
 
 
@@ -86,6 +88,70 @@ const userLogin = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+//resend otp
+ const resendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        otpStore.set(email, { otp, expires: Date.now() + 300000 });
+
+        console.log("Generated OTP:", otp);
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Your OTP Code",
+            text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+        });
+
+        console.log("OTP sent successfully to", email);
+        res.status(200).json({ message: "OTP sent to email" });
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+//google login
+const googleLogin = async(req,res)=>{
+    const code = req.query.code;
+    try {
+        const googleRes = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(googleRes.tokens);
+        const userRes = await axios.get(
+            `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`
+        );
+        console.log("google",userRes)
+        const { email, name,} = userRes.data;
+        // console.log(userRes);
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = await User.create({
+                name,
+                email,
+            });
+        }
+        const { _id,isAdmin } = user;
+        const token = generateToken(res,_id,isAdmin)
+        res.status(200).json({
+            message: 'success',
+            token,
+            user,
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+
+}
 
 //Logout user
 const logoutUser = async (req, res) => {
@@ -274,6 +340,8 @@ module.exports = {
     userSignup,
     userLogin,
     logoutUser,
+    resendOtp,
+    googleLogin,
     otpStore,
     searchUser,
     getAllUsers,
