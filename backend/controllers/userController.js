@@ -139,7 +139,8 @@ const googleLogin = async(req,res)=>{
             });
         }
         const { _id,isAdmin } = user;
-        const token = generateToken(res,_id,isAdmin)
+        const token = generateToken(user)
+        console.log("token generated",token)
         res.status(200).json({
             message: 'success',
             token,
@@ -157,7 +158,7 @@ const googleLogin = async(req,res)=>{
 const logoutUser = async (req, res) => {
     try {
         await res.cookie("jwt", "", {
-            httyOnly: true,
+            httpOnly: true,
             expires: new Date(0),
         });
 

@@ -5,8 +5,13 @@ const cors=require('cors')
 const app=express();
 
 
-
+app.use(cookieParser());
+app.use(cors({
+    origin: "http://localhost:5173",  
+    credentials: true,
+}));
 const userRouter = require('./routes/userRoutes')
+const productRouter = require('./routes/productRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
 const dbConnect = require('./config/db')
 
@@ -17,17 +22,19 @@ const PORT=process.env.PORT || 5004
 dbConnect();
 
 //middlewares
-app.use(cors({
-    origin: "http://localhost:5173",  // Allow frontend origin
-    credentials: true,
-}));
+
+
+app.use("/uploads",express.static("./uploads"))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
-app.use(cookieParser());
+
 
 //routes
 app.use('/api/user',userRouter)
 app.use("/api/category", categoryRoutes);
+app.use("/api/products", productRouter);
+
+
 
 
 

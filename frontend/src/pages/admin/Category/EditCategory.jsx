@@ -4,6 +4,36 @@ import { MdOutlineAdd } from "react-icons/md";
 import AdminSidebar from '../../../components/AdminSidebar'
 
 const EditCategory = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+  
+    const { data: category, refetch, isLoading, isError } = useFetchCategoriesQuery(id);
+    const [update, { isLoading: isUpdating }] = useUpdateCategoryMutation();
+  
+    const [updatingName, setUpdatingName] = useState("");
+
+    useEffect(() => {
+        if (category) {
+          setUpdatingName(category.name || "");
+        }
+        console.log("Updated category data:", category);
+      }, [category]);
+
+      const updateHandler = async (e, id) => {
+        e.preventDefault();
+        try {
+          await update({
+            id,
+            name: updatingName,
+          }).unwrap();
+          refetch();
+          console.log(updatingName)
+          toast.success("Category updated successfully!");
+          navigate("/adminDashboard");
+        } catch (err) {
+          toast.error(err?.data?.message || "Failed to update the category.");
+        }
+      };
     return (
         <>
             <Container fluid>
@@ -18,12 +48,14 @@ const EditCategory = () => {
                         <Form className='ms-5'>
                             <Form.Group controlId="categoryName">
                                 <Form.Label className='caption'>Category Name</Form.Label>
-                                <Form.Control type="text" placeholder="Enter category name" />
+                                <Form.Control type="text" placeholder="Enter category name" 
+                                 value={updatingName}
+                                onChange={(e) => setUpdatingName(e.target.value)}/>
                             </Form.Group>
                         </Form>
                     </Col>
                     <Col lg={4} className="my-5">
-                        <Button className="me-2 button-custom">
+                        <Button className="me-2 button-custom" onClick={(e)=>{updateHandler(e,category._id)}}>
                             <MdOutlineAdd /> <span>Add New Category</span>
                         </Button>
                     </Col>

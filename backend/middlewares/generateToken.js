@@ -1,19 +1,14 @@
 const jwt = require("jsonwebtoken")
 
-const generateToken = (res, userId,isAdmin) => {
-  const token = jwt.sign({ userId,isAdmin }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
-  });
 
-  // Set JWT as an HTTP-Only Cookie
-  res.cookie("jwt", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV !== "development",
-    sameSite: "strict",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  });
+const generateToken = (user) => {
+    const token = jwt.sign({ userid: user._id,userRole:user.isAdmin}, process.env.JWT_SECRET, {
+        expiresIn: '12h',
+    })
+    console.log("tooooo::",token)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+console.log("Decoded Token with User ID:", decoded);
 
-  return token;
-};
-
-module.exports = {generateToken}
+    return token
+}
+module.exports={generateToken}

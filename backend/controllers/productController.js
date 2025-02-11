@@ -1,42 +1,46 @@
 const express = require('express')
 const Product = require('../models/productModel')
 
-//Add product
+//add Product
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand, size } = req.fields;
-    switch (true) {
-      case !name:
-        return res.json({ error: "Name is required" });
-      case !brand:
-        return res.json({ error: "Brand is required" });
-      case !description:
-        return res.json({ error: "Description is required" });
-      case !price:
-        return res.json({ error: "Price is required" });
-      case !category:
-        return res.json({ error: "Category is required" });
-      case !quantity:
-        return res.json({ error: "Quantity is required" });
-      case !size:
-        return res.json({ error: "Size is required" });
-    }
+    const { name, description, price, category, quantity, brand, size } = req.body;
+    const files = req.files; 
 
-    const product = new Product.create({
+   
+    if (!name) return res.status(400).json({ error: "Name is required" });
+    if (!brand) return res.status(400).json({ error: "Brand is required" });
+    if (!description) return res.status(400).json({ error: "Description is required" });
+    if (!price) return res.status(400).json({ error: "Price is required" });
+    if (!category) return res.status(400).json({ error: "Category is required" });
+    if (!quantity) return res.status(400).json({ error: "Quantity is required" });
+    if (!size) return res.status(400).json({ error: "Size is required" });
+    if (!files || files.length === 0) return res.status(400).json({ error: "At least three images are required" });
+
+    
+    const imageUrls = files.map((file) => file.filename);
+
+    
+    const product = await Product.create({
       name,
       description,
       brand,
       category,
       quantity,
       size,
-      price
-    })
-    res.staus(201).json(product);
+      price,
+      pdImage: imageUrls, 
+    });
+
+    res.status(201).json({ message: "Product added successfully!", product });
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+
 
 //update product
 const updateProduct = async (req, res) => {
@@ -257,6 +261,6 @@ const removeProduct = async (req, res) => {
   }
 };
 
-
+module.exports = {addProduct}
 
 

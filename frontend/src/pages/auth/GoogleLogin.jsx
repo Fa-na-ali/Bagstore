@@ -15,15 +15,18 @@ const GoolgeLogin = (props) => {
             if (authResult["code"]) {
                 const result = await googleAuth(authResult.code);
                 console.log("result from back",result)
-                const { email, name } = result.data.user;
-                const token = result.data.token;
-                const obj = { email, name};
+                const { email, name, isAdmin } = result.data.user;
+                const token = result.data.token;  
+            
+                const obj = { email, name, isAdmin, token }; 
                 console.log("Dispatching credentials:", obj);
-                dispatch(setCredentials({ ...result.data.user}));
-                if (result.data.user.isAdmin) {
-                   navigate("/dashboard");
-               } else {
-                    navigate("/");
+            
+                dispatch(setCredentials(obj));  
+            
+                if (isAdmin) {
+                  navigate("/admin/dashboard");
+                } else {
+                  navigate("/");
                 }
             } else {
                 console.log(authResult);

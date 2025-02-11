@@ -1,33 +1,39 @@
 
+const express = require('express')
 const jwt = require("jsonwebtoken")
 const User = require("../models/userModel.js");
 
-
-const authenticate = async (req, res) => {
+const authenticate = async (req, res, next) => {
   let token;
-  try {
-    // Read JWT from the 'jwt' cookie
-  token = req.cookies.jwt;
+  //read jwt from the 'jwt' cookie
+  const authHeader = req.headers.authorization;
+  console.log("Authorization Header:", authHeader);
 
-  if (token) {
+  if (authHeader && authHeader.startsWith('Bearer')) {
     try {
+      token = authHeader.split(' ')[1];
+      console.log("Token:", token);
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.userId).select("-password");
+      console.log("Decoded Token:", decoded);
+
+      req.user = await User.findById(decoded.userid).select("-password");
+      console.log("User Retrieved from DB:", req.user);
       next();
     } catch (error) {
-      res.status(401);
-      throw new Error("Not authorized, token failed.");
+      res.status(401)
+      throw new Error("Not auhtorized, token failed")
     }
-  } else {
-    res.status(401);
-    throw new Error("Not authorized, no token.");
   }
-  } catch (error) {
-    res.status(500).json({message:error.message})
+  else {
+    res.status(401)
+    throw new Error("Not auhtorized, no token")
+
   }
 
-  
 }
+
+
 
 const authorizeAdmin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {

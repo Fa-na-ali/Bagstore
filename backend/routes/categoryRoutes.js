@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-    createCategory,
+    addCategory,
     updateCategory,
     listCategory,
     readCategory,
@@ -10,7 +10,7 @@ const {
 
 const { authenticate, authorizeAdmin } = require("../middlewares/authMiddleware.js");
 
-router.route("/").post(authenticate, authorizeAdmin, createCategory);
+router.route("/add-category").post( authenticate, authorizeAdmin, addCategory);
 router.route("/:categoryId").put(authenticate, authorizeAdmin, updateCategory);
 router
     .route("/:categoryId")

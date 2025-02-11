@@ -45,10 +45,10 @@ export const router = createBrowserRouter(
       <Route path="/admin" element={<RequireAuth/>}>
         <Route path="users" element={<UserManagement />} />
         <Route path="categories" element={<CategoryManagement />} />
-        <Route path="categories/add" element={<AddCategory />} />
-        <Route path="categories/edit/:_id" element={<EditCategory />} />
+        <Route path="add-category" element={<AddCategory />} />
+        <Route path="edit-category/:_id" element={<EditCategory />} />
         <Route path="products" element={<ProductManagement />} />
-        <Route path="products/add" element={<AddProduct />} />
+        <Route path="add-products" element={<AddProduct />} />
         <Route path="products/edit/:_id" element={<EditProduct/>} />
         <Route path="orders" element={<OrderManagement />} />
         <Route path="dashboard" element={<AdminDashboard />} />

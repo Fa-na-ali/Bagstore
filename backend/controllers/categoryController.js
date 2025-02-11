@@ -2,9 +2,14 @@
 const Category = require("../models/categoryModel.js");
 
 
-const createCategory = async (req, res) => {
+const addCategory = async (req, res) => {
+  
   try {
     const { name } = req.body;
+    if (!req.user?._id) {
+      return res.status(401).json({ message: "Unauthorized, user ID missing" });
+    }
+
 
     if (!name) {
       return res.json({ error: "Name is required" });
@@ -17,10 +22,12 @@ const createCategory = async (req, res) => {
     }
     const category = await Category.create({
       name,
+      createdBy: req.user._id, 
+      updatedBy: req.user._id,
 
     })
 
-    res.staus(201).json(category);
+    res.status(201).json(category);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: error.message });
@@ -98,7 +105,7 @@ const readCategory = async (req, res) => {
 };
 
 module.exports = {
-  createCategory,
+  addCategory,
   updateCategory,
   deleteCategory,
   listCategory,
