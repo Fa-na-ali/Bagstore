@@ -1,33 +1,25 @@
 import React, { useState } from "react";
+import { MdOutlineAdd } from "react-icons/md";
 import { Table, Container, Row, Col, Form, InputGroup, Button, Pagination, Dropdown } from "react-bootstrap";
 import { FaSort, FaSearch, FaEye, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
+import { Link, useNavigate } from "react-router";
 
-const Ttable = () => {
+const Ttable = ({ data, columns, onDelete, onView, onEdit }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("Name");
-
-  const customers = [
-    { id: 1, name: "Thomas Hardy", address: "89 Chiaroscuro Rd.", city: "Portland", pin: "97219", country: "USA" },
-    { id: 2, name: "Maria Anders", address: "Obere Str. 57", city: "Berlin", pin: "12209", country: "Germany" },
-    { id: 3, name: "Fran Wilson", address: "C/ Araquil, 67", city: "Madrid", pin: "28023", country: "Spain" },
-    { id: 4, name: "Dominique Perrier", address: "25, rue Lauriston", city: "Paris", pin: "75016", country: "France" },
-    { id: 5, name: "Martin Blank", address: "Via Monte Bianco 34", city: "Turin", pin: "10100", country: "Italy" },
-  ];
-
+  const [sortBy, setSortBy] = useState(columns[0]?.key);
+const navigate = useNavigate()
   // Sorting Logic
-  const sortedCustomers = [...customers].sort((a, b) => {
-    if (sortBy === "Name") return a.name.localeCompare(b.name);
-    if (sortBy === "City") return a.city.localeCompare(b.city);
-    if (sortBy === "Country") return a.country.localeCompare(b.country);
+  const sortedData = [...data].sort((a, b) => {
+    if (sortBy) return a[sortBy].localeCompare(b[sortBy]);
     return 0;
   });
 
   // Search Filter
-  const filteredCustomers = sortedCustomers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.country.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData = sortedData.filter(
+    (item) =>
+      columns.some((col) =>
+        item[col.key]?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
   return (
@@ -38,7 +30,11 @@ const Ttable = () => {
           <div className="table-title my-5">
             <Row className="align-items-center">
               <Col lg={6}>
-                <h2>Customer <b>Details</b></h2>
+              <Link to='add-category'>
+                <Button  className="me-2 button-custom" >
+                  <MdOutlineAdd /> <span>Add New </span>
+                </Button>
+                </Link>
               </Col>
               <Col sm={6} className="d-flex justify-content-end gap-3">
                 {/* Search Box */}
@@ -54,13 +50,13 @@ const Ttable = () => {
 
                 {/* Sort By Dropdown */}
                 <Dropdown>
-                  <Dropdown.Toggle variant="outline-primary">
+                  <Dropdown.Toggle variant="outline-dark">
                     Sort By: {sortBy}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {["Name", "City", "Country"].map((option) => (
-                      <Dropdown.Item key={option} onClick={() => setSortBy(option)}>
-                        {option}
+                    {columns.map((col) => (
+                      <Dropdown.Item key={col.key} onClick={() => setSortBy(col.key)}>
+                        {col.label}
                       </Dropdown.Item>
                     ))}
                   </Dropdown.Menu>
@@ -69,39 +65,39 @@ const Ttable = () => {
             </Row>
           </div>
 
-          {/* Customer Table */}
+          {/* Data Table */}
           <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name <FaSort /></th>
-                <th>Address</th>
-                <th>City <FaSort /></th>
-                <th>Pin Code</th>
-                <th>Country <FaSort /></th>
+            <thead className="heading">
+              <tr className="heading">
+                <th className="heading">#</th>
+                {columns.map((col) => (
+                  <th className="heading" key={col.key}>{col.label} <FaSort /></th>
+                ))}
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredCustomers.length > 0 ? (
-                filteredCustomers.map((customer) => (
-                  <tr key={customer.id}>
-                    <td>{customer.id}</td>
-                    <td>{customer.name}</td>
-                    <td>{customer.address}</td>
-                    <td>{customer.city}</td>
-                    <td>{customer.pin}</td>
-                    <td>{customer.country}</td>
+              {filteredData.length > 0 ? (
+                filteredData.map((item, index) => (
+                  <tr key={item._id}>
+                    <td>{index + 1}</td>
+                    {columns.map((col) => (
+                      <td className="caption" key={col.key}>{item[col.key]}</td>
+                    ))}
                     <td>
-                      <Button variant="link" className="text-primary p-0 me-2" title="View"><FaEye /></Button>
-                      <Button variant="link" className="text-warning p-0 me-2" title="Edit"><FaEdit /></Button>
-                      <Button variant="link" className="text-danger p-0" title="Delete"><FaTrash /></Button>
+                     
+                      <Button variant="link" className="caption p-0 me-2" title="Edit" onClick={() => onEdit(item)}>
+                        <FaEdit />
+                      </Button>
+                      <Button variant="link" className="text-danger p-0" title="Delete" onClick={() => onDelete(item)}>
+                        <FaTrash />
+                      </Button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="text-center text-muted">No results found</td>
+                  <td colSpan={columns.length + 2} className="text-center text-muted">No results found</td>
                 </tr>
               )}
             </tbody>
@@ -109,7 +105,7 @@ const Ttable = () => {
 
           {/* Pagination */}
           <div className="clearfix d-flex justify-content-between align-items-center">
-            <div className="hint-text">Showing <b>{filteredCustomers.length}</b> out of <b>{customers.length}</b> entries</div>
+            <div className="hint-text">Showing <b>{filteredData.length}</b> out of <b>{data.length}</b> entries</div>
             <Pagination>
               <Pagination.Item disabled><FaAngleDoubleLeft /></Pagination.Item>
               <Pagination.Item>1</Pagination.Item>

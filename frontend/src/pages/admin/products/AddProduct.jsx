@@ -1,97 +1,100 @@
-import React, { useState, useRef, useCallback  } from 'react';
-import { MdOutlineAdd, MdOutlineRemove } from 'react-icons/md';
-import { Row, Col, Container, Form, Button, Card ,Modal } from 'react-bootstrap';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router';
+import { Row, Col, Container, Form, Button, Card, Modal } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { MdOutlineAdd } from "react-icons/md";
+import { MdOutlineRemove } from "react-icons/md";
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
 import { useAddProductMutation } from '../../../redux/api/productApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar';
-import {toast} from 'react-toastify';
-import ReactCrop from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import { toast } from 'react-toastify';
+import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 
-const schema = yup.object().shape({
-  name: yup.string().required('Product name is required'),
-  category: yup.string().required('Category is required'),
-  description: yup.string().required('Description is required'),
-  price: yup.number().positive().required('Price is required'),
-  size: yup.string().required('Size is required'),
-  quantity: yup.number().integer().positive().required('Quantity is required'),
-  brand: yup.string().required('Brand is required'),
-});
 
 const AddProduct = () => {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [brand, setBrand] = useState("");
+  const [color, setColor] = useState('');
+  const [size, setSize] = useState('');
   const [files, setFiles] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [croppedImages, setCroppedImages] = useState([]);
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const cropperRef = useRef(null);
   const [addProduct, { isLoading }] = useAddProductMutation();
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({ resolver: yupResolver(schema) });
+  const { data: categories } = useFetchCategoriesQuery();
+  const navigate = useNavigate();
+
+  const validate = () => {
+    const newErrors = {};
+    if (!name) newErrors.name = 'Name of Product is required';
+    if (!category) newErrors.category = 'Category is required';
+    if (!description) newErrors.description = 'Description is required';
+    if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
+    if (!color) newErrors.color = 'Color is required';
+    if (!brand) newErrors.brand = 'Brand is required';
+    if (quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
+    if (files.length === 0) newErrors.files = 'At least one image is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleFileChange = (e) => {
-    setFiles([...e.target.files]);
-  };
-// Open modal for cropping when an image is clicked
-  const handleImageClick = (file) => {
-    setSelectedImage(file);
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+    setImageToCrop(URL.createObjectURL(selectedFiles[0]));
     setShowModal(true);
   };
-// Extract cropped image
-  const getCroppedImage = useCallback(() => {
-    if (!completedCrop || !previewCanvasRef.current || !imgRef.current) {
+
+  const handleCrop = () => {
+    if (cropperRef.current) {
+      const croppedCanvas = cropperRef.current.cropper.getCroppedCanvas();
+      if (croppedCanvas) {
+        croppedCanvas.toBlob((blob) => {
+          if (blob) {
+
+            const file = new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
+
+            setCroppedImages((prevImages) => [...prevImages, file]); // Store as File, not Blob
+          }
+        }, "image/webp");
+      }
+    }
+    setShowModal(false);
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) {
       return;
     }
-    const canvas = previewCanvasRef.current;
-    const image = imgRef.current;
-    const ctx = canvas.getContext("2d");
 
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
-
-    ctx.drawImage(
-      image,
-      completedCrop.x,
-      completedCrop.y,
-      completedCrop.width,
-      completedCrop.height,
-      0,
-      0,
-      completedCrop.width,
-      completedCrop.height
-    );
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, "image/jpeg");
-    });
-  }, [completedCrop]);
-
-   //Save the cropped image
-   const saveCroppedImage = async () => {
-    const croppedBlob = await getCroppedImage();
-    if (croppedBlob) {
-      const croppedFile = new File([croppedBlob], selectedImage.name, { type: "image/jpeg" });
-      setFiles((prevFiles) => prevFiles.map((file) => (file === selectedImage ? croppedFile : file)));
-      toast.success("Image cropped successfully!");
-      setShowModal(false);
-    }
-  };
-//form submit
-  const onSubmit = async (data) => {
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      formData.append(key, data[key]);
-    });
-    files.forEach((file) => {
-      formData.append('pdImage', file);
-    });
-    
     try {
-      await addProduct(formData).unwrap();
+      const productData = new FormData();
+      productData.append("name", name);
+      productData.append("description", description);
+      productData.append("price", price);
+      productData.append("category", category);
+      productData.append("quantity", quantity);
+      productData.append("brand", brand);
+      productData.append("color", color);
+      productData.append("size", size);
+      if (croppedImages.length === 0) {
+        toast.error("Please upload at least one image.");
+        return;
+      }
+      croppedImages.forEach((file) => {
+        productData.append('pdImage', file);
+      });
+      console.log("pp", name, description, price, category, quantity, color, brand)
+      const { data } = await addProduct(productData).unwrap()
       toast.success('Product added successfully!');
     } catch (error) {
       toast.error(error?.data?.message || 'Failed to add product');
@@ -106,100 +109,170 @@ const AddProduct = () => {
         </Col>
         <Col lg={9} className="p-4 background-one vw-75">
           <h2 className='text-center my-5 heading'>ADD PRODUCT</h2>
-          <Form onSubmit={handleSubmit(onSubmit)}>
+          <Form onSubmit={handleSubmit}>
             <Row className="mb-3 my-5">
-              <Form.Group as={Col}>
+              <Form.Group as={Col} controlId="formName">
                 <Form.Label className='caption'>Name of Product</Form.Label>
-                <Form.Control {...register('name')} placeholder="Enter Product name" />
-                <p className="text-danger">{errors.name?.message}</p>
+                <Form.Control type="text" placeholder="Enter Product name" value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  isInvalid={!!errors.name} />
+                <Form.Control.Feedback type="invalid">
+                  {errors.name}
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group as={Col} controlId="formGridCategory">
+                <Form.Label className="caption">Category</Form.Label>
+                <Form.Select className="text-secondary"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  isInvalid={!!errors.category}>
+                  <option value="">Choose...</option>
+                  {categories?.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors.category}
+                </Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group as={Col}>
-                <Form.Label className='caption'>Category</Form.Label>
-                <Form.Control {...register('category')} placeholder="Enter Category" />
-                <p className="text-danger">{errors.category?.message}</p>
-              </Form.Group>
             </Row>
-
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formDesc">
               <Form.Label className='caption'>Description</Form.Label>
-              <Form.Control {...register('description')} placeholder="Enter Description" />
-              <p className="text-danger">{errors.description?.message}</p>
+              <Form.Control type="text" placeholder="Enter Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                isInvalid={!!errors.description}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.description}
+              </Form.Control.Feedback>
             </Form.Group>
-
             <Row className="mb-3">
-              <Form.Group as={Col}>
+              <Form.Group as={Col} controlId="formGridPrice">
                 <Form.Label className='caption'>Price</Form.Label>
-                <Form.Control type="number" {...register('price')} placeholder="Enter Price" />
-                <p className="text-danger">{errors.price?.message}</p>
+                <Form.Control type="number" placeholder="Enter Price" value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  isInvalid={!!errors.price} />
+                <Form.Control.Feedback type="invalid">
+                  {errors.price}
+                </Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group as={Col}>
-                <Form.Label className='caption'>Size</Form.Label>
-                <Form.Control {...register('size')} placeholder="Enter Size" />
-                <p className="text-danger">{errors.size?.message}</p>
+              <Form.Group as={Col} controlId="formGridColor">
+                <Form.Label className='caption'>Color</Form.Label>
+                <Form.Select className='text-secondary' value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  isInvalid={!!errors.color}>
+                  <option value="">Choose...</option>
+                  <option value="Beige">Beige</option>
+                  <option value="Brown">Brown</option>
+                  <option value="White">White</option>
+                  <option value="Black">Black</option>
+                  <option value="Pink">Pink</option>
+                  <option value="Green">Green</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors.color}
+                </Form.Control.Feedback>
               </Form.Group>
-            </Row>
 
-            <Row className="mb-3">
-              <Form.Group as={Col}>
-                <Form.Label className='caption'>Quantity</Form.Label>
-                <Form.Control type="number" {...register('quantity')} placeholder="Enter Quantity" />
-                <p className="text-danger">{errors.quantity?.message}</p>
-              </Form.Group>
-
-              <Form.Group as={Col}>
+              <Form.Group as={Col} controlId="formGridBrand">
                 <Form.Label className='caption'>Brand</Form.Label>
-                <Form.Control {...register('brand')} placeholder="Enter Brand" />
-                <p className="text-danger">{errors.brand?.message}</p>
+                <Form.Control type="text" placeholder="Enter Brand" value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  isInvalid={!!errors.brand} />
+                <Form.Control.Feedback type="invalid">
+                  {errors.brand}
+                </Form.Control.Feedback>
               </Form.Group>
             </Row>
 
-            <Form.Group controlId="formFileMultiple" className="mb-3 my-4">
+            <Row>
+              <div style={{ maxWidth: '300px' }}>
+                <Form.Label className="mb-2 caption" >Quantity</Form.Label>
+                <div className="d-flex align-items-center">
+                  <Button className="px-3 me-2 button-custom" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                    <MdOutlineRemove />
+                  </Button>
+
+                  <Form.Control
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    className="text-center"
+                    style={{ width: '70px' }}
+                    isInvalid={!!errors.quantity}
+                  />
+
+                  <Button className="px-3 ms-2 button-custom" onClick={() => setQuantity(quantity + 1)}>
+                    <MdOutlineAdd />
+                  </Button>
+                </div>
+                <Form.Control.Feedback type="invalid">
+                  {errors.quantity}
+                </Form.Control.Feedback>
+              </div>
+
+              <Form.Group as={Col} controlId="formGridsize">
+                <Form.Label className='caption'>Size</Form.Label>
+                <Form.Control type="string" placeholder="Enter size" value={size}
+                  onChange={(e) => setSize(e.target.value)}
+                  isInvalid={!!errors.size} />
+                <Form.Control.Feedback type="invalid">
+                  {errors.size}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Row>
+            <Form.Group className="mb-3 my-4">
               <Form.Label className='caption'>Upload Images</Form.Label>
               <Form.Control type="file" multiple onChange={handleFileChange} />
               <p className="text-muted">You can upload multiple images.</p>
             </Form.Group>
-
-            {files.length > 0 && (
+            {croppedImages.length > 0 && (
               <Container className="mt-3 d-flex">
-                {files.map((file, index) => (
-                  <Card key={index} style={{ width: "70px", height: "70px", margin: "5px", cursor: "pointer" }} onClick={() => handleImageClick(file)}>
-                    <Card.Img variant="top" src={URL.createObjectURL(file)} />
+                {croppedImages.map((image, index) => (
+                  <Card key={index} style={{ width: "70px", height: "70px", margin: "5px" }}>
+                    <Card.Img variant="top" src={URL.createObjectURL(image)} />
                   </Card>
                 ))}
               </Container>
             )}
-
             <Button className='button-custom w-100 my-5' type="submit" disabled={isLoading}>
               {isLoading ? 'Uploading...' : 'Submit'}
             </Button>
           </Form>
         </Col>
       </Row>
-
-     
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Crop Image</Modal.Title>
-        </Modal.Header>
         <Modal.Body>
-          {selectedImage && (
-            <>
-              <ReactCrop
-                src={URL.createObjectURL(selectedImage)}
-                crop={crop}
-                onImageLoaded={(img) => (imgRef.current = img)}
-                onChange={(newCrop) => setCrop(newCrop)}
-                onComplete={(c) => setCompletedCrop(c)}
-              />
-              <canvas ref={previewCanvasRef} style={{ display: "none" }} />
-            </>
-          )}
+          <Cropper
+            ref={cropperRef}
+            style={{ height: 400, width: "100%" }}
+            zoomTo={0.5}
+            initialAspectRatio={1}
+            preview=".img-preview"
+            src={imageToCrop}
+            viewMode={1}
+            minCropBoxHeight={10}
+            minCropBoxWidth={10}
+            background={false}
+            responsive={true}
+            autoCropArea={1}
+            checkOrientation={false}
+            guides={true}
+          />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={saveCroppedImage}>Save</Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleCrop}>
+            Crop & Save
+          </Button>
         </Modal.Footer>
       </Modal>
     </Container>

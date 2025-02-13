@@ -6,7 +6,8 @@ const addProduct = async (req, res) => {
   try {
     const { name, description, price, category, quantity, brand, size } = req.body;
     const files = req.files; 
-
+console.log(req.body)
+console.log(req.files)
    
     if (!name) return res.status(400).json({ error: "Name is required" });
     if (!brand) return res.status(400).json({ error: "Brand is required" });
@@ -15,7 +16,7 @@ const addProduct = async (req, res) => {
     if (!category) return res.status(400).json({ error: "Category is required" });
     if (!quantity) return res.status(400).json({ error: "Quantity is required" });
     if (!size) return res.status(400).json({ error: "Size is required" });
-    if (!files || files.length === 0) return res.status(400).json({ error: "At least three images are required" });
+    if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
 
     
     const imageUrls = files.map((file) => file.filename);
@@ -30,6 +31,8 @@ const addProduct = async (req, res) => {
       size,
       price,
       pdImage: imageUrls, 
+      createdBy: req.user._id, 
+      updatedBy: req.user._id,
     });
 
     res.status(201).json({ message: "Product added successfully!", product });

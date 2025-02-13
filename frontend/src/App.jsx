@@ -27,7 +27,7 @@ import GoolgeLogin from './pages/auth/GoogleLogin';
 
 
 
-export const GoogleWrapper = ()=>(
+export const GoogleWrapper = () => (
   <GoogleOAuthProvider clientId="691232647580-japcu4npu0jvofkmk8traegt37io5j7e.apps.googleusercontent.com">
     <GoolgeLogin />
   </GoogleOAuthProvider>
@@ -42,18 +42,19 @@ export const router = createBrowserRouter(
       <Route path="google" element={<GoogleWrapper />} />
 
 
-      <Route path="/admin" element={<RequireAuth/>}>
+      <Route path="admin" element={<RequireAuth />}>
         <Route path="users" element={<UserManagement />} />
         <Route path="categories" element={<CategoryManagement />} />
-        <Route path="add-category" element={<AddCategory />} />
-        <Route path="edit-category/:_id" element={<EditCategory />} />
+        <Route path="categories/add-category" element={<AddCategory />} />
+        <Route path="categories/edit-category/:_id" element={<EditCategory />} />
+
         <Route path="products" element={<ProductManagement />} />
         <Route path="add-products" element={<AddProduct />} />
-        <Route path="products/edit/:_id" element={<EditProduct/>} />
+        <Route path="products/edit/:_id" element={<EditProduct />} />
         <Route path="orders" element={<OrderManagement />} />
         <Route path="dashboard" element={<AdminDashboard />} />
       </Route>
-      
+
     </Route >
   )
 )
@@ -62,14 +63,14 @@ function App() {
 
   return (
     <>
-    
-    <ErrorBoundary>
-      <Header />
-      <ToastContainer position="bottom-right" autoClose={5000} />
-      <main>
-        <Outlet /> {/* This will render the current route's component */}
-      </main>
-      <Footer />
+
+      <ErrorBoundary>
+        <Header />
+        <ToastContainer position="bottom-right" autoClose={5000} />
+        <main>
+          <Outlet /> {/* This will render the current route's component */}
+        </main>
+        <Footer />
       </ErrorBoundary>
     </>
   )
