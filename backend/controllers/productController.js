@@ -4,11 +4,11 @@ const Product = require('../models/productModel')
 //add Product
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand, size } = req.body;
-    const files = req.files; 
-console.log(req.body)
-console.log(req.files)
-   
+    const { name, description, price, category, quantity, brand, size, color } = req.body;
+    const files = req.files;
+    console.log(req.body)
+    console.log(req.files)
+
     if (!name) return res.status(400).json({ error: "Name is required" });
     if (!brand) return res.status(400).json({ error: "Brand is required" });
     if (!description) return res.status(400).json({ error: "Description is required" });
@@ -18,10 +18,10 @@ console.log(req.files)
     if (!size) return res.status(400).json({ error: "Size is required" });
     if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
 
-    
+
     const imageUrls = files.map((file) => file.filename);
 
-    
+
     const product = await Product.create({
       name,
       description,
@@ -30,8 +30,8 @@ console.log(req.files)
       quantity,
       size,
       price,
-      pdImage: imageUrls, 
-      createdBy: req.user._id, 
+      pdImage: imageUrls,
+      createdBy: req.user._id,
       updatedBy: req.user._id,
     });
 
@@ -39,6 +39,17 @@ console.log(req.files)
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+//All categories
+const listProducts = async (req, res) => {
+  try {
+    const all = await Product.find({}).sort({ createdAt: -1 });
+    res.json(all);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json(error.message);
   }
 };
 
@@ -66,6 +77,19 @@ const updateProduct = async (req, res) => {
 
   }
 
+};
+//to get a particular product
+const readProduct = async (req, res) => {
+  try {
+    
+    const id = req.params.id;
+    const product = await Product.findById({_id:id });
+    console.log("read",product)
+    res.status(201).json(product);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  }
 };
 
 //fetch products 
@@ -102,14 +126,14 @@ const fetchProducts = async (req, res) => {
 const fetchAllProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = parseInt(req.query.limit) || 3;
     const skip = (page - 1) * limit;
-    const products = await Product.find({ isExist: true })
+    const products = await Product.find({})
       .populate("category")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-    const totalProducts = await Product.countDocuments({ isExist: true });
+    const totalProducts = await Product.countDocuments({});
 
     res.json({
       products,
@@ -245,12 +269,12 @@ const filterProducts = async (req, res) => {
 
 //deleting product
 
-const removeProduct = async (req, res) => {
+const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { isExist: false }, 
-      { new: true } 
+      { isExist: false },
+      { new: true }
     );
 
     if (!product) {
@@ -264,6 +288,6 @@ const removeProduct = async (req, res) => {
   }
 };
 
-module.exports = {addProduct}
+module.exports = { addProduct, listProducts, deleteProduct,readProduct }
 
 

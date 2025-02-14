@@ -41,18 +41,19 @@ export const router = createBrowserRouter(
       <Route path="verify-otp" element={<OTPVerify />} />
       <Route path="google" element={<GoogleWrapper />} />
 
+      {/* protected routes */}
+      <Route element={<RequireAuth />}>
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />   
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/category" element={<CategoryManagement />} />
+        <Route path="/admin/category/add" element={<AddCategory />} />
+        <Route path="/admin/category/edit/:id" element={<EditCategory />} />
 
-      <Route path="admin" element={<RequireAuth />}>
-        <Route path="users" element={<UserManagement />} />
-        <Route path="categories" element={<CategoryManagement />} />
-        <Route path="categories/add-category" element={<AddCategory />} />
-        <Route path="categories/edit-category/:_id" element={<EditCategory />} />
-
-        <Route path="products" element={<ProductManagement />} />
-        <Route path="add-products" element={<AddProduct />} />
-        <Route path="products/edit/:_id" element={<EditProduct />} />
+        <Route path="/admin/products" element={<ProductManagement />} />
+        <Route path="/admin/products/add" element={<AddProduct />} />
+        <Route path="/admin/products/edit/:id" element={<EditProduct />} />
         <Route path="orders" element={<OrderManagement />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
+      
       </Route>
 
     </Route >

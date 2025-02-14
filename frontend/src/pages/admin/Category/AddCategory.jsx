@@ -20,7 +20,13 @@ const AddCategory = () => {
         try {
             const result = await createCategory({ name }).unwrap();
             setName("");
-            toast.success(`${result.name} category created successfully.`);
+            if (result.name) {
+                toast.success(`${result.name} category created successfully.`);
+            } else if (result.message) {
+                toast.error(result.message); 
+            } else {
+                toast.error("Unexpected response, try again.");
+            }
         } catch (error) {
             console.error(error);
             toast.error("Creating category failed, try again.");

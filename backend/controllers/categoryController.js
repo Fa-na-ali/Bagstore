@@ -1,28 +1,28 @@
-
+const mongoose = require('mongoose')
 const Category = require("../models/categoryModel.js");
 
-
+//add category
 const addCategory = async (req, res) => {
-  
+console.log("hhhh")
   try {
     const { name } = req.body;
     if (!req.user?._id) {
       return res.status(401).json({ message: "Unauthorized, user ID missing" });
     }
-
+  console.log(name)
 
     if (!name) {
       return res.json({ error: "Name is required" });
     }
 
-    const existingCategory = await Category.findOne({ name });
-
+    const existingCategory = await Category.findOne({name: name });
+     console.log(existingCategory)
     if (existingCategory) {
-      return res.json({ error: "Already exists" });
+      return res.json({ message: "Already exists" });
     }
     const category = await Category.create({
       name,
-      createdBy: req.user._id, 
+      createdBy: req.user._id,
       updatedBy: req.user._id,
 
     })
@@ -33,11 +33,12 @@ const addCategory = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
+//update category
 const updateCategory = async (req, res) => {
   try {
-    const { name } = req.body;
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  
+    console.log("upadte",req.params)
+    const category = await Category.findByIdAndUpdate({_id:req.params.id}, req.body, { new: true });
     if (!category) {
       res.status(404);
       throw new Error(`Category not found with  id ${req.params.id}`);
@@ -53,7 +54,7 @@ const updateCategory = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
+//delete category
 const deleteCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
@@ -74,7 +75,7 @@ const deleteCategory = async (req, res) => {
 //All categories
 const listCategory = async (req, res) => {
   try {
-    const all = await Category.find({});
+    const all = await Category.find({}).sort({ createdAt: -1 });
     res.json(all);
   } catch (error) {
     console.log(error);
@@ -96,7 +97,10 @@ const listExistCategory = async (req, res) => {
 //to get a particular category
 const readCategory = async (req, res) => {
   try {
-    const category = await Category.findOne({ _id: req.params.id });
+    
+    const id = req.params.id;
+    const category = await Category.findById({_id:id });
+    console.log("read",category)
     res.status(201).json(category);
   } catch (error) {
     console.log(error);
@@ -104,11 +108,27 @@ const readCategory = async (req, res) => {
   }
 };
 
+//search category
+const searchCategory = async (req, res) => {
+  console.log("hiii")
+  const search = new RegExp(req.params?.search, 'i')
+  if (search !== '')
+    try {
+      const all = await Category.find({ name: search });
+      console.log("search", all)
+      res.status(200).json(all)
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
   addCategory,
   updateCategory,
   deleteCategory,
+  readCategory,
   listCategory,
   listExistCategory,
-  readCategory,
+  searchCategory
 };

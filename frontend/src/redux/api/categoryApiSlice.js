@@ -6,37 +6,52 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     addCategory: builder.mutation({
       query: (newCategory) => ({
-        url: `${CATEGORY_URL}/add-category`,
+        url: `${CATEGORY_URL}`,
         method: "POST",
         body: newCategory,
       }),
       
     }),
-
     updateCategory: builder.mutation({
-      query: ({ categoryId, updatedCategory }) => ({
-        url: `${CATEGORY_URL}/${categoryId}`,
+      query: ({ id,...data }) => ({
+        url: `${CATEGORY_URL}/${id}`,
         method: "PUT",
-        body: updatedCategory,
+        body: data,
       }),
     }),
-
     deleteCategory: builder.mutation({
-      query: (categoryId) => ({
-        url: `${CATEGORY_URL}/${categoryId}`,
+      query: (id) => ({
+        url: `${CATEGORY_URL}/${id}`,
         method: "DELETE",
       }),
     }),
-
-    fetchCategories: builder.query({
-      query: () => `${CATEGORY_URL}/categories`,
+    specificCategories: builder.query({
+      query: (id) => ({
+        url:`${CATEGORY_URL}/${id}`,
+      })
     }),
+    fetchCategories: builder.query({
+      query: () => ({
+        url: `${CATEGORY_URL}`,
+      }),
+      providesTags: ["Category"],
+      keepUnusedDataFor: 5,
+    }),
+    searchCategories: builder.query({
+      query: (search) => ({
+        url: `${CATEGORY_URL}/search/${search}`,
+      })
+    }),
+  
+
   }),
 });
 
 export const {
   useAddCategoryMutation,
+  useSearchCategoriesQuery,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useFetchCategoriesQuery,
+  useSpecificCategoriesQuery
 } = categoryApiSlice;

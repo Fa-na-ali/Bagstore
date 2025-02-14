@@ -26,6 +26,16 @@ const productSchema = new Schema({
     required: true,
     min: 0
   },
+  brand: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  color: {
+    type: String,
+    required: true,
+    trim: true
+  },
   isExist: {
     type: Boolean,
     default: true
