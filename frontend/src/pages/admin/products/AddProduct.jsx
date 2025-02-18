@@ -1,9 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Row, Col, Container, Form, Button, Card, Modal } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { MdOutlineAdd } from "react-icons/md";
 import { MdOutlineRemove } from "react-icons/md";
 import Cropper from 'react-cropper';
@@ -96,6 +93,7 @@ const AddProduct = () => {
       console.log("pp", name, description, price, category, quantity, color, brand)
       const { data } = await addProduct(productData).unwrap()
       toast.success('Product added successfully!');
+      navigate('/admin/products')
     } catch (error) {
       toast.error(error?.data?.message || 'Failed to add product');
     }

@@ -10,10 +10,10 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: newCategory,
       }),
-      
+
     }),
     updateCategory: builder.mutation({
-      query: ({ id,...data }) => ({
+      query: ({ id, ...data }) => ({
         url: `${CATEGORY_URL}/${id}`,
         method: "PUT",
         body: data,
@@ -27,22 +27,24 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
     }),
     specificCategories: builder.query({
       query: (id) => ({
-        url:`${CATEGORY_URL}/${id}`,
+        url: `${CATEGORY_URL}/${id}`,
       })
     }),
     fetchCategories: builder.query({
       query: () => ({
-        url: `${CATEGORY_URL}`,
+        url: `${CATEGORY_URL}/all`,
       }),
       providesTags: ["Category"],
       keepUnusedDataFor: 5,
     }),
     searchCategories: builder.query({
-      query: (search) => ({
-        url: `${CATEGORY_URL}/search/${search}`,
-      })
+      query: ({ keyword, page }) => ({
+        url: `${CATEGORY_URL}`,
+        params: { keyword, page }
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ["Category"],
     }),
-  
 
   }),
 });

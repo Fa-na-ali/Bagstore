@@ -19,17 +19,17 @@ const OTPVerify = () => {
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
+console.log("user",userInfo)
+  // useEffect(() => {
+  //   if (userInfo) {
 
-  useEffect(() => {
-    if (userInfo) {
-
-      if (userInfo.user.isAdmin) {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
-    }
-  }, [navigate, userInfo]);
+  //     if (userInfo?.user.isAdmin) {
+  //       navigate("/admin/dashboard");
+  //     } else {
+  //       navigate("/");
+  //     }
+  //   }
+  // }, [navigate, userInfo]);
 
   // Handle OTP input change
   const handleChange = (index, e) => {
@@ -67,7 +67,7 @@ const OTPVerify = () => {
       toast.success("OTP Verified Successfully!");
       dispatch(setCredentials({ ...res }));
       if (res.user.isAdmin) {
-        navigate("/dashboard");
+        navigate("/admin/dashboard");
       } else {
         navigate("/");
       }

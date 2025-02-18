@@ -26,9 +26,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isBlocked: {
+    isExist: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     address: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
-
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
-import { Outlet, Link } from 'react-router';
+import {Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
-import { useAllProductsQuery, useDeleteProductMutation, } from '../../../redux/api/productApiSlice';
+import { useDeleteProductMutation, useGetProductsQuery, } from '../../../redux/api/productApiSlice';
 
-const CategoryManagement = () => {
-  let { data: products, refetch: load, error, isLoading } = useAllProductsQuery();
+const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchedProducts, setSearchedProducts] = useState([]);
-  //const { data: searchProducts, refetch, error: searchError, isLoading: searchLoading } = useSearchCategoriesQuery(searchTerm)
+  const [currentPage, setCurrentPage] = useState(1);
+  let { data, refetch: load, error, isLoading } = useGetProductsQuery({ keyword: searchTerm, page: currentPage });
   const [deleteProduct] = useDeleteProductMutation();
+  const products = data?.products || [];
 
   //  columns for the category table
   const columns = [
@@ -27,34 +26,34 @@ const CategoryManagement = () => {
     { key: "isExist", label: "Status" }
   ];
 
-  // useEffect(() => {
-  //   load()
-  //   if (searchProducts) {
-  //     setSearchedProducts(searchProducts);
-  //   }
-  // }, [searchCategories, load]);
+  useEffect(() => {
+    if (products)
+      load()
+  }, [load]);
 
-  // const searchHandler = (e) => {
-  //   e.preventDefault();
-  //   refetch();
-  // };
+  const searchHandler = (e) => {
+    e.preventDefault();
+    refetch();
+  };
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+  // on delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Do you want to delete")) {
+      try {
+        await deleteProduct(id);
+        toast.success(" Deleted Successfully")
+        load();
 
-  // Define handlers for actions 
-   const handleDelete = async (id) => {
-     if (window.confirm("Do you want to delete")) {
-       try {
-         await deleteProduct(id);
-         toast.success(" Deleted Successfully")
-         load();
-
-       } catch (err) {
-         toast.error(err?.data?.message || err.error);
-       }
-     }
-   };
+      } catch (err) {
+        toast.error(err?.data?.message || err.error);
+      }
+    }
+  };
 
 
   return (
@@ -79,7 +78,7 @@ const CategoryManagement = () => {
                 <Col lg={3}></Col>
                 <Col lg={3} className="d-flex justify-content-end gap-3">
                   <InputGroup className="mb-3">
-                    <Form  method="GET" className="d-flex">
+                    <Form onSubmit={searchHandler} method="GET" className="d-flex">
                       <FormControl
                         type="search"
                         placeholder="Search"
@@ -96,13 +95,15 @@ const CategoryManagement = () => {
                 </Col>
               </Row>
             </div>
-            {(products || searchedProducts) && (products.length > 0 || searchedProducts.length > 0) ? (
+            {(products ) && (products.length > 0) ? (
               <Ttable
                 naming="products"
-                data={searchTerm ? searchedProducts : products}
+                data={products}
                 columns={columns}
                 onDelete={handleDelete}
-
+                onPage={handlePageChange}
+                pageData={data}
+                currentPage={currentPage}
               />
             ) : (
               <p>No Products found</p>
@@ -116,4 +117,4 @@ const CategoryManagement = () => {
   );
 };
 
-export default CategoryManagement;
+export default ProductManagement;

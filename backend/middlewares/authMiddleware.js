@@ -5,7 +5,7 @@ const User = require("../models/userModel.js");
 
 const authenticate = async (req, res, next) => {
   let token;
-  //read jwt from the 'jwt' cookie
+  
   const authHeader = req.headers.authorization;
   console.log("Authorization Header:", authHeader);
 
@@ -16,6 +16,10 @@ const authenticate = async (req, res, next) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("Decoded Token:", decoded);
+      if (!decoded.userId) {
+        console.log("noooo")
+      }
+
 
       req.user = await User.findById(decoded.userId).select("-password");
       console.log("User Retrieved from DB:", req.user);

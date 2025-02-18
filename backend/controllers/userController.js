@@ -121,6 +121,9 @@ const userLogin = async (req, res) => {
 //google login
 const googleLogin = async(req,res)=>{
     const code = req.query.code;
+    if (!code) {
+        return res.status(400).json({ message: "Authorization code is missing!" });
+      }
     try {
         const googleRes = await oauth2Client.getToken(code);
         oauth2Client.setCredentials(googleRes.tokens);
@@ -213,7 +216,7 @@ const deleteUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        user.isBlocked = true;
+        user.isExist = false;
         await user.save();
 
         res.json({ message: "User deleted successfully (soft delete)", user });
@@ -224,31 +227,73 @@ const deleteUser = async (req, res) => {
 };
 
 //function to search a specific user
-const searchUser = async (req, res) => {
+// const searchUser = async (req, res) => {
+//     try {
+//         const { query} = req.query;
+    
+//         if (query) {
+//             const users = await User.find({
+//                 $or: [
+//                     { name: { $regex: query, $options: 'i' } },
+//                     { email: { $regex: query, $options: 'i' } }
+//                 ]
+//             });
+
+//             return res.json(users);
+//         }
+//         const users = await User.find({});
+//         res.json(users);
+
+//     } catch (error) {
+//         res.status(500).json({ message: error.message })
+//     }
+
+// };
+//fetch all users using keyword and pagination
+const fetchUsers = async (req, res) => {
+    console.log("search")
     try {
-        const { query, clear } = req.query;
-        if (clear === 'true') {
-            const users = await User.find({});
-            return res.json(users);
+      const pageSize = 6;
+      const page = Number(req.query.page) || 1;
+      const keyword = req.query.keyword
+        ? {
+          email: {
+            $regex: req.query.keyword,
+            $options: "i",
+          },
         }
-        if (query) {
-            const users = await User.find({
-                $or: [
-                    { name: { $regex: query, $options: 'i' } },
-                    { email: { $regex: query, $options: 'i' } }
-                ]
-            });
-
-            return res.json(users);
-        }
-        const users = await User.find({});
-        res.json(users);
-
+        : {};
+  
+      const count = await User.countDocuments({ ...keyword });
+      console.log("count", count)
+      const user = await User.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+      console.log("users", user)
+      res.json({
+        user,
+        count,
+        page,
+        pages: Math.ceil(count / pageSize),
+        hasMore: page < Math.ceil(count / pageSize),
+      });
     } catch (error) {
-        res.status(500).json({ message: error.message })
+      console.error(error);
+      res.status(500).json({ message: error.message });
     }
-
-};
+  };
+  
+const searchUser = async (req, res) => {
+    console.log("hiii searching")
+    const search = new RegExp(req.params?.search, 'i')
+    if (search !== '')
+      try {
+        const all = await User.find({ email: search });
+        console.log("search", all)
+        res.status(200).json(all)
+      } catch (error) {
+        console.log(error);
+        return res.status(400).json({ message: error.message });
+      }
+  };
 
 //function to get all users
 const getAllUsers = async (req, res) => {
@@ -344,6 +389,7 @@ module.exports = {
     resendOtp,
     googleLogin,
     otpStore,
+    fetchUsers,
     searchUser,
     getAllUsers,
     deleteUser,

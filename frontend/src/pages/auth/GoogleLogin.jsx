@@ -13,6 +13,7 @@ const GoolgeLogin = (props) => {
     const responseGoogle = async (authResult) => {
         try {
             if (authResult["code"]) {
+                console.log("auth",authResult)
                 const result = await googleAuth(authResult.code);
                 console.log("result from back",result)
                 const { email, name, isAdmin } = result.data.user;

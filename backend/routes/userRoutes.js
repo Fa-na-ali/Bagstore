@@ -10,6 +10,8 @@ const { userSignup,
     verifyOtpPassword, 
     resendOtp,
     googleLogin,
+    getAllUsers,
+    fetchUsers,
 } = require('../controllers/userController')
 const { authorizeAdmin, authenticate } = require('../middlewares/authMiddleware')
 const verifyOtp = require('../middlewares/verifyOtp')
@@ -21,11 +23,11 @@ router.route('/resend-otp').post(resendOtp)
 router.route('/google').get(googleLogin)
 router.route('/forgotpassword').post(forgotPassword)
 router.route('/verify-otp-password').post(verifyOtpPassword)
-router.route('/:id').put(authenticate,updateUser)
+router.route('/').get(authenticate,authorizeAdmin,fetchUsers)
+router.route('/:id').delete(authenticate,authorizeAdmin,deleteUser)
 router.route('/adminLogin').post(userLogin, authorizeAdmin)
 router.route("/logout").post(logoutUser)
-router.route("/admin/search").post(authenticate,authorizeAdmin,searchUser)
-router.route("/admin/:id").delete(authenticate,authorizeAdmin,deleteUser)
+router.route("/search/:search").get(authenticate,authorizeAdmin,searchUser)
 
 
 module.exports = router

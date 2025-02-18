@@ -15,7 +15,7 @@ const AdminSidebar=()=>{
     <Navbar expand="lg" className="d-lg-block sidebar collapse vh-100 background-two ">
       <Container fluid className="position-sticky">
         <Nav className="flex-column  mt-5 ">
-          <Nav.Link href="#" className="py-2 ripple text-white">
+          <Nav.Link as={Link} to='/admin/dashboard' className="py-2 ripple text-white">
             <RxDashboard  className="me-3" />
             Main Dashboard
           </Nav.Link>
@@ -43,7 +43,7 @@ const AdminSidebar=()=>{
             <PiFlagBannerFill className="me-3" />
           Banner
           </Nav.Link>
-          <Nav.Link href="#" className="py-2 ripple text-white">
+          <Nav.Link as={Link} to='/admin/user' className="py-2 ripple text-white">
           <FaUserGroup className="me-3"/>
             Users
           </Nav.Link>

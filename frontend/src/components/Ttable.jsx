@@ -4,10 +4,8 @@ import { Table, Container, Row, Col, Form, InputGroup, Button, Pagination, FormC
 import { FaSort, FaSearch, FaTimes, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const Ttable = ({ naming, data, columns, onDelete, onView, onEdit, onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-
+const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage }) => {
+  const totalPages = pageData?.pages || 1;
 
   return (
     <Container fluid="xl">
@@ -47,10 +45,19 @@ const Ttable = ({ naming, data, columns, onDelete, onView, onEdit, onSearch }) =
                               Inactive
                             </Badge>
                           )
+                        ) : col.key === "isAdmin" ? (
+                          item[col.key] ? (
+                            <Badge bg="success" pill>
+                              Admin
+                            </Badge>
+                          ) : (
+                            <Badge bg="danger" pill>
+                              User
+                            </Badge>
+                          )
                         ) : (
                           item[col.key]
                         )}
-
                       </td>
                     ))}
                     <td>
@@ -75,15 +82,29 @@ const Ttable = ({ naming, data, columns, onDelete, onView, onEdit, onSearch }) =
 
 
           <div className="clearfix d-flex justify-content-between align-items-center">
-            <div className="hint-text">Showing <b>{data.length}</b> out of <b>{data.length}</b> entries</div>
+            <div className="hint-text">Showing <b>{data.length}</b> out of <b>{pageData?.count || 0}</b> entries</div>
             <Pagination>
-              <Pagination.Item disabled><FaAngleDoubleLeft /></Pagination.Item>
-              <Pagination.Item>1</Pagination.Item>
-              <Pagination.Item>2</Pagination.Item>
-              <Pagination.Item active>3</Pagination.Item>
-              <Pagination.Item>4</Pagination.Item>
-              <Pagination.Item>5</Pagination.Item>
-              <Pagination.Item><FaAngleDoubleRight /></Pagination.Item>
+              <Pagination.Item
+                disabled={currentPage === 1}
+                onClick={() => onPage(1)}
+
+              ><FaAngleDoubleLeft /></Pagination.Item>
+              {[...Array(totalPages).keys()].map((num) => (
+                <Pagination.Item
+                  key={num + 1}
+                  active={num + 1 === currentPage}
+                  onClick={() => onPage(num + 1)}
+                >
+                  {num + 1}
+                </Pagination.Item>
+              ))}
+
+              <Pagination.Item
+                disabled={currentPage === totalPages}
+                onClick={() => onPage(totalPages)}
+              >
+                <FaAngleDoubleRight />
+              </Pagination.Item>
             </Pagination>
           </div>
         </div>

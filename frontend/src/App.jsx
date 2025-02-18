@@ -44,7 +44,7 @@ export const router = createBrowserRouter(
       {/* protected routes */}
       <Route element={<RequireAuth />}>
       <Route path="/admin/dashboard" element={<AdminDashboard />} />   
-        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/user" element={<UserManagement />} />
         <Route path="/admin/category" element={<CategoryManagement />} />
         <Route path="/admin/category/add" element={<AddCategory />} />
         <Route path="/admin/category/edit/:id" element={<EditCategory />} />

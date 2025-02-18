@@ -107,6 +107,38 @@ const readCategory = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+//fetch categories on search and pagination
+const fetchCategories = async (req, res) => {
+  console.log("search")
+  try {
+    const pageSize = 6;
+    const page = Number(req.query.page) || 1;
+    const keyword = req.query.keyword
+      ? {
+        name: {
+          $regex: req.query.keyword,
+          $options: "i",
+        },
+      }
+      : {};
+
+    const count = await Category.countDocuments({ ...keyword });
+    console.log("count", count)
+    const categories = await Category.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+    console.log("products", categories)
+    res.json({
+      categories,
+      count,
+      page,
+      pages: Math.ceil(count / pageSize),
+      hasMore: page < Math.ceil(count / pageSize),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 //search category
 const searchCategory = async (req, res) => {
@@ -127,6 +159,7 @@ module.exports = {
   addCategory,
   updateCategory,
   deleteCategory,
+  fetchCategories,
   readCategory,
   listCategory,
   listExistCategory,

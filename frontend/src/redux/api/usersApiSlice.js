@@ -18,25 +18,30 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     verifyOtp: builder.mutation({
-        query: (data) => ({
-          url: `${USERS_URL}/verify-otp`,
-          method: "POST",
-          body: data,
-        }),
+      query: (data) => ({
+        url: `${USERS_URL}/verify-otp`,
+        method: "POST",
+        body: data,
       }),
-      resendOtp: builder.mutation({
-        query: (data) => ({
-          url: `${USERS_URL}/resend-otp`,
-          method: "POST",
-          body: data, 
-          headers: { "Content-Type": "application/json" },
-        }),
+    }),
+    resendOtp: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/resend-otp`,
+        method: "POST",
+        body: data,
+        headers: { "Content-Type": "application/json" },
       }),
+    }),
     logout: builder.mutation({
       query: () => ({
         url: `${USERS_URL}/logout`,
         method: "POST",
       }),
+    }),
+    searchUser: builder.query({
+      query: (search) => ({
+        url: `${USERS_URL}/search/${search}`,
+      })
     }),
     profile: builder.mutation({
       query: (data) => ({
@@ -64,6 +69,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 5,
     }),
+    fetchUsers: builder.query({
+      query: ({ keyword, page }) => ({
+        url: `${USERS_URL}`,
+        params: { keyword, page }
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ["User"],
+    }),
     updateUser: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/${data.userId}`,
@@ -81,9 +94,11 @@ export const {
   useVerifyOtpMutation,
   useResendOtpMutation,
   useRegisterMutation,
+  useSearchUserQuery,
   useProfileMutation,
   useGetUsersQuery,
   useDeleteUserMutation,
   useUpdateUserMutation,
+  useFetchUsersQuery,
   useGetUserDetailsQuery,
 } = userApiSlice;

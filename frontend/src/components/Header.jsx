@@ -74,7 +74,7 @@ const Header = () => {
                                         to="/account-settings"
                                         className="caption"
                                     >
-                                        {userInfo.name}
+                                        {(userInfo.name) ? userInfo.name : userInfo.user.name}
                                     </Nav.Link>
                                 ) : (
                                     <Nav.Link

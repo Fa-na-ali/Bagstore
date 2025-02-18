@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useDeleteCategoryMutation, useFetchCategoriesQuery, useSearchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
+import { useDeleteCategoryMutation, useSearchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
-import { Outlet, Link } from 'react-router';
+import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 
 const CategoryManagement = () => {
-  let { data: categories, refetch: load, error, isLoading } = useFetchCategoriesQuery();
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchedCategories, setSearchedCategories] = useState([]);
-  const { data: searchCategories, refetch, error: searchError, isLoading: searchLoading } = useSearchCategoriesQuery(searchTerm)
+  const [currentPage, setCurrentPage] = useState(1);
+  let { data, refetch: load, error, isLoading } = useSearchCategoriesQuery({ keyword: searchTerm, page: currentPage });
+  const categories = data?.categories || [];
   const [deleteCategory] = useDeleteCategoryMutation();
 
   //  columns for the category table
@@ -22,21 +23,24 @@ const CategoryManagement = () => {
   ];
 
   useEffect(() => {
-    load()
-    if (searchCategories) {
-      setSearchedCategories(searchCategories);
-    }
-  }, [searchCategories, load]);
+    if (categories)
+      load()
+
+  }, [load]);
 
   const searchHandler = (e) => {
     e.preventDefault();
     refetch();
   };
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
-  // Define handlers for actions 
+  // on delete
   const handleDelete = async (id) => {
     if (window.confirm("Do you want to delete")) {
       try {
@@ -90,12 +94,15 @@ const CategoryManagement = () => {
                 </Col>
               </Row>
             </div>
-            {(categories || searchedCategories) && (categories.length > 0 || searchedCategories.length > 0) ? (
+            {(categories) && (categories.length > 0 ) ? (
               <Ttable
-                naming="category"
-                data={searchTerm ? searchedCategories : categories}
-                columns={columns}
-                onDelete={handleDelete}
+              naming="category"
+              data={categories}
+              columns={columns}
+              onDelete={handleDelete}
+              onPage={handlePageChange}
+              pageData={data}
+              currentPage={currentPage}
 
 
               />

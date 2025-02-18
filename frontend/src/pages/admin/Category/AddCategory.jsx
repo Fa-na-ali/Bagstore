@@ -4,10 +4,12 @@ import { MdOutlineAdd } from "react-icons/md";
 import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddCategoryMutation } from "../../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 const AddCategory = () => {
     const [name, setName] = useState("");
     const [createCategory] = useAddCategoryMutation();
+    const navigate=useNavigate()
 
     const handleCreateCategory = async (e) => {
         e.preventDefault();
@@ -22,6 +24,7 @@ const AddCategory = () => {
             setName("");
             if (result.name) {
                 toast.success(`${result.name} category created successfully.`);
+                navigate('/admin/category')
             } else if (result.message) {
                 toast.error(result.message); 
             } else {

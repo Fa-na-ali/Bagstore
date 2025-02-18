@@ -1,5 +1,6 @@
 const express = require('express')
 const Product = require('../models/productModel')
+const mongoose = require('mongoose')
 
 //add Product
 const addProduct = async (req, res) => {
@@ -16,6 +17,7 @@ const addProduct = async (req, res) => {
     if (!category) return res.status(400).json({ error: "Category is required" });
     if (!quantity) return res.status(400).json({ error: "Quantity is required" });
     if (!size) return res.status(400).json({ error: "Size is required" });
+    if (!color) return res.status(400).json({ error: "Color is required" });
     if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
 
 
@@ -30,6 +32,7 @@ const addProduct = async (req, res) => {
       quantity,
       size,
       price,
+      color,
       pdImage: imageUrls,
       createdBy: req.user._id,
       updatedBy: req.user._id,
@@ -42,10 +45,11 @@ const addProduct = async (req, res) => {
   }
 };
 
-//All categories
-const listProducts = async (req, res) => {
+//NEW products
+const newProducts = async (req, res) => {
   try {
-    const all = await Product.find({}).sort({ createdAt: -1 });
+    const all = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+    console.log("new products",all)
     res.json(all);
   } catch (error) {
     console.log(error);
@@ -59,17 +63,28 @@ const listProducts = async (req, res) => {
 //update product
 const updateProduct = async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand, size } = req.fields;
+    const { name, description, price, category, quantity, brand, size, color } = req.body;
+    const files = req.files;
+    console.log("body", req.body)
+    console.log("files", req.files)
+    const id = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
     const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { ...req.fields },
+      id,
+      { ...req.body },
       { new: true }
     );
-    if (!user) {
+    const imageUrls = files.map((file) => file.filename);
+    product.pdImage = [...imageUrls]
+
+    if (!product) {
       res.status(404);
       throw new Error(`Product not found with  id ${req.params.id}`);
     }
     else {
+      await product.save();
       res.json({ product })
     }
   } catch (error) {
@@ -78,13 +93,39 @@ const updateProduct = async (req, res) => {
   }
 
 };
+//delete Image
+const deleteImage = async (req, res) => {
+  console.log("params", req.params)
+  try {
+    const { id, index } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+    const product = await Product.findById(id);
+    console.log("prooo", product)
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    if (index < 0 || index >= product.pdImage.length) {
+      return res.status(400).json({ error: "Invalid image index" });
+    }
+
+    product.pdImage.splice(index, 1);
+    await product.save();
+
+    res.status(200).json({ message: "Image deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+
 //to get a particular product
 const readProduct = async (req, res) => {
   try {
-    
+
     const id = req.params.id;
-    const product = await Product.findById({_id:id });
-    console.log("read",product)
+    const product = await Product.findById({ _id: id });
+    console.log("read", product)
     res.status(201).json(product);
   } catch (error) {
     console.log(error);
@@ -95,9 +136,10 @@ const readProduct = async (req, res) => {
 //fetch products 
 
 const fetchProducts = async (req, res) => {
+  console.log("search")
   try {
     const pageSize = 6;
-
+    const page = Number(req.query.page) || 1;
     const keyword = req.query.keyword
       ? {
         name: {
@@ -108,13 +150,15 @@ const fetchProducts = async (req, res) => {
       : {};
 
     const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword }).limit(pageSize);
-
+    console.log("count", count)
+    const products = await Product.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+    console.log("products", products)
     res.json({
       products,
-      page: 1,
+      count,
+      page,
       pages: Math.ceil(count / pageSize),
-      hasMore: false,
+      hasMore: page < Math.ceil(count / pageSize),
     });
   } catch (error) {
     console.error(error);
@@ -288,6 +332,6 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { addProduct, listProducts, deleteProduct,readProduct }
+module.exports = { addProduct, newProducts, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts }
 
 
