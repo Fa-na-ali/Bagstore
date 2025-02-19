@@ -29,14 +29,14 @@ const EditProduct = () => {
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [files, setFiles] = useState([]);
-  const [upload,setUpload] = useState([])
+  const [upload, setUpload] = useState([])
   const [croppedImages, setCroppedImages] = useState([]);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const cropperRef = useRef(null);
   const [croppingIndex, setCroppingIndex] = useState(null);
 
-  const imageBaseUrl = "http://localhost:5004/uploads/"; 
+  const imageBaseUrl = "http://localhost:5004/uploads/";
   const productImages = product?.pdImage.map((img) => `${imageBaseUrl}${img}`);
 
   console.log("product", product)
@@ -50,7 +50,7 @@ const EditProduct = () => {
       setBrand(product.brand || "");
       setColor(product.color || "");
       setSize(product.size || "");
-      
+
       if (product?.pdImage) {
         setFiles(product.pdImage.map((img) => `${imageBaseUrl}${img}`));
       }
@@ -61,23 +61,23 @@ const EditProduct = () => {
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files).map((file) => URL.createObjectURL(file));
     setFiles([...productImages, ...newFiles]);
-    console.log("length",files.length)
+    console.log("length", files.length)
   }
-//to remove image
-const removeImage = async (id,index) => {
-  console.log("idddddd",id)
-  console.log("index",index)
-  try {
-    if (index >= 0 && index < product?.pdImage.length) {
-    await deleteImage({ id, index }).unwrap();
-    }
-    
-    setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
+  //to remove image
+  const removeImage = async (id, index) => {
+    console.log("idddddd", id)
+    console.log("index", index)
+    try {
+      if (index >= 0 && index < product?.pdImage.length) {
+        await deleteImage({ id, index }).unwrap();
+      }
 
-  } catch (error) {
-    console.error("Error deleting image:", error);
-  }
-};
+      setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
+
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
   //to crop
   const openCropModal = (image, index) => {
     setCroppingIndex(index);
@@ -96,11 +96,11 @@ const removeImage = async (id,index) => {
 
             setCroppedImages((prevImages) => {
               const updatedImages = [...prevImages];
-              updatedImages[croppingIndex] = objectURL; 
+              updatedImages[croppingIndex] = objectURL;
               return updatedImages;
             });
 
-            
+
           }
         }, "image/webp");
       }
@@ -108,40 +108,40 @@ const removeImage = async (id,index) => {
     setShowModal(false);
   }
   //to update
-   const handleSubmit = async (e) => {
-      e.preventDefault();
-  
-      try {
-        const productData = new FormData();
-        productData.append("name", name);
-        productData.append("description", description);
-        productData.append("price", price);
-        productData.append("category", category);
-        productData.append("quantity", quantity);
-        productData.append("brand", brand);
-        productData.append("color", color);
-        productData.append("size", size);
-        if (croppedImages.length !== 0) {
-          croppedImages.forEach((file) => {
-            productData.append('pdImage', file);
-          });
-        }
-        else{
-          files.forEach((file) => {
-            productData.append('pdImage', file);
-          });
-        }
-        
-        console.log("pp",name, description, price, category, quantity, color, brand,product._id)
-        const { data } = await update({id:product?._id,formData:productData}).unwrap()
-        toast.success('Product Edited successfully!');
-       navigate('/admin/products')
-       refetch();
-      } catch (error) {
-        toast.error(error?.data?.message || 'Failed to add product');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const productData = new FormData();
+      productData.append("name", name);
+      productData.append("description", description);
+      productData.append("price", price);
+      productData.append("category", category);
+      productData.append("quantity", quantity);
+      productData.append("brand", brand);
+      productData.append("color", color);
+      productData.append("size", size);
+      if (croppedImages.length !== 0) {
+        croppedImages.forEach((file) => {
+          productData.append('pdImage', file);
+        });
       }
-    };
-  
+      else {
+        files.forEach((file) => {
+          productData.append('pdImage', file);
+        });
+      }
+
+      console.log("pp", name, description, price, category, quantity, color, brand, product._id)
+      const { data } = await update({ id: product?._id, formData: productData }).unwrap()
+      toast.success('Product Edited successfully!');
+      navigate('/admin/products')
+      refetch();
+    } catch (error) {
+      toast.error(error?.data?.message || 'Failed to add product');
+    }
+  };
+
 
 
   return (
@@ -155,7 +155,7 @@ const removeImage = async (id,index) => {
           </Col>
           <Col lg={9} className="p-4 background-one vw-75">
             <h2 className='text-center my-5 heading'>ADD PRODUCT</h2>
-            <Form  onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit}>
               <Row className="mb-3 my-5">
                 <Form.Group as={Col} controlId="formName">
                   <Form.Label className='caption'>Name of Product</Form.Label>
@@ -260,7 +260,7 @@ const removeImage = async (id,index) => {
                 <Form.Control type="file" multiple accept="image/*" onChange={handleFileChange} />
               </Form.Group>
 
-              {(files.length > 0 ) && (
+              {(files.length > 0) && (
                 <Container className="mt-3 d-flex">
                   {files.map((image, index) => (
                     <div key={index} className="position-relative">
@@ -276,13 +276,13 @@ const removeImage = async (id,index) => {
                         variant="danger"
                         size="sm"
                         className="position-absolute top-0 end-0"
-                        onClick={() => removeImage(product._id,index)}
+                        onClick={() => removeImage(product._id, index)}
                       >
                         <MdDelete />
                       </Button>
                     </div>
                   ))}
-                 
+
                 </Container>
               )}
               <Button className='button-custom w-100 my-5' type="submit" disabled={isLoading}>

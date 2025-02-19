@@ -48,8 +48,7 @@ const addProduct = async (req, res) => {
 //NEW products
 const newProducts = async (req, res) => {
   try {
-    const all = await Product.find({}).sort({ createdAt: -1 }).limit(5);
-    console.log("new products",all)
+    const all = await Product.find({}).sort({ createdAt: -1 }).limit(6);
     res.json(all);
   } catch (error) {
     console.log(error);
@@ -133,7 +132,7 @@ const readProduct = async (req, res) => {
   }
 };
 
-//fetch products 
+//fetch products in the product management with pagination and search
 
 const fetchProducts = async (req, res) => {
   console.log("search")
@@ -192,17 +191,24 @@ const fetchAllProducts = async (req, res) => {
   }
 };
 
+//fetch related products
 const fetchRelatedProducts = async (req, res) => {
+  console.log("fetchrelated")
   try {
-    const { productId } = req.params;
-    const currentProduct = await Product.findById(productId);
+    const { id } = req.params;
+    console.log(req.params)
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+    const currentProduct = await Product.findById(id);
     if (!currentProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
+    console.log("currentpro",currentProduct)
     const relatedProducts = await Product.find({
       category: currentProduct.category,
       isExist: true,
-      _id: { $ne: productId }
+      _id: { $ne: currentProduct._id}
     })
       .populate("category")
       .limit(6)
@@ -332,6 +338,13 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { addProduct, newProducts, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts }
+module.exports = { addProduct, 
+  newProducts,
+   deleteProduct,
+    readProduct,
+     deleteImage,
+      updateProduct, 
+      fetchProducts,
+    fetchRelatedProducts }
 
 

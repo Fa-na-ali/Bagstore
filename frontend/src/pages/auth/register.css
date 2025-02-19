@@ -1,23 +1,29 @@
-.heading{
-    color:#cc664E;
+.heading {
+    color: #cc664E;
 }
-.background{
+
+.background {
     background-color: #EDE6DF;
 }
-.background-two{
-    background-color:#0B485D!important;
+
+.background-two {
+    background-color: #0B485D !important;
 }
-.caption{
-    color:#0B485D!important;
+
+.caption {
+    color: #0B485D !important;
 }
+
 .button-custom {
     background-color: #0B485D !important;
     color: white !important;
     border: none !important;
-  }
-  .background-one{
+}
+
+.background-one {
     background-color: #FCF7F3;
-  }
-  .card {
+}
+
+.card {
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-   }
+}

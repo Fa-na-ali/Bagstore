@@ -24,6 +24,8 @@ import EditCategory from './pages/admin/Category/EditCategory';
 import AddCategory from './pages/admin/Category/AddCategory';
 import RequireAuth from './pages/auth/RequireAuth';
 import GoolgeLogin from './pages/auth/GoogleLogin';
+import ProductDetails from './pages/user/ProductDetails';
+import ProductsList from './pages/user/ProductsList';
 
 
 
@@ -40,10 +42,14 @@ export const router = createBrowserRouter(
       <Route path="register" element={<Register />} />
       <Route path="verify-otp" element={<OTPVerify />} />
       <Route path="google" element={<GoogleWrapper />} />
+      <Route path="/filter" element={<ProductsList />} />
+      <Route path="/details/:id" element={<ProductDetails />} />
 
       {/* protected routes */}
       <Route element={<RequireAuth />}>
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />   
+
+
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/user" element={<UserManagement />} />
         <Route path="/admin/category" element={<CategoryManagement />} />
         <Route path="/admin/category/add" element={<AddCategory />} />
@@ -53,7 +59,8 @@ export const router = createBrowserRouter(
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route path="/admin/products/edit/:id" element={<EditProduct />} />
         <Route path="orders" element={<OrderManagement />} />
-      
+
+
       </Route>
 
     </Route >
