@@ -26,6 +26,8 @@ import RequireAuth from './pages/auth/RequireAuth';
 import GoolgeLogin from './pages/auth/GoogleLogin';
 import ProductDetails from './pages/user/ProductDetails';
 import ProductsList from './pages/user/ProductsList';
+import ForgotPass from './pages/auth/ForgotPass';
+import Password from './pages/auth/Password';
 
 
 
@@ -42,7 +44,9 @@ export const router = createBrowserRouter(
       <Route path="register" element={<Register />} />
       <Route path="verify-otp" element={<OTPVerify />} />
       <Route path="google" element={<GoogleWrapper />} />
-      <Route path="/filter" element={<ProductsList />} />
+      <Route path="/forgot-password" element={<ForgotPass />} />
+      <Route path="/reset-password" element={<Password />} />
+      <Route path="/shop-products" element={<ProductsList />} />
       <Route path="/details/:id" element={<ProductDetails />} />
 
       {/* protected routes */}

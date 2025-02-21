@@ -90,12 +90,24 @@ export const productApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Product"],
       keepUnusedDataFor: 5,
     }),
-    getFilteredProducts: builder.query({
-      query: ({ checked, radio }) => ({
-        url: `${PRODUCT_URL}/filtered-products`,
-        method: "POST",
-        body: { checked, radio },
-      }),
+
+    filterProducts: builder.query({
+      query: ({ search, categories,  colors,minPrice, maxPrice,  sortBy, page}) => {
+        const params = new URLSearchParams();
+
+        if (search) params.append("search", search);
+        if (categories.length) categories.forEach((cat) => params.append("category", cat));
+        if (colors.length) colors.forEach((color) => params.append("color", color));
+        if (minPrice) params.append("minPrice", minPrice);
+        if (maxPrice) params.append("maxPrice", maxPrice);
+       
+        if (sortBy) params.append("sortBy", sortBy);
+        params.append("page", page);
+       
+
+        return `${PRODUCT_URL}/shop-products?${params.toString()}`;
+      },
+      providesTags: ["Product"],
     }),
   }),
 });
@@ -113,5 +125,5 @@ export const {
   useGetNewProductsQuery,
   useUploadProductImageMutation,
   useFetchRelatedProductsQuery,
-  useGetFilteredProductsQuery,
+  useFilterProductsQuery,
 } = productApiSlice;

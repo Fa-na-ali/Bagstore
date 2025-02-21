@@ -13,7 +13,7 @@ const ProductManagement = () => {
   let { data, refetch: load, error, isLoading } = useGetProductsQuery({ keyword: searchTerm, page: currentPage });
   const [deleteProduct] = useDeleteProductMutation();
   const products = data?.products || [];
-
+console.log(data)
   //  columns for the category table
   const columns = [
     { key: "name", label: "Product Name" },

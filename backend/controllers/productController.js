@@ -204,11 +204,11 @@ const fetchRelatedProducts = async (req, res) => {
     if (!currentProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
-    console.log("currentpro",currentProduct)
+    console.log("currentpro", currentProduct)
     const relatedProducts = await Product.find({
       category: currentProduct.category,
       isExist: true,
-      _id: { $ne: currentProduct._id}
+      _id: { $ne: currentProduct._id }
     })
       .populate("category")
       .limit(6)
@@ -223,18 +223,20 @@ const fetchRelatedProducts = async (req, res) => {
 
 //filtering,sorting and search
 const filterProducts = async (req, res) => {
+  console.log(req.query)
   try {
     const {
       search,
       category,
       minPrice,
       maxPrice,
-      brand,
       color,
       sortBy,
-      page = 1,
-      limit = 12,
+      page ,
+     
     } = req.query;
+   
+    const limit = req.query.limit || 12;
 
     const filters = { isExist: true };
 
@@ -245,7 +247,8 @@ const filterProducts = async (req, res) => {
 
 
     if (category) {
-      filters.categoryId = category;
+      const categoriesArray = Array.isArray(category) ? category : [category];
+      filters.category = { $in: categoriesArray };
     }
 
 
@@ -255,15 +258,11 @@ const filterProducts = async (req, res) => {
       if (maxPrice) filters.price.$lte = parseInt(maxPrice);
     }
 
-
-    if (brand) {
-      filters.brand = brand;
-    }
-
     if (color) {
-      filters.color = { $regex: color, $options: "i" };
+      const colorsArray = Array.isArray(color) ? color : [color];
+      filters.color = { $in: colorsArray.map((c) => new RegExp(c, "i")) };
     }
-
+console.log("filtersss",filters)
 
     let sortOption = {};
     if (sortBy) {
@@ -283,17 +282,6 @@ const filterProducts = async (req, res) => {
         case "newArrivals":
           sortOption.createdAt = -1;
           break;
-        case "averageRating":
-          sortOption.averageRating = -1;
-          break;
-        case "popularity":
-          sortOption.sold = -1;
-          break;
-        case "featured":
-          sortOption.featured = -1;
-          break;
-        default:
-          sortOption.createdAt = -1;
       }
     }
 
@@ -303,6 +291,7 @@ const filterProducts = async (req, res) => {
       .sort(sortOption)
       .skip(skip)
       .limit(parseInt(limit));
+      console.log('filtered',products)
     const totalProducts = await Product.countDocuments(filters);
 
     res.json({
@@ -338,13 +327,16 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { addProduct, 
+module.exports = {
+  addProduct,
   newProducts,
-   deleteProduct,
-    readProduct,
-     deleteImage,
-      updateProduct, 
-      fetchProducts,
-    fetchRelatedProducts }
+  deleteProduct,
+  readProduct,
+  deleteImage,
+  updateProduct,
+  fetchProducts,
+  fetchRelatedProducts,
+  filterProducts
+}
 
 
