@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useRegisterMutation } from "../../redux/api/usersApiSlice";
-import { setCredentials } from "../../redux/features/auth/authSlice";
+
 
 //  Yup validation schema
 const validationSchema = yup.object().shape({
@@ -26,11 +26,11 @@ const validationSchema = yup.object().shape({
 });
 
 const Register = () => {
-  const dispatch = useDispatch();
+ 
   const navigate = useNavigate();
   const { search } = useLocation();
   const sp = new URLSearchParams(search);
-  const redirect = sp.get("redirect") || "/login";
+  const redirect = sp.get("redirect") || "/";
 
   const {
     register,
@@ -45,7 +45,7 @@ const Register = () => {
 
   useEffect(() => {
     console.log("UserInfo:", userInfo);
-  console.log("Redirect Path:", redirect);
+    console.log("Redirect Path:", redirect);
     if (userInfo) {
       navigate(redirect);
     }
@@ -59,12 +59,12 @@ const Register = () => {
         email: data.email,
         phone: data.phone,
         password: data.password,
-        confirmPassword:data.confirmPassword
+        confirmPassword: data.confirmPassword
       }).unwrap();
-
-      dispatch(setCredentials({ ...res }));
-      navigate(redirect);
       toast.success("User successfully registered");
+      navigate(`/verify-otp?email=${data.email}`);
+      toast.success("OTP has been sent to your email.");
+      
     } catch (err) {
       console.log(err);
       toast.error(err.data?.message || "Registration failed");

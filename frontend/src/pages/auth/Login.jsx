@@ -7,7 +7,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../redux/api/usersApiSlice";
+import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
 import GoolgeLogin from "./GoogleLogin";
 import { GoogleLogin } from "@react-oauth/google";
@@ -22,6 +24,7 @@ const validationSchema = yup.object().shape({
 const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
+   const dispatch = useDispatch();
   // React Hook Form setup
   const {
     register,
@@ -35,8 +38,15 @@ const Login = () => {
       const res = await login({ email: data.email, password: data.password }).unwrap();
 
       if (res) {
-        toast.success("OTP has been sent to your email.");
-        navigate(`/verify-otp?email=${data.email}`);
+         dispatch(setCredentials({ ...res }));
+              if (res.user.isAdmin && res.user.isExist) {
+                navigate("/admin/dashboard");
+              } else if(!res.user.isAdmin && res.user.isExist){
+                navigate("/");
+              }
+              else
+              toast.error("You are blocked");
+       
       } else {
         toast.error("Something went wrong. Please try again.");
       }
@@ -86,7 +96,7 @@ const Login = () => {
 
                       <div className="pt-1 mb-4">
                         <Button className="button-custom w-100" size="lg" type="submit" disabled={isLoading}>
-                          {isLoading ? "Sending OTP..." : "Login"}
+                          {isLoading ? "Loading..." : "Login"}
                         </Button>
                       </div>
 

@@ -28,6 +28,7 @@ import ProductDetails from './pages/user/ProductDetails';
 import ProductsList from './pages/user/ProductsList';
 import ForgotPass from './pages/auth/ForgotPass';
 import Password from './pages/auth/Password';
+import Account from './pages/user/Account';
 
 
 
@@ -52,6 +53,7 @@ export const router = createBrowserRouter(
       {/* protected routes */}
       <Route element={<RequireAuth />}>
 
+        <Route path="/account" element={<Account />} />
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/user" element={<UserManagement />} />

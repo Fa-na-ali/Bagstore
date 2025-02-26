@@ -3,12 +3,14 @@ const jwt = require("jsonwebtoken")
 
 const generateToken = (user) => {
     const token = jwt.sign({ userId: user._id}, process.env.JWT_SECRET, {
-        expiresIn: '12h',
+        expiresIn: process.env.ACCESS_EXPIRY,
+    })
+    const refreshToken = jwt.sign({ userId: user._id}, process.env.JWT_REFRESH_SECRET, {
+        expiresIn: process.env.REFRESH_EXPIRY,
     })
     console.log("tooooo::",token)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-console.log("Decoded Token with User ID:", decoded);
+    
 
-    return token
+    return {token,refreshToken}
 }
 module.exports={generateToken}

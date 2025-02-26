@@ -16,17 +16,17 @@ const GoolgeLogin = (props) => {
                 console.log("auth",authResult)
                 const result = await googleAuth(authResult.code);
                 console.log("result from back",result)
-                const { email, name, isAdmin } = result.data.user;
+                const { email, name, isAdmin ,isExist} = result.data.user;
                 const token = result.data.token;  
             
-                const obj = { email, name, isAdmin, token }; 
+                const obj = { email, name, isAdmin,isExist, token }; 
                 console.log("Dispatching credentials:", obj);
             
                 dispatch(setCredentials(obj));  
             
-                if (isAdmin) {
+                if (isAdmin && isExist) {
                   navigate("/admin/dashboard");
-                } else {
+                } else if(isExist){
                   navigate("/");
                 }
             } else {

@@ -90,7 +90,7 @@ const AddProduct = () => {
       croppedImages.forEach((file) => {
         productData.append('pdImage', file);
       });
-      console.log("pp", name, description, price, category, quantity, color, brand)
+      console.log("pp", name, description, price, category, quantity, color, brand,size,croppedImages)
       const { data } = await addProduct(productData).unwrap()
       toast.success('Product added successfully!');
       navigate('/admin/products')

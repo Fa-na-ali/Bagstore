@@ -54,14 +54,22 @@ const EditProduct = () => {
       if (product?.pdImage) {
         setFiles(product.pdImage.map((img) => `${imageBaseUrl}${img}`));
       }
+     
     }
-  }, [product]);
+   
+  }, [product,]);
 
   //on upload
   const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files).map((file) => URL.createObjectURL(file));
-    setFiles([...productImages, ...newFiles]);
-    console.log("length", files.length)
+    const newFiles = Array.from(e.target.files)
+  //  console.log("image up",newFiles)
+    const fileURLs =newFiles.map((file) => URL.createObjectURL(file));
+    setFiles((prevFiles) => {
+      const updatedFiles = [...prevFiles, ...fileURLs];
+    //  console.log("Updated length", updatedFiles);  // Correctly logs updated length
+      return updatedFiles;
+  });
+   // console.log("length", files)
   }
   //to remove image
   const removeImage = async (id, index) => {
@@ -111,7 +119,7 @@ const EditProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
+   
       const productData = new FormData();
       productData.append("name", name);
       productData.append("description", description);
@@ -121,24 +129,36 @@ const EditProduct = () => {
       productData.append("brand", brand);
       productData.append("color", color);
       productData.append("size", size);
-      if (croppedImages.length !== 0) {
-        croppedImages.forEach((file) => {
-          productData.append('pdImage', file);
-        });
-      }
-      else {
-        files.forEach((file) => {
-          productData.append('pdImage', file);
-        });
-      }
 
-      console.log("pp", name, description, price, category, quantity, color, brand, product._id)
+      let finalImages = croppedImages.length ? croppedImages : files; 
+
+      // Convert Object URLs to actual File objects
+      const convertedFiles = await Promise.all(
+        finalImages.map(async (file) => {
+          if (file instanceof File) return file; 
+    
+          // Fetch image from Object URL (blob:http://...)
+          const response = await fetch(file); 
+          const blob = await response.blob(); 
+    
+          // Convert Blob to File
+          return new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
+        })
+      );
+    
+      // Append images to FormData
+      convertedFiles.forEach((file) => productData.append("pdImage", file));
+    
+
+       console.log("prooo",productData)
+      console.log("pp", {name, description, price, category, quantity, color, brand, productId: product._id, images:convertedFiles,})
+      try {
       const { data } = await update({ id: product?._id, formData: productData }).unwrap()
       toast.success('Product Edited successfully!');
-      navigate('/admin/products')
+     navigate('/admin/products')
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message || 'Failed to add product');
+      toast.error(error?.data?.message || 'Failed to edit product');
     }
   };
 
@@ -154,7 +174,7 @@ const EditProduct = () => {
             <AdminSidebar />
           </Col>
           <Col lg={9} className="p-4 background-one vw-75">
-            <h2 className='text-center my-5 heading'>ADD PRODUCT</h2>
+            <h2 className='text-center my-5 heading'>EDIT PRODUCT</h2>
             <Form onSubmit={handleSubmit}>
               <Row className="mb-3 my-5">
                 <Form.Group as={Col} controlId="formName">

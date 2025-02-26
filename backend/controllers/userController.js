@@ -7,7 +7,7 @@ const { oauth2Client } = require('../utils/googleClient');
 const axios = require('axios');
 require("dotenv").config();
 
-
+const otpStore = new Map();
 //user registration
 const userSignup = async (req, res) => {
     try {
@@ -37,37 +37,7 @@ const userSignup = async (req, res) => {
             password: hashedPassword,
 
         })
-
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            isAdmin: user.isAdmin
-        })
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-}
-
-//user Login
-const otpStore = new Map();
-
-const userLogin = async (req, res) => {
-    try {
-
-        const { email, password } = req.body;
-
-        const user = await User.findOne({ email });
-        if (!user) {
-            console.log("User not found!");
-            return res.status(400).json({ message: "User not found" });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            console.log("Invalid password!");
-            return res.status(400).json({ message: "Invalid password" });
-        }
-
+       
         const otp = Math.floor(100000 + Math.random() * 900000);
         otpStore.set(email, { otp, expires: Date.now() + 300000 });
 
@@ -81,8 +51,47 @@ const userLogin = async (req, res) => {
         });
 
         console.log("OTP sent successfully to", email);
-        res.status(200).json({ message: "OTP sent to email" });
+        return res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            isAdmin: user.isAdmin,
+            message: "User registered successfully. OTP sent to email.",
+          });
+      
+   
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
 
+//user Login
+
+
+const userLogin = async (req, res) => {
+    try {
+
+        const { email, password } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            console.log("User not found!");
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if(isMatch){
+            const {token,refreshToken} = generateToken(user);
+            user.refreshToken = refreshToken;
+            await user.save();
+            console.log("Generated Token:", token);
+            res.status(201).json({ message: "Loggedin successfully", token,refreshToken,user});
+            return;
+        }
+        else
+        res.status(400).json({message:"Invalid email or password"})
+       
+
+        
     } catch (error) {
         console.error("Login Error:", error);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -142,11 +151,14 @@ const googleLogin = async(req,res)=>{
             });
         }
         const { _id,isAdmin } = user;
-        const token = generateToken(user)
+        const {token,refreshToken} = generateToken(user)
+        user.refreshToken = refreshToken;
+            await user.save();
         console.log("token generated",token)
         res.status(200).json({
             message: 'success',
             token,
+            refreshToken,
             user,
         });
     } catch (err) {
@@ -160,15 +172,19 @@ const googleLogin = async(req,res)=>{
 //Logout user
 const logoutUser = async (req, res) => {
     try {
-        await res.cookie("jwt", "", {
-            httpOnly: true,
-            expires: new Date(0),
-        });
+       
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.refreshToken = null; // Remove refresh token from DB
+        await user.save();
 
         res.status(200).json({ message: "Logged out successfully" });
 
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
 
 };

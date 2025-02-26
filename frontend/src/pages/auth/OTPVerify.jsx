@@ -8,6 +8,7 @@ import { setCredentials } from "../../redux/features/auth/authSlice";
 
 const OTPVerify = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
+  const [timer, setTimer] = useState(180);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -20,18 +21,21 @@ const OTPVerify = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
 console.log("user",userInfo)
-  // useEffect(() => {
-  //   if (userInfo) {
+useEffect(() => {
+  if (timer > 0) {
+    const interval = setInterval(() => {
+      setTimer((prevTimer) => prevTimer - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }
+}, [timer]);
 
-  //     if (userInfo?.user.isAdmin) {
-  //       navigate("/admin/dashboard");
-  //     } else {
-  //       navigate("/");
-  //     }
-  //   }
-  // }, [navigate, userInfo]);
+const formatTime = (time) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+};
 
-  // Handle OTP input change
   const handleChange = (index, e) => {
     const value = e.target.value;
     if (isNaN(value)) return;
@@ -84,6 +88,7 @@ console.log("user",userInfo)
       toast.success("A new OTP has been sent to your email.");
       setOtp(new Array(6).fill(""));
       inputRefs.current[0]?.focus();
+      setTimer(180); 
     } catch (err) {
       console.error("Resend OTP Error:", err);
       toast.error("Failed to resend OTP. Try again later.");
@@ -124,6 +129,10 @@ console.log("user",userInfo)
               <Button type="submit" variant="primary" className="w-100 button-custom" disabled={isLoading}>
                 {isLoading ? "Verifying..." : "Verify"}
               </Button>
+              <div className="mt-3">
+                {timer > 0 ? (
+                  <p className="text-muted">Resend OTP in <strong>{formatTime(timer)}</strong></p>
+                ) : (
 
               <Button
                 variant="secondary"
@@ -133,6 +142,8 @@ console.log("user",userInfo)
               >
                 {isResending ? "Resending..." : "Resend OTP"}
               </Button>
+                )}
+                </div>
             </Form>
           </div>
         </Col>
