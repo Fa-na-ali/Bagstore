@@ -33,10 +33,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    address: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-    },
+    address: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+      }
+    ], 
   },
   {
     timestamps: true, 

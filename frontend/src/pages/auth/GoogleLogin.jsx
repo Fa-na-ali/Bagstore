@@ -13,21 +13,21 @@ const GoolgeLogin = (props) => {
     const responseGoogle = async (authResult) => {
         try {
             if (authResult["code"]) {
-                console.log("auth",authResult)
+                console.log("auth", authResult)
                 const result = await googleAuth(authResult.code);
-                console.log("result from back",result)
-                const { email, name, isAdmin ,isExist} = result.data.user;
-                const token = result.data.token;  
-            
-                const obj = { email, name, isAdmin,isExist, token }; 
+                console.log("result from back", result)
+                const { _id, email, name, isAdmin, isExist } = result.data.user;
+                const token = result.data.token;
+
+                const obj = { _id, email, name, isAdmin, isExist, token };
                 console.log("Dispatching credentials:", obj);
-            
-                dispatch(setCredentials(obj));  
-            
+
+                dispatch(setCredentials(obj));
+
                 if (isAdmin && isExist) {
-                  navigate("/admin/dashboard");
-                } else if(isExist){
-                  navigate("/");
+                    navigate("/admin/dashboard");
+                } else if (isExist) {
+                    navigate("/");
                 }
             } else {
                 console.log(authResult);

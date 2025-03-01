@@ -43,11 +43,9 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/search/${search}`,
       })
     }),
-    profile: builder.mutation({
-      query: (data) => ({
-        url: `${USERS_URL}/profile`,
-        method: "PUT",
-        body: data,
+    profile: builder.query({
+      query: () => ({
+        url: `${USERS_URL}/account`,
       }),
     }),
     getUsers: builder.query({
@@ -78,13 +76,42 @@ export const userApiSlice = apiSlice.injectEndpoints({
       providesTags: ["User"],
     }),
     updateUser: builder.mutation({
-      query: (data) => ({
-        url: `${USERS_URL}/${data.userId}`,
+      query: (userData) => ({
+        url: `${USERS_URL}/account/edit`,
         method: "PUT",
-        body: data,
+        body: userData,
       }),
       invalidatesTags: ["User"],
     }),
+    addAddress: builder.mutation({
+      query: (addressData) => ({
+        url: `${USERS_URL}/account/add-address`,
+        method: "POST",
+        body: addressData,
+      }),
+      invalidatesTags: ["User"],
+    }),
+    getAddress: builder.query({
+      query: (id) =>({
+        url: `${USERS_URL}/account/edit-address/${id}`,
+      }),
+      providesTags: ["Address"],
+  }),
+  updateAddress: builder.mutation({
+      query: ({ id, ...data }) => ({
+          url: `${USERS_URL}/account/edit-address/${id}`,
+          method: "PUT",
+          body: data,
+      }),
+      invalidatesTags: ["Address"],
+  }),
+  deleteAddress: builder.mutation({
+    query: (id) => ({
+      url: `${USERS_URL}/account/delete-address/${id}`,
+      method: "DELETE",
+    }),
+    invalidatesTags: ["User"],
+  }),
   }),
 });
 
@@ -95,10 +122,14 @@ export const {
   useResendOtpMutation,
   useRegisterMutation,
   useSearchUserQuery,
-  useProfileMutation,
+  useProfileQuery,
   useGetUsersQuery,
   useDeleteUserMutation,
   useUpdateUserMutation,
   useFetchUsersQuery,
   useGetUserDetailsQuery,
+  useAddAddressMutation,
+  useGetAddressQuery,
+  useUpdateAddressMutation,
+  useDeleteAddressMutation
 } = userApiSlice;

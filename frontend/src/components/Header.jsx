@@ -15,6 +15,8 @@ const Header = () => {
     // Get user info from Redux state
     const { userInfo } = useSelector((state) => state.auth);
     console.log(userInfo);
+    const id=(userInfo?._id) ? userInfo?._id : userInfo?.user._id
+    console.log(id)
     const [logoutApiCall] = useLogoutMutation();
 
     const logoutHandler = async () => {
@@ -71,7 +73,7 @@ const Header = () => {
                                 {userInfo? (
                                     <Nav.Link
                                         as={Link}
-                                        to="/account-settings"
+                                        to={`/account`}
                                         className="caption"
                                     >
                                         {(userInfo.name) ? userInfo.name : userInfo.user.name}

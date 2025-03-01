@@ -29,6 +29,9 @@ import ProductsList from './pages/user/ProductsList';
 import ForgotPass from './pages/auth/ForgotPass';
 import Password from './pages/auth/Password';
 import Account from './pages/user/Account';
+import EditProfile from './pages/user/EditProfile';
+import AddAddress from './pages/user/AddAddress';
+import EditAddress from './pages/user/EditAddress';
 
 
 
@@ -54,6 +57,11 @@ export const router = createBrowserRouter(
       <Route element={<RequireAuth />}>
 
         <Route path="/account" element={<Account />} />
+        <Route path="/account/edit" element={<EditProfile />} />
+        <Route path="/account/add-address" element={<AddAddress />} />
+        <Route path="/account/edit-address/:id" element={<EditAddress />} />
+
+
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/user" element={<UserManagement />} />

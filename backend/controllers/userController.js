@@ -6,6 +6,8 @@ const nodemailer = require("nodemailer");
 const { oauth2Client } = require('../utils/googleClient');
 const axios = require('axios');
 require("dotenv").config();
+const mongoose = require('mongoose')
+const Address = require('../models/addressModel')
 
 const otpStore = new Map();
 //user registration
@@ -189,40 +191,6 @@ const logoutUser = async (req, res) => {
 
 };
 
-//update user
-const updateUser = async (req, res) => {
-    try {
-        const { name, email, phone, currentPassword, newPassword, confirmPassword } = req.body; // Get the form data
-        if (newPassword !== confirmPassword) {
-            res.status(400)
-            throw new Error("Passwords should match")
-        }
-
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!user) {
-            res.status(404);
-            throw new Error(`User not found with  id ${req.params.id}`);
-        }
-        else {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                password: hashedPassword,
-
-            })
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-
-    }
-
-
-}
 
 //delete user
 const deleteUser = async (req, res) => {
@@ -391,10 +359,139 @@ const verifyOtpPassword = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+//get current user
+const getCurrentUserProfile = async (req, res) => {
+    try{
+    const user = await User.findById(req.user._id).populate("address");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+  };
+
+  //edit user profile
+
+  const updateUser = async (req, res) => {
+    console.log("req",req)
+    try {
+        const id=req.user._id
+        console.log("id to edit user",id)
+        const { name, email, phone, } = req.body; // Get the form data
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+              return res.status(400).json({ message: "Invalid User ID" });
+            }
+        const user = await User.findByIdAndUpdate(id, {...req.body}, { new: true });
+        console.log("user found",user)
+        if (!user) {
+            res.status(404);
+            throw new Error(`User not found with  id ${id}`);
+        }
+        else {
+            await user.save();
+            return res.status(200).json({
+               user
+
+            })
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+
+    }
 
 
+}
 
+//add address
+const addAddress = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { name, houseName, town, street, state,zipcode,country,phone } = req.body
+        if (!name || !houseName || !town || !street || !state || !zipcode || !country || !phone) {
+            res.status(400)
+            throw new Error("Please fill all the inputs")
+        }
+        
+        const addressExists = await Address.findOne({houseName })
+        if (addressExists) {
+            res.status(400).send("Address already exists")
+            return;
+        }
+        const address = await Address.create({
+            name,
+            houseName,
+            town,
+            street,
+            state,
+            zipcode,
+            country,
+            phone,
+            user: userId,
 
+        })
+        await User.findByIdAndUpdate(userId, { $push: { address: address._id } });
+        res.status(201).json({ message: "Address added successfully!", address});
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+//get address
+const getAddress = async (req, res) => {
+    try {
+        const id = req.params.id
+        console.log("id:",id)
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid address ID" });
+          }
+        const address = await Address.findById(id);
+
+        if (!address) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        res.json(address);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+//update address
+const updateAddress = async (req, res) => {
+    try {
+        const id=req.params.id
+      const { name, houseName, town, street, zipcode, state, country, phone } = req.body;
+      const address = await Address.findByIdAndUpdate(id, {...req.body}, { new: true });
+  
+      if (!address) {
+        return res.status(404).json({ message: "Address not found" });
+      }
+  
+      await address.save();
+      res.json({ message: "Address updated successfully", address });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+  //delete address
+ const deleteAddress = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        user.address = user.address.filter((addr) => addr._id.toString() !== req.params.id);
+        await user.save();
+
+        res.status(200).json({ message: "Address deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting address", error: error.message });
+    }
+};
 
 
 
@@ -405,6 +502,7 @@ module.exports = {
     resendOtp,
     googleLogin,
     otpStore,
+    getCurrentUserProfile,
     fetchUsers,
     searchUser,
     getAllUsers,
@@ -412,4 +510,8 @@ module.exports = {
     updateUser,
     forgotPassword,
     verifyOtpPassword,
+    addAddress,
+    getAddress,
+    updateAddress,
+    deleteAddress,
 }

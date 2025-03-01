@@ -12,6 +12,11 @@ const { userSignup,
     googleLogin,
     getAllUsers,
     fetchUsers,
+    getCurrentUserProfile,
+    addAddress,
+    getAddress,
+    updateAddress,
+    deleteAddress,
 } = require('../controllers/userController')
 const { authorizeAdmin, authenticate } = require('../middlewares/authMiddleware')
 const generaterefreshToken = require('../middlewares/generateRefreshToken')
@@ -24,6 +29,11 @@ router.route('/auth/refresh').post(generaterefreshToken)
 router.route('/verify-otp').post(verifyOtp)
 router.route('/resend-otp').post(resendOtp)
 router.route('/google').get(googleLogin)
+router.route('/account').get(authenticate,getCurrentUserProfile)
+router.route('/account/edit').put(authenticate,updateUser)
+router.route('/account/add-address').post(authenticate,addAddress)
+router.route('/account/edit-address/:id').get(authenticate,getAddress).put(authenticate,updateAddress)
+router.route("/account/delete-address/:id").delete(authenticate, deleteAddress);
 router.route('/forgotpassword').post(forgotPassword)
 router.route('/verify-otp-password').post(verifyOtpPassword)
 router.route('/').get(authenticate,authorizeAdmin,fetchUsers)
