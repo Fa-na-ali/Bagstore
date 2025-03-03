@@ -32,6 +32,8 @@ import Account from './pages/user/Account';
 import EditProfile from './pages/user/EditProfile';
 import AddAddress from './pages/user/AddAddress';
 import EditAddress from './pages/user/EditAddress';
+import Cart from './pages/order/Cart';
+import Checkout from './pages/order/Checkout';
 
 
 
@@ -60,7 +62,9 @@ export const router = createBrowserRouter(
         <Route path="/account/edit" element={<EditProfile />} />
         <Route path="/account/add-address" element={<AddAddress />} />
         <Route path="/account/edit-address/:id" element={<EditAddress />} />
-
+ 
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout/>} />
 
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />

@@ -87,7 +87,7 @@ const Header = () => {
                                         <FaUser />
                                     </Nav.Link>
                                 )}
-                                <Nav.Link as={Link} to="/" className="me-3 position-relative caption">
+                                <Nav.Link as={Link} to="/cart" className="me-3 position-relative caption">
                                     <FaShoppingCart size={17} />
                                     <Badge
                                         pill

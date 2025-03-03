@@ -1,6 +1,6 @@
 import React,{useEffect} from "react";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
-import { FaFacebookF, FaTwitter, FaInstagram, FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { Link, useNavigate, useParams } from "react-router";
 import { useDeleteAddressMutation, useProfileQuery } from "../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";

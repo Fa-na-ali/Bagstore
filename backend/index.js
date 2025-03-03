@@ -13,6 +13,7 @@ app.use(cors({
 const userRouter = require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
+const orderRouter = require('./routes/orderRoutes')
 const dbConnect = require('./config/db')
 
 
@@ -33,6 +34,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/user', userRouter)
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRouter);
+app.use("/api/orders", orderRouter);
 
 
 

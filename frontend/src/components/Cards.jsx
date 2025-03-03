@@ -1,9 +1,17 @@
 import React from 'react'
 import { Container, Row, Col, Modal, Card, Badge, Button } from "react-bootstrap";
 import { FaHeart } from "react-icons/fa";
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
+
 const Cards = ({ products }) => {
   const imageBaseUrl = "http://localhost:5004/uploads/";
+  const navigate = useNavigate()
+
+  const cartHandler = ()=>{
+    toast.success("Item added to cart")
+    navigate('/cart')
+  }
   return (
     <>
 
@@ -45,7 +53,7 @@ const Cards = ({ products }) => {
                   </div>
                   <h6 className='mb-3 caption'>INR {product.price}</h6>
                   <div className="d-flex justify-content-center gap-3 mt-auto">
-                  <Button className='button-custom'>Add to cart</Button>
+                  <Button className='button-custom' onClick={cartHandler}>Add to cart</Button>
                   <Button variant="light" className="border icon-hover">
                     <FaHeart className="text-danger" />
                   </Button>

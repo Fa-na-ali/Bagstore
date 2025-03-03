@@ -16,10 +16,10 @@ const GoolgeLogin = (props) => {
                 console.log("auth", authResult)
                 const result = await googleAuth(authResult.code);
                 console.log("result from back", result)
-                const { _id, email, name, isAdmin, isExist } = result.data.user;
+                const { _id, email, name, isAdmin, isExist, address } = result.data.user;
                 const token = result.data.token;
 
-                const obj = { _id, email, name, isAdmin, isExist, token };
+                const obj = { _id, email, name, isAdmin, isExist, address, token };
                 console.log("Dispatching credentials:", obj);
 
                 dispatch(setCredentials(obj));
