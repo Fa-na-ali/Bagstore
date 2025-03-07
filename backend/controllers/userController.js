@@ -18,7 +18,7 @@ const userSignup = async (req, res) => {
             res.status(400)
             throw new Error("Please fill all the inputs")
         }
-        
+
         const userExists = await User.findOne({ email })
         if (userExists) {
             res.status(400).send("User already exists")
@@ -31,7 +31,7 @@ const userSignup = async (req, res) => {
 
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        
+
         const user = await User.create({
             name,
             email,
@@ -39,7 +39,7 @@ const userSignup = async (req, res) => {
             password: hashedPassword,
 
         })
-       
+
         const otp = Math.floor(100000 + Math.random() * 900000);
         otpStore.set(email, { otp, expires: Date.now() + 300000 });
 
@@ -54,13 +54,11 @@ const userSignup = async (req, res) => {
 
         console.log("OTP sent successfully to", email);
         return res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            isAdmin: user.isAdmin,
+            user,
             message: "User registered successfully. OTP sent to email.",
-          });
-      
-   
+        });
+
+
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -74,26 +72,26 @@ const userLogin = async (req, res) => {
 
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate("address");
         if (!user) {
             console.log("User not found!");
             return res.status(400).json({ message: "User not found" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if(isMatch){
-            const {token,refreshToken} = generateToken(user);
+        if (isMatch) {
+            const { token, refreshToken } = generateToken(user);
             user.refreshToken = refreshToken;
             await user.save();
             console.log("Generated Token:", token);
-            res.status(201).json({ message: "Loggedin successfully", token,refreshToken,user});
+            res.status(201).json({ message: "Loggedin successfully", token, refreshToken, user });
             return;
         }
         else
-        res.status(400).json({message:"Invalid email or password"})
-       
+            res.status(400).json({ message: "Invalid email or password" })
 
-        
+
+
     } catch (error) {
         console.error("Login Error:", error);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -101,7 +99,7 @@ const userLogin = async (req, res) => {
 };
 
 //resend otp
- const resendOtp = async (req, res) => {
+const resendOtp = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -130,21 +128,21 @@ const userLogin = async (req, res) => {
 };
 
 //google login
-const googleLogin = async(req,res)=>{
+const googleLogin = async (req, res) => {
     const code = req.query.code;
     if (!code) {
         return res.status(400).json({ message: "Authorization code is missing!" });
-      }
+    }
     try {
         const googleRes = await oauth2Client.getToken(code);
         oauth2Client.setCredentials(googleRes.tokens);
         const userRes = await axios.get(
             `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`
         );
-        console.log("google",userRes)
-        const { email, name,} = userRes.data;
+        console.log("google", userRes)
+        const { email, name, } = userRes.data;
         // console.log(userRes);
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }).populate("address");
 
         if (!user) {
             user = await User.create({
@@ -152,11 +150,11 @@ const googleLogin = async(req,res)=>{
                 email,
             });
         }
-        const { _id,isAdmin } = user;
-        const {token,refreshToken} = generateToken(user)
+        const { _id, isAdmin } = user;
+        const { token, refreshToken } = generateToken(user)
         user.refreshToken = refreshToken;
-            await user.save();
-        console.log("token generated",token)
+        await user.save();
+        console.log("token generated", token)
         res.status(200).json({
             message: 'success',
             token,
@@ -174,7 +172,7 @@ const googleLogin = async(req,res)=>{
 //Logout user
 const logoutUser = async (req, res) => {
     try {
-       
+
         const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -214,7 +212,7 @@ const deleteUser = async (req, res) => {
 // const searchUser = async (req, res) => {
 //     try {
 //         const { query} = req.query;
-    
+
 //         if (query) {
 //             const users = await User.find({
 //                 $or: [
@@ -237,47 +235,47 @@ const deleteUser = async (req, res) => {
 const fetchUsers = async (req, res) => {
     console.log("search")
     try {
-      const pageSize = 6;
-      const page = Number(req.query.page) || 1;
-      const keyword = req.query.keyword
-        ? {
-          email: {
-            $regex: req.query.keyword,
-            $options: "i",
-          },
-        }
-        : {};
-  
-      const count = await User.countDocuments({ ...keyword });
-      console.log("count", count)
-      const user = await User.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
-      console.log("users", user)
-      res.json({
-        user,
-        count,
-        page,
-        pages: Math.ceil(count / pageSize),
-        hasMore: page < Math.ceil(count / pageSize),
-      });
+        const pageSize = 6;
+        const page = Number(req.query.page) || 1;
+        const keyword = req.query.keyword
+            ? {
+                email: {
+                    $regex: req.query.keyword,
+                    $options: "i",
+                },
+            }
+            : {};
+
+        const count = await User.countDocuments({ ...keyword });
+        console.log("count", count)
+        const user = await User.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+        console.log("users", user)
+        res.json({
+            user,
+            count,
+            page,
+            pages: Math.ceil(count / pageSize),
+            hasMore: page < Math.ceil(count / pageSize),
+        });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: error.message });
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
-  };
-  
+};
+
 const searchUser = async (req, res) => {
     console.log("hiii searching")
     const search = new RegExp(req.params?.search, 'i')
     if (search !== '')
-      try {
-        const all = await User.find({ email: search });
-        console.log("search", all)
-        res.status(200).json(all)
-      } catch (error) {
-        console.log(error);
-        return res.status(400).json({ message: error.message });
-      }
-  };
+        try {
+            const all = await User.find({ email: search });
+            console.log("search", all)
+            res.status(200).json(all)
+        } catch (error) {
+            console.log(error);
+            return res.status(400).json({ message: error.message });
+        }
+};
 
 //function to get all users
 const getAllUsers = async (req, res) => {
@@ -296,13 +294,14 @@ const getAllUsers = async (req, res) => {
 const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
+        console.log("email", email)
         const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = Date.now() + 10 * 60 * 1000; 
+        const expiresAt = Date.now() + 3 * 60 * 1000;
 
         otpStore.set(email, { otp, expiresAt });
 
@@ -310,7 +309,7 @@ const forgotPassword = async (req, res) => {
             to: user.email,
             from: process.env.EMAIL_USER,
             subject: "Your Password Reset OTP",
-            html: `<p>Your OTP for password reset is <b>${otp}</b>. It is valid for 10 minutes.</p>`,
+            html: `<p>Your OTP for password reset is <b>${otp}</b>. It is valid for 3 minutes.</p>`,
         };
 
         await transporter.sendMail(mailOptions);
@@ -324,22 +323,15 @@ const forgotPassword = async (req, res) => {
 
 //verify otp to reset password
 
-const verifyOtpPassword = async (req, res) => {
+const resetPassword = async (req, res) => {
     try {
-        const { email, otp, newPassword, confirmPassword } = req.body;
+        const { email, newPassword, confirmPassword } = req.body;
         const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-
-        const storedOtpData = otpStore.get(email);
-
-        if (!storedOtpData || storedOtpData.otp !== otp || storedOtpData.expiresAt < Date.now()) {
-            return res.status(400).json({ message: "Invalid or expired OTP" });
-        }
-       
         if (newPassword !== confirmPassword) {
             res.status(400)
             throw new Error("Passwords should match")
@@ -350,9 +342,6 @@ const verifyOtpPassword = async (req, res) => {
 
         await user.save();
 
-
-        otpStore.delete(email);
-
         res.json({ message: "Password reset successful. You can now log in!" });
     } catch (error) {
         console.error(error);
@@ -361,32 +350,32 @@ const verifyOtpPassword = async (req, res) => {
 };
 //get current user
 const getCurrentUserProfile = async (req, res) => {
-    try{
-    const user = await User.findById(req.user._id).populate("address");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-  };
-
-  //edit user profile
-
-  const updateUser = async (req, res) => {
-    console.log("req",req)
     try {
-        const id=req.user._id
-        console.log("id to edit user",id)
+        const user = await User.findById(req.user._id).populate("address");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+//edit user profile
+
+const updateUser = async (req, res) => {
+    console.log("req", req)
+    try {
+        const id = req.user._id
+        console.log("id to edit user", id)
         const { name, email, phone, } = req.body; // Get the form data
         if (!mongoose.Types.ObjectId.isValid(id)) {
-              return res.status(400).json({ message: "Invalid User ID" });
-            }
-        const user = await User.findByIdAndUpdate(id, {...req.body}, { new: true });
-        console.log("user found",user)
+            return res.status(400).json({ message: "Invalid User ID" });
+        }
+        const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
+        console.log("user found", user)
         if (!user) {
             res.status(404);
             throw new Error(`User not found with  id ${id}`);
@@ -394,7 +383,7 @@ const getCurrentUserProfile = async (req, res) => {
         else {
             await user.save();
             return res.status(200).json({
-               user
+                user
 
             })
         }
@@ -410,13 +399,13 @@ const getCurrentUserProfile = async (req, res) => {
 const addAddress = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { name, houseName, town, street, state,zipcode,country,phone } = req.body
+        const { name, houseName, town, street, state, zipcode, country, phone } = req.body
         if (!name || !houseName || !town || !street || !state || !zipcode || !country || !phone) {
             res.status(400)
             throw new Error("Please fill all the inputs")
         }
-        
-        const addressExists = await Address.findOne({houseName })
+
+        const addressExists = await Address.findOne({ houseName })
         if (addressExists) {
             res.status(400).send("Address already exists")
             return;
@@ -434,7 +423,7 @@ const addAddress = async (req, res) => {
 
         })
         await User.findByIdAndUpdate(userId, { $push: { address: address._id } });
-        res.status(201).json({ message: "Address added successfully!", address});
+        res.status(201).json({ message: "Address added successfully!", address });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -443,10 +432,10 @@ const addAddress = async (req, res) => {
 const getAddress = async (req, res) => {
     try {
         const id = req.params.id
-        console.log("id:",id)
+        console.log("id:", id)
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid address ID" });
-          }
+        }
         const address = await Address.findById(id);
 
         if (!address) {
@@ -463,23 +452,23 @@ const getAddress = async (req, res) => {
 //update address
 const updateAddress = async (req, res) => {
     try {
-        const id=req.params.id
-      const { name, houseName, town, street, zipcode, state, country, phone } = req.body;
-      const address = await Address.findByIdAndUpdate(id, {...req.body}, { new: true });
-  
-      if (!address) {
-        return res.status(404).json({ message: "Address not found" });
-      }
-  
-      await address.save();
-      res.json({ message: "Address updated successfully", address });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
+        const id = req.params.id
+        const { name, houseName, town, street, zipcode, state, country, phone } = req.body;
+        const address = await Address.findByIdAndUpdate(id, { ...req.body }, { new: true });
 
-  //delete address
- const deleteAddress = async (req, res) => {
+        if (!address) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        await address.save();
+        res.json({ message: "Address updated successfully", address });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+//delete address
+const deleteAddress = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -509,7 +498,7 @@ module.exports = {
     deleteUser,
     updateUser,
     forgotPassword,
-    verifyOtpPassword,
+    resetPassword,
     addAddress,
     getAddress,
     updateAddress,

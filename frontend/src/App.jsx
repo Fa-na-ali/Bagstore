@@ -34,6 +34,9 @@ import AddAddress from './pages/user/AddAddress';
 import EditAddress from './pages/user/EditAddress';
 import Cart from './pages/order/Cart';
 import Checkout from './pages/order/Checkout';
+import OrderSuccess from './pages/order/OrderSuccess';
+import MyOrder from './pages/order/MyOrder';
+import VerifyOTPPass from './pages/auth/VerifyOTPPass';
 
 
 
@@ -51,6 +54,8 @@ export const router = createBrowserRouter(
       <Route path="verify-otp" element={<OTPVerify />} />
       <Route path="google" element={<GoogleWrapper />} />
       <Route path="/forgot-password" element={<ForgotPass />} />
+      <Route path="/verify-otp-password" element={<VerifyOTPPass />} />
+
       <Route path="/reset-password" element={<Password />} />
       <Route path="/shop-products" element={<ProductsList />} />
       <Route path="/details/:id" element={<ProductDetails />} />
@@ -65,6 +70,9 @@ export const router = createBrowserRouter(
  
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout/>} />
+        <Route path="/mine" element={<MyOrder/>} />
+        <Route path="/order-success" element={<OrderSuccess/>} />
+        <Route path="/admin/orders" element={<OrderManagement/>} />
 
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />

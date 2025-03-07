@@ -1,34 +1,98 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button, Form ,Image} from "react-bootstrap";
-import { FaTrash, } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
+import { FaTrash, FaCcMastercard, FaCcVisa, FaCcPaypal } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import { useProfileQuery } from "../../redux/api/usersApiSlice";
+import { savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
+import { GiReceiveMoney } from "react-icons/gi";
+import { BsWallet2 } from "react-icons/bs";
+import { useCreateOrderMutation } from "../../redux/api/orderApiSlice";
+import { toast } from 'react-toastify'
 
 const Checkout = () => {
 
   const cart = useSelector((state) => state.cart);
-  const {userInfo} = useSelector((state) => state.auth); 
-  console.log("userinfo",userInfo)
+  const { data: user, refetch } = useProfileQuery()
+  console.log("iii", user)
   const { cartItems } = cart;
-  const { address } = userInfo; 
+  console.log(cart.cartItems)
+  const address = user?.address || [];
+  console.log("add", address)
   const imageBaseUrl = "http://localhost:5004/uploads/";
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const [createOrder, { isLoading, error }] = useCreateOrderMutation();
 
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [saveShipping, setSaveShipping] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState("credit");
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (address && address.length > 0) {
-      setSelectedAddress(address[0].id); // Set default address
+    refetch();
+
+    if (user?.address && user.address.length > 0) {
+      setSelectedAddress(user.address[0]._id);
     }
-  }, [address]);
+  }, [user, refetch]);
 
   const handleAddressChange = (id) => {
     setSelectedAddress(id);
   };
 
+  const handleSaveAddress = () => {
+    setSaveShipping(!saveShipping);
+
+    if (!saveShipping && selectedAddress) {
+      dispatch(saveShippingAddress(selectedAddress));
+    }
+  };
+
+  const handleContinue = () => {
+    if (selectedPayment === "Cash On Delivery") {
+      setShowModal(true);
+
+
+    }
+  };
+  const handlePaymentMethod = (method) => {
+
+    dispatch(savePaymentMethod(method));
+
+  }
+
+  const handlePlaceOrder = async () => {
+
+    setShowModal(false);
+    if (!cartItems || cartItems.length === 0) {
+      toast.error("Your cart is empty. Please add items before placing an order.");
+      return;
+    }
+    try {
+      const res = await createOrder({
+        userId: user?._id,
+        items: cart?.cartItems,
+        shippingAddress: cart?.shippingAddress,
+
+        paymentMethod: cart?.paymentMethod,
+        shippingPrice: cart?.shippingPrice,
+        couponId: null,
+        totalPrice: cart?.totalPrice,
+      }).unwrap();
+      dispatch(clearCartItems());
+      navigate('/order-success')
+    } catch (error) {
+      toast.error(error);
+    }
+
+  };
+  console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = subtotal * 0.1;
   const tax = subtotal * 0.05;
   const total = subtotal - discount + tax;
-
+  const id = selectedAddress
 
 
   return (
@@ -52,103 +116,229 @@ const Checkout = () => {
                       <h5 className="text-center text-muted">Your cart is empty</h5>
                     ) : (
                       cartItems.map((item) => (
-                      <Card key={item._id} className="mb-3">
+                        <Card key={item._id} className="mb-3">
+                          <Card.Body>
+                            <div className="d-flex justify-content-between">
+                              <div className="d-flex flex-row align-items-center">
+                                <div>
+                                  <Image
+                                    src={`${imageBaseUrl}${item.pdImage[0]}`}
+                                    className="img-fluid rounded-3"
+                                    alt="Shopping item"
+                                    style={{ width: "65px" }}
+                                  />
+                                </div>
+                                <div className="ms-3">
+                                  <h5>{item.name}</h5>
+                                  <p className="small mb-0">{item.color}</p>
+                                </div>
+                              </div>
+                              <div className="d-flex flex-row align-items-center">
+                                <div style={{ width: "50px" }}>
+                                  <h5 className="fw-normal mb-0">{item.qty}</h5>
+                                </div>
+                                <div style={{ width: "80px" }}>
+                                  <h5 className="mb-0">₹{item.price * item.qty}</h5>
+                                </div>
+                                <Button variant="link" className="text-danger p-0">
+                                  <FaTrash size={18} />
+                                </Button>
+                              </div>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      ))
+                    )}
+                  </Col>
+                  <Col lg={5}>
+
+                    <div className="mt-5">
+                      <Card className="shadow-0 border">
                         <Card.Body>
                           <div className="d-flex justify-content-between">
-                            <div className="d-flex flex-row align-items-center">
-                              <div>
-                                <Image
-                                  src={`${imageBaseUrl}${item.pdImage[0]}`}
-                                  className="img-fluid rounded-3"
-                                  alt="Shopping item"
-                                  style={{ width: "65px" }}
-                                />
-                              </div>
-                              <div className="ms-3">
-                                <h5>{item.name}</h5>
-                                <p className="small mb-0">{item.color}</p>
-                              </div>
-                            </div>
-                            <div className="d-flex flex-row align-items-center">
-                              <div style={{ width: "50px" }}>
-                                <h5 className="fw-normal mb-0">{item.qty}</h5>
-                              </div>
-                              <div style={{ width: "80px" }}>
-                                <h5 className="mb-0">₹{item.price * item.qty}</h5>
-                              </div>
-                              <Button variant="link" className="text-danger p-0">
-                                <FaTrash size={18} />
-                              </Button>
-                            </div>
+                            <p className="mb-2">Total price:</p>
+                            <p className="mb-2">$329.00</p>
+                          </div>
+                          <div className="d-flex justify-content-between">
+                            <p className="mb-2">Discount:</p>
+                            <p className="mb-2 text-success">-$60.00</p>
+                          </div>
+                          <div className="d-flex justify-content-between">
+                            <p className="mb-2">TAX:</p>
+                            <p className="mb-2">$14.00</p>
+                          </div>
+                          <hr />
+                          <div className="d-flex justify-content-between">
+                            <p className="mb-2">Total price:</p>
+                            <p className="mb-2 fw-bold">$283.00</p>
+                          </div>
+                          <div className="mt-3">
+                            <Button className="w-100 shadow-0 mb-2 button-custom" onClick={handleContinue}>
+                              CONTINUE
+                            </Button>
+                            <Button variant="light" className="w-100 border mt-2">
+                              Back to shop
+                            </Button>
                           </div>
                         </Card.Body>
                       </Card>
-                     ))
-                    )}
+                    </div>
                   </Col>
 
                   {/* Shipping Info Section */}
                   <Row>
-                  <Col lg={7}>
-                    <Card className="shadow-0 border">
-                      <Card.Body className="p-4">
-                        <h5 className="card-title mb-3">Shipping info</h5>
-                        <hr className="my-4" />
+                    <Col lg={7}>
+                      <Card className="shadow-0 border">
+                        <Card.Body className="p-4">
+                          <h5 className="card-title mb-3">Shipping info</h5>
+                          <hr className="my-4" />
 
-                        <Row className="mb-3">
-                        {address && address.length > 0 ? (
-                          address.map((address,index) => (
-                            <Col lg={4} key={index} className="mb-3">
-                              <Form.Check
-                                type="radio"
-                                name="shippingOption"
-                                label={
-                                  <>
-                                    <strong>{address[index]}</strong>
-                                    <br />
-                                    <small className="text-muted">
-                                    {address.street}, {address.city}
-                                    </small>
-                                    <br />
-                                    <small className="text-primary">{address.phone}</small>
-                                  </>
-                                }
-                                checked={selectedAddress === address.id}
-                                onChange={() => handleAddressChange(address.id)}
-                                className="border rounded-3 p-3"
-                              />
-                            </Col>
-                            ))
-                          ) : (
-                            <p className="text-muted">No saved addresses found. Please add one.</p>
-                          )}
-                        </Row>
+                          <Row className="mb-3">
+                            {address && address.length > 0 ? (
+                              address.map((address, index) => (
+                                <Col lg={4} key={address._id} className="mb-3">
+                                  <Form.Check
+                                    type="radio"
+                                    name="shippingOption"
+                                    label={
+                                      <>
+                                        <strong>{address.houseName}</strong>
+                                        <br />
+                                        <small className="text-muted">
+                                          {address.street}, {address.city}
+                                        </small>
+                                        <br />
+                                        <small className="text-muted">{address.phone}</small>
+                                      </>
+                                    }
+                                    checked={selectedAddress === address._id}
+                                    onChange={() => handleAddressChange(address._id)}
+                                    className="border rounded-3 p-3"
+                                  />
+                                </Col>
+                              ))
+                            ) : (
+                              <p className="text-muted">No saved addresses found. Please add one.</p>
+                            )}
+                          </Row>
 
-                        <Form.Check
-                          type="checkbox"
-                          id="saveAddress"
-                          label="Save this address"
-                          className="mb-3"
-                        />
+                          <Form.Check
+                            type="checkbox"
+                            id="saveAddress"
+                            label="Save this address"
+                            className="mb-3"
+                            checked={saveShipping}
+                            onChange={handleSaveAddress}
+                          />
 
-                        <div className="float-end">
-                          <Button variant="light" className="border me-2">
-                            Cancel
-                          </Button>
-                          <Button variant="success" className="shadow-0 border">
-                            Continue
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+                          <div className="float-end">
+                            <Button variant="" className="border me-2 button-custom" onClick={() => { navigate(`/account/edit-address/${id}`) }}>
+                              Edit
+                            </Button>
+                            <Button variant="success" className="shadow-0 border button-custom" onClick={() => { navigate('/account/add-address') }}>
+                              Add New
+                            </Button>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col lg={7}>
+
+                      <Card className="shadow-sm mb-5 mt-5" style={{ borderRadius: "16px" }}>
+                        <Card.Body className="p-4">
+                          <h5 className="card-title mb-3">Payment Method</h5>
+                          <hr className="my-4" />
+                          <Form>
+                            <Row className="g-3">
+
+                              <Col md={4}>
+                                <div
+                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "Cash On Delivery" ? "border-primary" : ""}`}
+                                  onClick={() => setSelectedPayment("Cash On Delivery")}
+                                  style={{ cursor: "pointer" }}
+                                >
+                                  <Form.Check
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="cashondelivery"
+                                    checked={selectedPayment === "Cash On Delivery"}
+                                    onChange={() => handlePaymentMethod("Cash On Delivery")}
+                                  />
+
+                                  <span>Cash On Delivery</span>
+                                </div>
+                              </Col>
+
+                              {/* Debit Card */}
+                              <Col md={4}>
+                                <div
+                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "wallet" ? "border-primary" : ""}`}
+                                  onClick={() => setSelectedPayment("Wallet")}
+                                  style={{ cursor: "pointer" }}
+                                >
+                                  <Form.Check
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="debitCard"
+                                    checked={selectedPayment === "Wallet"}
+                                    onChange={() => handlePaymentMethod("Wallet")}
+                                  />
+                                  <BsWallet2 size={32} className="text-body" />
+                                  <span>Wallet</span>
+                                </div>
+                              </Col>
+
+                              {/* PayPal */}
+                              <Col md={4}>
+                                <div
+                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "paypal" ? "border-primary" : ""}`}
+                                  onClick={() => setSelectedPayment("Paypal")}
+                                  style={{ cursor: "pointer" }}
+                                >
+                                  <Form.Check
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="paypal"
+                                    checked={selectedPayment === "Paypal"}
+                                    onChange={() => handlePaymentMethod("Paypal")}
+                                  />
+                                  <FaCcPaypal size={32} className="text-body" />
+                                  <span>PayPal</span>
+                                </div>
+                              </Col>
+                            </Row>
+                          </Form>
+                        </Card.Body>
+                      </Card>
+                    </Col>
                   </Row>
                 </Row>
+
               </Card.Body>
             </Card>
           </Col>
+
         </Row>
       </Container>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Your Order</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Your total order amount is <strong>${total.toFixed(2)}</strong></p>
+          <p>Do you want to place the order?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="success" onClick={handlePlaceOrder}>
+            Place Order at ${total.toFixed(2)}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   );
 };

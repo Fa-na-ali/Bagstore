@@ -25,7 +25,7 @@ const AddAddress = () => {
             }).unwrap();
 
             toast.success('Address added successfully!');
-            navigate('/account');
+            navigate(-1);
 
         } catch (error) {
             toast.error(error?.data?.message || 'Failed to add address');

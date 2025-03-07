@@ -18,7 +18,6 @@ const CategoryManagement = () => {
   //  columns for the category table
   const columns = [
     { key: "name", label: "Category Name" },
-    { key: "createdBy", label: "Created By" },
     { key: "isExist", label: "Status" }
   ];
 

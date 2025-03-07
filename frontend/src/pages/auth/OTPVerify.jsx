@@ -69,12 +69,14 @@ const formatTime = (time) => {
     try {
       const res = await verifyOtp({ email, otp: otpCode }).unwrap();
       toast.success("OTP Verified Successfully!");
+      
       dispatch(setCredentials({ ...res }));
       if (res.user.isAdmin) {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
+   
     } catch (err) {
       console.error("Verification Error:", err);
       toast.error(err?.data?.message || "Invalid OTP. Please try again.");

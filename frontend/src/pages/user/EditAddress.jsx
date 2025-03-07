@@ -45,7 +45,7 @@ const EditAddress = () => {
         try {
             await updateAddress({ id, ...formData }).unwrap();
             toast.success("User Edited successfully!");
-            navigate("/account");
+            navigate(-1);
         } catch (error) {
             console.error("Failed to update address", error);
         }
