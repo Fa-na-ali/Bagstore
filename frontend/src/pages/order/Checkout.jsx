@@ -7,7 +7,7 @@ import { useProfileQuery } from "../../redux/api/usersApiSlice";
 import { savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
-import { useCreateOrderMutation } from "../../redux/api/orderApiSlice";
+import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
 
 const Checkout = () => {

@@ -27,3 +27,11 @@
 .card {
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
+
+.zoom-image {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .zoom-image:hover {
+    transform: scale(1.5); /* Zoom effect */
+  }

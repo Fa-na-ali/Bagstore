@@ -11,12 +11,6 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    getOrderDetails: builder.query({
-      query: (id) => ({
-        url: `${ORDERS_URL}/${id}`,
-      }),
-    }),
-
     getMyOrders: builder.query({
       query: () => ({
         url: `${ORDERS_URL}/mine`,
@@ -37,6 +31,14 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
 
     }),
 
+    getOrderDetails: builder.query({
+      query: (id) => ({
+        url: `${ORDERS_URL}/admin/orders/edit/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Orders"],
+      keepUnusedDataFor: 5,
+    }),
   }),
 });
 

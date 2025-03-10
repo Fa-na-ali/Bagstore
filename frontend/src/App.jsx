@@ -37,6 +37,7 @@ import Checkout from './pages/order/Checkout';
 import OrderSuccess from './pages/order/OrderSuccess';
 import MyOrder from './pages/order/MyOrder';
 import VerifyOTPPass from './pages/auth/VerifyOTPPass';
+import OrderDetails from './pages/admin/Orders/OrderDetails';
 
 
 
@@ -73,6 +74,7 @@ export const router = createBrowserRouter(
         <Route path="/mine" element={<MyOrder/>} />
         <Route path="/order-success" element={<OrderSuccess/>} />
         <Route path="/admin/orders" element={<OrderManagement/>} />
+        <Route path='/admin/orders/edit/:id' element={<OrderDetails/>}/>
 
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />

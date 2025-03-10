@@ -53,7 +53,7 @@ const ProductDetails = () => {
                 alt="Product"
                 fluid
                 rounded
-                className="mb-3"
+                className="mb-3 zoom-image"
                 style={{ width: "500px", height: "500px", }}
               />
 
@@ -78,7 +78,7 @@ const ProductDetails = () => {
               <h2 className="mb-3 caption">{product.name}</h2>
               <p className="text-muted mb-4 caption">ID: {product._id}</p>
               <div className="mb-3">
-                <span className="h4 me-2 caption">${product.price}</span>
+                <span className="h6 me-2 caption">Price: ${product.price}</span>
 
               </div>
               <div className="mb-3">
@@ -86,9 +86,9 @@ const ProductDetails = () => {
                   <i key={i} className="bi bi-star-fill text-warning"></i>
                 ))}
                 {product.rating < 5 && <i className="bi bi-star-half text-warning"></i>}
-                <span className="ms-2 caption">4.5 ({20} reviews)</span>
+                <span className=" caption">Reviews: 4.5 ({20} reviews)</span>
               </div>
-              <p className="mb-4 caption">{product.description}</p>
+              <p className="mb-4 caption">Description: {product.description}</p>
               <div className="mb-4">
                 <h5 className='caption'>Color:</h5>
                 <div className="btn-group" role="group" aria-label="Color selection">
@@ -123,7 +123,7 @@ const ProductDetails = () => {
                   style={{ width: '80px' }}
                 />
               </div>
-              <Button size="lg" className="mb-3 me-2 button-custom" onClick={addToCartHandler(product,1)}>
+              <Button size="lg" className="mb-3 me-2 button-custom" onClick={()=>addToCartHandler(product,1)}>
                 <i className="bi bi-cart-plus"></i> Add to Cart
               </Button>
               <Button variant="outline-secondary" size="lg" className="mb-3">

@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from 'react'
 import AdminSidebar from '../../../components/AdminSidebar';
-import { useGetAllOrdersQuery } from '../../../redux/api/orderApiSlice';
+import { useGetAllOrdersQuery } from '../../../redux/api/ordersApiSlice';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
 import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";

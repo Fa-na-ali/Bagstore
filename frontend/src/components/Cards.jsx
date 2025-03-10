@@ -46,12 +46,12 @@ const Cards = ({ products }) => {
                 </div>
                 <Card.Body>
                   <div className='text-reset text-decoration-none'>
-                    <Card.Title className='mb-3 caption text-decoration-none'>{product.name}</Card.Title>
+                    <Card.Title className='mb-3 caption text-decoration-none text-center'>{product.name}</Card.Title>
                   </div>
-                  <div className='text-reset text-decoration-none '>
+                  <div className='text-reset text-decoration-none text-center'>
                     <p className='caption'>{product.color}</p>
                   </div>
-                  <h6 className='mb-3 caption'>INR {product.price}</h6>
+                  <h6 className='mb-3 caption text-center'>INR {product.price}</h6>
                   <div className="d-flex justify-content-center gap-3 mt-auto">
                   <Button className='button-custom' onClick={cartHandler}>Add to cart</Button>
                   <Button variant="light" className="border icon-hover">

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
-import { useGetMyOrdersQuery } from '../../redux/api/orderApiSlice'
+import { useGetMyOrdersQuery } from '../../redux/api/ordersApiSlice'
 
 const MyOrder = () => {
   const { data: orders, isLoading, error } = useGetMyOrdersQuery();
