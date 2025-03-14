@@ -38,6 +38,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
           body: data,
       }),
   }),
+  changePassword: builder.mutation({
+    query: (data) => ({
+        url: `${USERS_URL}/change-password`,
+        method: "POST",
+        body: data,
+    }),
+}),
     verifyOtp: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/verify-otp`,
@@ -143,6 +150,7 @@ export const {
   useForgotPasswordMutation ,
   useVerifyOtpPassMutation,
   useResetPasswordMutation,
+  useChangePasswordMutation,
   useResendOtpMutation,
   useRegisterMutation,
   useSearchUserQuery,

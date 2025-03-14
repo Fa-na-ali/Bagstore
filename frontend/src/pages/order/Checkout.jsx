@@ -78,7 +78,6 @@ const Checkout = () => {
         userId: user?._id,
         items: formattedItems,
         shippingAddress: cart?.shippingAddress,
-
         paymentMethod: cart?.paymentMethod,
         shippingPrice: cart?.shippingPrice,
         couponId: null, 

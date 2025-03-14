@@ -39,6 +39,8 @@ import MyOrder from './pages/order/MyOrder';
 import VerifyOTPPass from './pages/auth/VerifyOTPPass';
 import OrderDetails from './pages/admin/Orders/OrderDetails';
 import OrderDetail from './pages/order/OrderDetail';
+import EmailVerify from './pages/user/EmailVerify';
+import ChangePassword from './pages/user/ChangePassword';
 
 
 
@@ -69,6 +71,9 @@ export const router = createBrowserRouter(
         <Route path="/account/edit" element={<EditProfile />} />
         <Route path="/account/add-address" element={<AddAddress />} />
         <Route path="/account/edit-address/:id" element={<EditAddress />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/verify-email" element={<EmailVerify />} />
+
  
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout/>} />

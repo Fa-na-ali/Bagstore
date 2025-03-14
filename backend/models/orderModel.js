@@ -30,8 +30,8 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'delivered', 'cancelled','returned','shipped'],
-      default: 'pending',
+      enum: ['completed', 'not completed'],
+      default: 'not completed',
     },
     totalPrice: {
       type: Number,
@@ -49,6 +49,15 @@ const orderSchema = new mongoose.Schema(
           required: true,
           min: 1,
         },
+        status: {
+          type: String,
+          enum: ['pending', 'delivered', 'cancelled','returned','shipped'],
+          default: 'pending',
+        },
+        cancel_reason: {
+          type: String,
+          required: false
+      }
       },
     ],
     couponId: {

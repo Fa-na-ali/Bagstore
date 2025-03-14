@@ -1,17 +1,20 @@
-import React, { useState,useEffect } from 'react'
-import { Container, Row, Col, Card, Button, FormControl, FormGroup, Form } from "react-bootstrap";
-import { useProfileQuery, useUpdateUserMutation } from '../../redux/api/usersApiSlice';
+import React, { useState, useEffect } from 'react'
+import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
+import { useProfileQuery, useResendOtpMutation,} from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { updateProfile } from '../../redux/features/auth/authSlice';
 
 const EditProfile = () => {
     const { data: user, refetch } = useProfileQuery()
     const navigate = useNavigate()
-    const [update] = useUpdateUserMutation()
+    
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-
+    const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+    const dispatch = useDispatch()
     useEffect(() => {
         if (user) {
             setName(user.name || "");
@@ -24,18 +27,18 @@ const EditProfile = () => {
     //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const userData = { name, email, phone };
+
         try {
-            const response = await update(userData).unwrap();
-             navigate(`/verify-email?email=${email}`)
-            console.log("Updated User Data:", response);  
-            toast.success("User Edited successfully!"); 
-            refetch(); 
-            navigate("/account");
-        
+
+            await resendOtp({ email:user.email }).unwrap();
+            toast.info("OTP sent to your email. Please verify.");
+             dispatch(updateProfile({name,email,phone}))
+            navigate(`/verify-email?email=${user.email}`)
+
+
         } catch (error) {
-            console.error("Update Error:", error);
-            toast.error(error?.data?.message || "Failed to edit");
+            console.error("OTP Sending Error:", error);
+            toast.error(error?.data?.message || "Failed to send OTP");
         }
     };
 

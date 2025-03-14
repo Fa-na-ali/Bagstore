@@ -115,7 +115,7 @@ const resendOtp = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Your OTP Code",
-            text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+            text: `Your OTP code is ${otp}. It is valid for 3 minutes.`,
         });
 
         console.log("OTP sent successfully to", email);
@@ -376,41 +376,25 @@ const updateUser = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid User ID" });
         }
-        const user1 = await User.findById(id)
-        if (user1.email !== req.body.email) {
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            const expiresAt = Date.now() + 3 * 60 * 1000;
 
-            otpStore.set(email, { otp, expiresAt });
-
-            const mailOptions = {
-                to: user1.email,
-                from: process.env.EMAIL_USER,
-                subject: "Your Password Reset OTP",
-                html: `<p>Your OTP for password reset is <b>${otp}</b>. It is valid for 3 minutes.</p>`,
-            };
-
-            await transporter.sendMail(mailOptions);
-
-            res.json({ message: "OTP sent to your email" });
+        const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
+        console.log("user found", user)
+        if (!user) {
+            res.status(404);
+            throw new Error(`User not found with  id ${id}`);
         }
         else {
+            await user.save();
+            const { token, refreshToken } = generateToken(user);
+            user.refreshToken = refreshToken;
+            return res.status(200).json({
+                token,
+                refreshToken,
+                user,
 
-
-            const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
-            console.log("user found", user)
-            if (!user) {
-                res.status(404);
-                throw new Error(`User not found with  id ${id}`);
-            }
-            else {
-                await user.save();
-                return res.status(200).json({
-                    user
-
-                })
-            }
+            })
         }
+
     } catch (error) {
         res.status(500).json({ message: error.message })
 
@@ -506,6 +490,28 @@ const deleteAddress = async (req, res) => {
     }
 };
 
+const changePassword = async(req,res)=>{
+    const id = req.user._id
+    const {currentPassword,newPassword,confirmPassword} = req.body
+    const exists = await User.findOne({_id: id});
+    if (!exists) {
+        return res.status(404).json({success: false, message: `User not found`});
+    }
+
+    const comparePassword = await bcrypt.compare(currentPassword, exists.password);
+
+    if (!comparePassword) {
+        return res.status(400).json({success: false, message: "Current password is incorrect"});
+    }
+    if(newPassword!== confirmPassword){
+        return res.status(400).json({status:'Error',message:"Passwords should match"})
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashed_password = await bcrypt.hash(newPassword, salt);
+    await User.updateOne({_id: req.user._id}, {$set: {password: hashed_password}});
+    return res.status(200).json({success: true, message: "Password updated successfully"});
+}
+
 
 
 module.exports = {
@@ -521,6 +527,7 @@ module.exports = {
     getAllUsers,
     deleteUser,
     updateUser,
+    changePassword,
     forgotPassword,
     resetPassword,
     addAddress,

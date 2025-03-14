@@ -18,6 +18,7 @@ const { userSignup,
     updateAddress,
     deleteAddress,
     resetPassword,
+    changePassword,
 } = require('../controllers/userController')
 const { authorizeAdmin, authenticate } = require('../middlewares/authMiddleware')
 const generaterefreshToken = require('../middlewares/generateRefreshToken')
@@ -35,6 +36,7 @@ router.route('/account/edit').put(authenticate,updateUser)
 router.route('/account/add-address').post(authenticate,addAddress)
 router.route('/account/edit-address/:id').get(authenticate,getAddress).put(authenticate,updateAddress)
 router.route("/account/delete-address/:id").delete(authenticate, deleteAddress);
+router.route('/change-password').post(authenticate,changePassword)
 router.route('/forgot-password').post(forgotPassword)
 router.route('/verify-otp-password').post(verifyOtpPass)
 router.route('/reset-password').post(resetPassword)

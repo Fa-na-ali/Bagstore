@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { useVerifyOtpPassMutation, useResendOtpMutation } from "../../redux/api/usersApiSlice";
+import { useVerifyOtpPassMutation, useResendOtpMutation, useUpdateUserMutation, useProfileQuery } from "../../redux/api/usersApiSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 
-const OTPVerify = () => {
+const EmailVerify = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timer, setTimer] = useState(180);
   const inputRefs = useRef([]);
@@ -18,23 +18,24 @@ const OTPVerify = () => {
 
   const [verifyOtp, { isLoading }] = useVerifyOtpPassMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const { data: user, refetch } = useProfileQuery()
+  const [update] = useUpdateUserMutation()
+  const { updatedUser } = useSelector((state) => state.auth);
+  console.log("user", updatedUser)
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
 
-  const { userInfo } = useSelector((state) => state.auth);
-console.log("user",userInfo)
-useEffect(() => {
-  if (timer > 0) {
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => prevTimer - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }
-}, [timer]);
-
-const formatTime = (time) => {
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-  return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
-};
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  };
 
   const handleChange = (index, e) => {
     const value = e.target.value;
@@ -68,15 +69,17 @@ const formatTime = (time) => {
 
     try {
       const res = await verifyOtp({ email, otp: otpCode }).unwrap();
-       toast.success("OTP Verified Successfully!");
-      
-      dispatch(setCredentials({ ...res }));
-      if (res.user.isAdmin) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
+      if (res) {
+        const result = await update({ name: updatedUser.name, email:updatedUser.email, phone: updatedUser.phone }).unwrap();
+        dispatch(setCredentials({ ...result }));
+        toast.success("Email verified & User updated!");
+        refetch();
+        navigate('/account')
       }
-   
+      else {
+        toast.error("Invalid OTP. Try again.");
+      }
+
     } catch (err) {
       console.error("Verification Error:", err);
       toast.error(err?.data?.message || "Invalid OTP. Please try again.");
@@ -90,7 +93,7 @@ const formatTime = (time) => {
       toast.success("A new OTP has been sent to your email.");
       setOtp(new Array(6).fill(""));
       inputRefs.current[0]?.focus();
-      setTimer(180); 
+      setTimer(180);
     } catch (err) {
       console.error("Resend OTP Error:", err);
       toast.error("Failed to resend OTP. Try again later.");
@@ -136,16 +139,16 @@ const formatTime = (time) => {
                   <p className="text-muted">Resend OTP in <strong>{formatTime(timer)}</strong></p>
                 ) : (
 
-              <Button
-                variant="secondary"
-                className="w-100 mt-2"
-                onClick={handleResendOtp}
-                disabled={isResending}
-              >
-                {isResending ? "Resending..." : "Resend OTP"}
-              </Button>
+                  <Button
+                    variant="secondary"
+                    className="w-100 mt-2"
+                    onClick={handleResendOtp}
+                    disabled={isResending}
+                  >
+                    {isResending ? "Resending..." : "Resend OTP"}
+                  </Button>
                 )}
-                </div>
+              </div>
             </Form>
           </div>
         </Col>
@@ -154,4 +157,4 @@ const formatTime = (time) => {
   );
 };
 
-export default OTPVerify;
+export default EmailVerify;

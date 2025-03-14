@@ -13,7 +13,7 @@ const MyOrder = () => {
 
   const handleCancelOrder = (orderId) => {
     console.log("Cancel order:", orderId);
-    
+
   };
   return (
     <>
@@ -27,10 +27,11 @@ const MyOrder = () => {
                   <Row>
                     {/* Shopping Cart Section */}
                     <Col lg={12}>
+                    <h2 className="mb-1 text-center heading">MY ORDERS</h2>
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                          <p className="mb-1">My Orders</p>
-                          <p className="mb-0"></p>
+                        
+                         
                         </div>
                       </div>
 
@@ -38,49 +39,66 @@ const MyOrder = () => {
                         <h5 className="text-center text-muted">No orders made</h5>
                       ) : (
 
-                        orders.map((order) => (
+                        orders?.map((order) => (
                           <div key={order._id}>
-                            <h5>Order ID: {order._id}</h5>
-                            <p>Status: {order.status}</p>
-                            <p>Total Price: ₹{order.totalPrice}</p>
+                             <h5>Order ID: {order.orderId}</h5>
+                            <p>Total Price: ₹{order.totalPrice}</p> 
                             <hr />
                             {order?.items?.length > 0 ? (
                               order.items.map((item) => (
-                                <Card key={item._id} className="mb-3">
+                                <Card key={item.product._id} className="mb-3">
                                   <Card.Body>
-                                  <div className="d-flex justify-content-between align-items-center">
-                                    <div className="d-flex align-items-center" style={{ flex: "2" }}>
-                                      <Image
-                                        src={`${imageBaseUrl}${item.pdImage?.[0] || "placeholder.jpg"}`}
-                                        className="img-fluid rounded-3"
-                                        alt="Shopping item"
-                                        style={{ width: "80px", height: "80px", objectFit: "cover" }}
-                                      />
-                                      <div className="ms-3">
-                                        <h5>{item.name}</h5>
-                                        <p className="small mb-0 text-muted">{item.color}</p>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                      <div className="d-flex align-items-center" style={{ flex: "2" }}>
+                                        <Image
+                                          src={`${imageBaseUrl}${item.product.pdImage[0] || "placeholder.jpg"}`}
+                                          className="img-fluid rounded-3"
+                                          alt="Shopping item"
+                                          style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                                        />
+                                        <div className="ms-3">
+                                          <h5>{item.product.name}</h5>
+                                          <p className="small mb-0 text-muted">{item.product.color}</p>
+                                        </div>
                                       </div>
-                                    </div>
 
-                                    {/* Price & Delivery */}
-                                    <div className="d-flex align-items-center justify-content-end" style={{ flex: "3" }}>
-                                      <div className="me-4 text-center" style={{ width: "80px" }}>
-                                        <h5 className="mb-0">₹{item.price}</h5>
+                                      {/* Price & Delivery */}
+                                      <div className="d-flex align-items-center justify-content-end" style={{ flex: "3" }}>
+                                        <div className="me-4 text-center" style={{ width: "80px" }}>
+                                          <h5 className="mb-0">₹{item.product.price}</h5>
+                                        </div>
+
+                                        <div className="me-4 text-center" style={{ width: "200px" }}>
+                                          <h6
+                                            className={`mb-0 ${item.status === "pending" ||
+                                                item.status === "shipped" ||
+                                                item.status === "delivered"
+                                                ? "text-success"
+                                                : "text-danger"
+                                              }`}
+                                          >
+                                            {item.status}
+                                          </h6>
+                                        </div>
+                                        {item.status === "pending" || item.status === "shipped" ? (
+                                          <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => handleCancelOrder(order._id)}
+                                          >
+                                            Cancel
+                                          </Button>
+                                        ) : item.status === "delivered" ? (
+                                          <Button
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => handleReturnOrder(order._id)}
+                                          >
+                                            Return
+                                          </Button>
+                                        ) : null}
                                       </div>
-                                      <div className="me-4 text-center" style={{ width: "200px" }}>
-                                        <h6 className="text-muted mb-0">Delivery Expected by</h6>
-                                      </div>
-                                      {order.status === "p  ending" && (
-                                        <Button 
-                                          variant="danger" 
-                                          size="sm"
-                                          onClick={() => handleCancelOrder(order._id)}
-                                        >
-                                          Cancel
-                                        </Button>
-                                      )}
                                     </div>
-                                  </div>
 
                                   </Card.Body>
                                 </Card>

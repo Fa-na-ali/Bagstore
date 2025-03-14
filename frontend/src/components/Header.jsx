@@ -35,7 +35,7 @@ const Header = () => {
             <Navbar expand="lg" bg="white" className="sticky-top shadow shadow-sm">
                 <Container>
 
-                    <Navbar.Brand as={Link} to="/" className="fw-bold d-flex align-items-center">
+                    <Navbar.Brand as={Link} to="/admin/dashboard" className="fw-bold d-flex align-items-center">
                         <img
                             src={logo}
                             alt="BagStore Logo"
@@ -76,7 +76,7 @@ const Header = () => {
                                         to={`/account`}
                                         className="caption"
                                     >
-                                        {(userInfo.name) ? userInfo.name : userInfo.user.name}
+                                         {(userInfo.name) ? userInfo.name : userInfo.user.name} 
                                     </Nav.Link>
                                 ) : (
                                     <Nav.Link

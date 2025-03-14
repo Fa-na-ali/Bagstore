@@ -41,7 +41,7 @@ const createOrder = async (req, res) => {
     items: validatedItems,
     shippingAddress,
     paymentMethod,
-    status: 'pending',
+    status:'not completed',
     totalPrice,
     couponId,
   });
@@ -67,7 +67,7 @@ const createOrder = async (req, res) => {
 const getMyOrders = async (req, res) => {
   console.log("uuuuuuuser", req.user._id)
   try {
-    const orders = await Order.find({ userId: req.user._id }).populate('items');
+    const orders = await Order.find({ userId: req.user._id }).populate('items.product');
     console.log("orders", orders)
     res.json(orders);
   } catch (error) {

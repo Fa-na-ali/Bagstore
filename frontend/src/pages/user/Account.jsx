@@ -31,13 +31,13 @@ const Account = () => {
     };
 
     return (
-        <section className="vh-100" style={{ backgroundColor: "#f4f5f7" }}>
+        <section className="vh-100 background" >
             <Container className="py-5">
                 <Row className="d-flex justify-content-center align-items-center">
                     <Col lg={12} className="mb-4 mb-lg-0">
                         <Card className="mb-3" style={{ borderRadius: ".5rem" }}>
                             <Row className="g-0">
-                                <Col md={4} className="text-center text-white d-flex flex-column align-items-center justify-content-center" style={{ backgroundColor: "#6c757d", borderTopLeftRadius: ".5rem", borderBottomLeftRadius: ".5rem" }}>
+                                <Col md={4} className="text-center text-white d-flex flex-column align-items-center justify-content-center background-two" style={{ borderTopLeftRadius: ".5rem", borderBottomLeftRadius: ".5rem" }}>
                                     <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp" alt="Avatar" className="img-fluid my-4" style={{ width: "80px" }} />
                                     <h5>{user?.name}</h5>
                                     <Link to='/account/edit' style={{ textDecoration: "none", color: "inherit" }}>
@@ -46,19 +46,25 @@ const Account = () => {
                                 </Col>
                                 <Col md={8}>
                                     <Card.Body className="p-4">
-                                        <h6>Profile</h6>
+                                        <h3 className="heading text-center">PROFILE</h3>
                                         <hr className="mt-0 mb-4" />
                                         <Row className="pt-1">
                                             <Col xs={6} className="mb-3">
-                                                <h6>Email</h6>
+                                                <h6 className="caption">Email</h6>
                                                 <p className="text-muted">{user?.email}</p>
                                             </Col>
                                             <Col xs={6} className="mb-3">
-                                                <h6>Phone</h6>
+                                                <h6 className="caption">Phone</h6>
                                                 <p className="text-muted">{user?.phone}</p>
                                             </Col>
                                         </Row>
-                                        <h6>Address</h6>
+                                        <Row className="pt-1">
+                                            <Col xs={6} className="mb-3">
+                                               <Button className="button-custom" onClick={()=>{navigate(`/change-password`)}}>Change Password</Button>
+                                            </Col>
+                                        
+                                        </Row>
+                                        <h6 className="caption">Address</h6>
                                         <hr className="mt-0 mb-4" />
                                         <Row className="pt-1">
                                         {user?.address?.length > 0 ? (
@@ -67,14 +73,14 @@ const Account = () => {
                                                 <Card style={{height:'170px'}}>
                                                     <Card.Body>
                                                         <div className="d-flex justify-content-between">
-                                                            <Card.Title>{`Address ${index+1}`}</Card.Title>
+                                                            <Card.Title className="caption">{`Address ${index+1}`}</Card.Title>
                                                             <div>
-                                                                <Button variant="outline-secondary" size="sm" className="me-2" onClick={()=>{navigate(`/account/edit-address/${address._id}`)}}><FaEdit /></Button>
-                                                                <Button variant="outline-secondary" size="sm"  onClick={() => handleDelete(address._id)}><FaTrash /></Button>
+                                                                <Button variant="outline-primary" size="sm" className="me-2" onClick={()=>{navigate(`/account/edit-address/${address._id}`)}}><FaEdit /></Button>
+                                                                <Button variant="outline-danger" size="sm"  onClick={() => handleDelete(address._id)}><FaTrash /></Button>
                                                             </div>
                                                         </div>
                                                         
-                                                        <Card.Text>
+                                                        <Card.Text className="text-muted">
                                                             {address.houseName},{address.town},{address.street},
                                                         {address.state}, {address.zipcode}, {address.country} <br />
                                                         <strong>Phone:</strong> {address.phone}
@@ -92,9 +98,9 @@ const Account = () => {
                                                 </Col>
                                                 )}
                                             <Col xs={6} className="mb-3">
-                                                <Card style={{height:'170px'}}>
+                                                <Card  className="background-two" style={{height:'170px'}}>
                                                     <Card.Body>
-                                                        <Link to='/account/add-address' style={{ textDecoration: "none", color: "inherit" }}>
+                                                        <Link to='/account/add-address' style={{ textDecoration: "none", color: "white" }}>
                                                             <Card.Title className="text-center mt-5">+ Add Address</Card.Title>
                                                         </Link>
 
