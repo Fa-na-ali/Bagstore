@@ -18,6 +18,21 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
     }),
 
+    getOrderById: builder.query({
+      query: (id) => ({
+        url: `${ORDERS_URL}/${id}`,
+      }),
+      keepUnusedDataFor: 5,
+    }),
+
+    cancelOrder: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/cancel/${orderId}`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Order"], // Invalidate cache to update UI
+    }),
+
     getAllOrders: builder.query({
       query: ({ searchTerm = "", status = "", page = 1 }) => {
         const params = new URLSearchParams();
@@ -44,5 +59,6 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
 
 export const { useCreateOrderMutation,
   useGetOrderDetailsQuery,
+  useGetOrderByIdQuery,
   useGetMyOrdersQuery,
   useGetAllOrdersQuery } = ordersApiSlice;

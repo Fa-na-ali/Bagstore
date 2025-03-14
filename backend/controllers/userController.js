@@ -79,7 +79,7 @@ const userLogin = async (req, res) => {
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
+        if (isMatch && user.isExist) {
             const { token, refreshToken } = generateToken(user);
             user.refreshToken = refreshToken;
             await user.save();
@@ -88,7 +88,7 @@ const userLogin = async (req, res) => {
             return;
         }
         else
-            res.status(400).json({ message: "Invalid email or password" })
+            res.status(400).json({ message: "Invalid credentials or blocked" })
 
 
 
@@ -151,16 +151,18 @@ const googleLogin = async (req, res) => {
             });
         }
         const { _id, isAdmin } = user;
-        const { token, refreshToken } = generateToken(user)
-        user.refreshToken = refreshToken;
-        await user.save();
-        console.log("token generated", token)
-        res.status(200).json({
-            message: 'success',
-            token,
-            refreshToken,
-            user,
-        });
+        if (user.isExist) {
+            const { token, refreshToken } = generateToken(user)
+            user.refreshToken = refreshToken;
+            await user.save();
+            console.log("token generated", token)
+            res.status(200).json({
+                message: 'success',
+                token,
+                refreshToken,
+                user,
+            });
+        }
     } catch (err) {
         res.status(500).json({
             message: err.message
@@ -178,7 +180,7 @@ const logoutUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        user.refreshToken = null; // Remove refresh token from DB
+        user.refreshToken = null;
         await user.save();
 
         res.status(200).json({ message: "Logged out successfully" });
@@ -370,22 +372,44 @@ const updateUser = async (req, res) => {
     try {
         const id = req.user._id
         console.log("id to edit user", id)
-        const { name, email, phone, } = req.body; // Get the form data
+        const { name, email, phone, } = req.body;
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid User ID" });
         }
-        const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
-        console.log("user found", user)
-        if (!user) {
-            res.status(404);
-            throw new Error(`User not found with  id ${id}`);
+        const user1 = await User.findById(id)
+        if (user1.email !== req.body.email) {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = Date.now() + 3 * 60 * 1000;
+
+            otpStore.set(email, { otp, expiresAt });
+
+            const mailOptions = {
+                to: user1.email,
+                from: process.env.EMAIL_USER,
+                subject: "Your Password Reset OTP",
+                html: `<p>Your OTP for password reset is <b>${otp}</b>. It is valid for 3 minutes.</p>`,
+            };
+
+            await transporter.sendMail(mailOptions);
+
+            res.json({ message: "OTP sent to your email" });
         }
         else {
-            await user.save();
-            return res.status(200).json({
-                user
 
-            })
+
+            const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
+            console.log("user found", user)
+            if (!user) {
+                res.status(404);
+                throw new Error(`User not found with  id ${id}`);
+            }
+            else {
+                await user.save();
+                return res.status(200).json({
+                    user
+
+                })
+            }
         }
     } catch (error) {
         res.status(500).json({ message: error.message })

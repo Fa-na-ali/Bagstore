@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useRegisterMutation } from "../../redux/api/usersApiSlice";
+import { GoogleWrapper } from "../../App";
 
 
 //  Yup validation schema
@@ -164,12 +165,8 @@ const Register = () => {
 
                 <Row className="mt-4">
                   <Col xs={12}>
-                    <p className="text-secondary">Or continue with</p>
-                    <div className="d-grid gap-3">
-                      <Button variant="danger" className="d-flex justify-content-center align-items-center">
-                        <i className="bi bi-google me-2"></i> Sign in With Google
-                      </Button>
-                    </div>
+                    <p className="text-secondary text-center">Or continue with</p>
+                    <GoogleWrapper />
                   </Col>
                 </Row>
               </Card.Body>

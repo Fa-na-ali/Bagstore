@@ -3,8 +3,14 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel')
 const mongoose = require('mongoose')
 
+async function generateOrderId() {
+  const { nanoid } = await import("nanoid");
+  return `ORD-${nanoid(10)}`;
+}
+//create order
 const createOrder = async (req, res) => {
   console.log("Order request body:", req.body);
+  const orderId = await generateOrderId();
   const {
     userId,
     items,
@@ -16,25 +22,48 @@ const createOrder = async (req, res) => {
   } = req.body;
 
   if (!items || items.length === 0) {
-    res.status(400);
-    throw new Error("No items in the order");
+    res.status(400).json({ message: "No items in the order" })
+
   }
+  const validatedItems = items.map((item) => {
+    if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+      throw new Error('Each item must have a valid product ID');
+    }
+    if (!item.qty || item.qty < 1) {
+      throw new Error(`Invalid quantity for product ${item.product}`);
+    }
+    return { product: item.product, qty: item.qty };
+  });
 
   const order = new Order({
+    orderId,
     userId,
-    items,
+    items: validatedItems,
     shippingAddress,
     paymentMethod,
-
+    status: 'pending',
     totalPrice,
     couponId,
   });
 
   const createdOrder = await order.save();
   console.log("order created")
+  if (paymentMethod === "COD") {
+    await Promise.all(
+      validatedItems.map(async (item) => {
+        const product = await Product.findById(item.product);
+        if (product) {
+          product.stock -= item.qty;
+          await product.save();
+        }
+      })
+    );
+    console.log("Stock updated for COD order");
+  }
   res.status(201).json(createdOrder);
 };
 
+//get my orders
 const getMyOrders = async (req, res) => {
   console.log("uuuuuuuser", req.user._id)
   try {
@@ -45,6 +74,7 @@ const getMyOrders = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 const getAllOrders = async (req, res) => {
@@ -62,9 +92,6 @@ const getAllOrders = async (req, res) => {
     if (status) {
       query.status = status;
     }
-
-
-
     const skip = (parseInt(page) - 1) * parseInt(limit);
     console.log("Skip:", skip, "Limit:", limit);
     const orders = await Order.find(query)
@@ -86,6 +113,7 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+//get order  by id
 const findOrderById = async (req, res) => {
 
   console.log("Received Order ID:", req.params.id);
@@ -97,11 +125,8 @@ const findOrderById = async (req, res) => {
     const order = await Order.findById(id).populate(
       "userId")
       .populate("shippingAddress")
-      .populate({
-        path: "items",
-        model: Product,
-        select: "name price",
-      });
+      .populate("items.product")
+
     console.log("orrrrder", order)
     if (order) {
       res.json(order);

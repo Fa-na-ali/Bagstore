@@ -14,6 +14,7 @@ const ProductManagement = () => {
   const [deleteProduct] = useDeleteProductMutation();
   const products = data?.products || [];
 console.log(data)
+
   //  columns for the category table
   const columns = [
     { key: "name", label: "Product Name" },
@@ -22,7 +23,6 @@ console.log(data)
     { key: "quantity", label: "Quantity" },
     { key: "color", label: "Color" },
     { key: "brand", label: "Brand" },
-    { key: "createdBy", label: "Created By" },
     { key: "isExist", label: "Status" }
   ];
 

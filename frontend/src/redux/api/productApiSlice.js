@@ -20,6 +20,13 @@ export const productApiSlice = apiSlice.injectEndpoints({
       ],
     }),
 
+    getProductsByIds: builder.query({
+      query: (ids) => ({
+        url: `${PRODUCT_URL}/idarray`,
+        params: { ids: ids.join(",") }, 
+      }),
+    }),
+
     allProducts: builder.query({
       query: () => `${PRODUCT_URL}`,
       providesTags: ["Product"],
@@ -126,4 +133,5 @@ export const {
   useUploadProductImageMutation,
   useFetchRelatedProductsQuery,
   useFilterProductsQuery,
+  useGetProductsByIdsQuery
 } = productApiSlice;

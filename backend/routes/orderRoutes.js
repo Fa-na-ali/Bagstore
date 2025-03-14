@@ -6,6 +6,8 @@ const { createOrder, getMyOrders,getAllOrders, findOrderById } = require('../con
 router.route('/').post(authenticate, createOrder)
 router.route('/admin/orders').get(authenticate, authorizeAdmin, getAllOrders);
 router.route('/mine').get(authenticate, getMyOrders)
+router.route('/:id').get(findOrderById)
+   
 router.route('/admin/orders/edit/:id').get(findOrderById)
    
 

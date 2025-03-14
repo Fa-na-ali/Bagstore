@@ -4,7 +4,7 @@ import { FaTrash, FaCcMastercard, FaCcVisa, FaCcPaypal } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useProfileQuery } from "../../redux/api/usersApiSlice";
-import { savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
+import { clearCartItems, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
@@ -22,6 +22,10 @@ const Checkout = () => {
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const formattedItems = cart?.cartItems.map(item => ({
+    product: item._id,
+    qty: item.qty
+  }));
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -72,16 +76,21 @@ const Checkout = () => {
     try {
       const res = await createOrder({
         userId: user?._id,
-        items: cart?.cartItems,
+        items: formattedItems,
         shippingAddress: cart?.shippingAddress,
 
         paymentMethod: cart?.paymentMethod,
         shippingPrice: cart?.shippingPrice,
-        couponId: null,
+        couponId: null, 
         totalPrice: cart?.totalPrice,
       }).unwrap();
-      dispatch(clearCartItems());
-      navigate('/order-success')
+      console.log('res', res)
+      const id = res?._id
+      if (!id) {
+        throw new Error("Order ID not found in the response.");
+      }
+      dispatch(clearCartItems())
+      navigate(`/order-success?id=${id}`)
     } catch (error) {
       toast.error(error);
     }
@@ -157,20 +166,20 @@ const Checkout = () => {
                         <Card.Body>
                           <div className="d-flex justify-content-between">
                             <p className="mb-2">Total price:</p>
-                            <p className="mb-2">$329.00</p>
+                            <p className="mb-2">₹{subtotal.toFixed(2)}</p>
                           </div>
                           <div className="d-flex justify-content-between">
                             <p className="mb-2">Discount:</p>
-                            <p className="mb-2 text-success">-$60.00</p>
+                            <p className="mb-2 text-success">-₹{discount.toFixed(2)}</p>
                           </div>
                           <div className="d-flex justify-content-between">
                             <p className="mb-2">TAX:</p>
-                            <p className="mb-2">$14.00</p>
+                            <p className="mb-2">₹{tax.toFixed(2)}</p>
                           </div>
                           <hr />
                           <div className="d-flex justify-content-between">
                             <p className="mb-2">Total price:</p>
-                            <p className="mb-2 fw-bold">$283.00</p>
+                            <p className="mb-2 fw-bold">₹{total.toFixed(2)}</p>
                           </div>
                           <div className="mt-3">
                             <Button className="w-100 shadow-0 mb-2 button-custom" onClick={handleContinue}>
@@ -327,7 +336,7 @@ const Checkout = () => {
           <Modal.Title>Confirm Your Order</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Your total order amount is <strong>${total.toFixed(2)}</strong></p>
+          <p>Your total order amount is <strong>₹{total.toFixed(2)}</strong></p>
           <p>Do you want to place the order?</p>
         </Modal.Body>
         <Modal.Footer>
@@ -335,7 +344,7 @@ const Checkout = () => {
             Cancel
           </Button>
           <Button variant="success" onClick={handlePlaceOrder}>
-            Place Order at ${total.toFixed(2)}
+            Place Order at ₹{total.toFixed(2)}
           </Button>
         </Modal.Footer>
       </Modal>

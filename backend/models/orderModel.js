@@ -1,13 +1,8 @@
 const mongoose = require('mongoose');
 
-async function generateOrderId() {
-  const { nanoid } = await import("nanoid");
-  return `ORD-${nanoid(10)}`;
-}
-
 const orderSchema = new mongoose.Schema(
   {
-    orderId: { type: String, unique: true, default: async () => await generateOrderId()  },
+    orderId: { type: String, unique: true  },
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Payment',
@@ -35,7 +30,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'delivered', 'cancelled'],
+      enum: ['pending', 'delivered', 'cancelled','returned','shipped'],
       default: 'pending',
     },
     totalPrice: {
@@ -44,8 +39,16 @@ const orderSchema = new mongoose.Schema(
     },
     items: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        qty: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
       },
     ],
     couponId: {
@@ -55,7 +58,7 @@ const orderSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
+    timestamps: true, 
   }
 );
 

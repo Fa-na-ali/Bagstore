@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Category = require("../models/categoryModel.js");
+const Product = require('../models/productModel.js');
 
 //add category
 const addCategory = async (req, res) => {

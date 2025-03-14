@@ -1,27 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Form, Image } from "react-bootstrap";
 import { FaHeart, FaTrash, FaMinus, FaPlus } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { addToCart,removeFromCart } from "../../redux/features/cart/cartSlice";
+import { addToCart, removeFromCart, syncCartWithDatabase, updateCartItemQuantity,} from "../../redux/features/cart/cartSlice";
+import { useGetProductsByIdsQuery } from "../../redux/api/productApiSlice";
 
 const Cart = () => {
 
-const navigate = useNavigate();
-const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  const cart = useSelector((state) => state.cart);
+  const { cartItems } = cart;
+  console.log(cartItems )
+  const imageBaseUrl = "http://localhost:5004/uploads/";
+  const maximum = 5
 
-const cart = useSelector((state) => state.cart);
-const { cartItems } = cart;
-const imageBaseUrl = "http://localhost:5004/uploads/";
+  const productIds = cartItems.map((item) => item._id);
+  const { data: latestProducts } = useGetProductsByIdsQuery(productIds);
 
-const addToCartHandler = (product, qty) => {
-  if (qty < 1 || qty > 5) return; 
-dispatch(addToCart({ ...product, qty }));
-};
-const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-const discount = subtotal * 0.1; 
-const tax = subtotal * 0.05; 
-const total = subtotal - discount + tax;
+  useEffect(() => {
+    if (latestProducts) {
+      dispatch(syncCartWithDatabase(latestProducts));
+    }
+  }, [latestProducts, dispatch]);
+
+
+
+  const isAnyItemOutOfStock = () => {
+    return cartItems.some((item) => item.quantity===0
+  
+    );
+  };
+
+  const updateQuantityHandler = (product, qty) => {
+    
+    const maxAllowed = Math.min(maximum, product?.quantity);
+    if (qty < 1 || qty > maxAllowed) {
+      toast.error(`You can only add up to ${maxAllowed} units of this product`);
+      return;
+    }
+    
+    dispatch(updateCartItemQuantity({ productId: product._id, qty }))
+    
+  };
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const discount = subtotal * 0.1;
+  const tax = subtotal * 0.05;
+  const total = subtotal - discount + tax;
   return (
     <section className="bg-light my-5">
       <Container>
@@ -51,31 +78,32 @@ const total = subtotal - discount + tax;
                       <Col lg={4} md={6} className="mb-4 mb-lg-0">
 
                         <div className="d-flex mb-4" style={{ maxWidth: "300px" }}>
-                          <Button variant="primary" className="px-3 me-2" onClick={()=>addToCartHandler(item,item.qty-1)}
-                             disabled={item.qty <= 1}>
+                          <Button variant="primary" className="px-3 me-2" onClick={() => updateQuantityHandler(item, item.qty - 1)}
+                            disabled={item.qty <= 1}>
                             <FaMinus />
                           </Button>
                           <Form.Control
                             type="number"
                             min="1"
+                            max={Math.min(maximum,item.quantity)}
                             value={item.qty}
                             onChange={(e) => {
                               let value = Number(e.target.value);
-                              if (value >= 1 && value <= 5) {
-                                addToCartHandler(item, value);
+                              if (value >= 1 && value <=  Math.min(maximum, item.quantity)) {
+                                updateQuantityHandler(item, value);
                               }
                             }}
-                            
+
                             className="text-center"
                           />
-                          <Button variant="primary" className="px-3 ms-2" onClick={()=>addToCartHandler(item,item.qty+1)}
-                            disabled={item.qty >= 5}>
+                          <Button variant="primary" className="px-3 ms-2" onClick={() => updateQuantityHandler(item, item.qty + 1)}
+                            disabled={item.qty >= Math.min(maximum, item.quantity)}>
                             <FaPlus />
                           </Button>
                         </div>
                       </Col>
                       <Col>
-                      <p className="text-muted py-2 ms-5">₹{item.price}</p></Col>
+                        <p className="text-muted py-2 ms-5">₹{item.price}</p></Col>
                       <Col lg className="d-flex justify-content-sm-center justify-content-md-start justify-content-lg-center justify-content-xl-end mb-2">
                         <div className="float-md-end">
                           <Button variant="danger" className="border px-2">
@@ -87,8 +115,8 @@ const total = subtotal - discount + tax;
                         </div>
                       </Col>
                     </Row>
-                    ))
-                  )}
+                  ))
+                )}
               </Card.Body>
             </Card>
           </Col>
@@ -97,23 +125,26 @@ const total = subtotal - discount + tax;
               <Card.Body>
                 <div className="d-flex justify-content-between">
                   <p className="mb-2">Total price:</p>
-                  <p className="mb-2">$329.00</p>
+                  <p className="mb-2">₹{subtotal.toFixed(2)}</p>
                 </div>
                 <div className="d-flex justify-content-between">
                   <p className="mb-2">Discount:</p>
-                  <p className="mb-2 text-success">-$60.00</p>
+                  <p className="mb-2 text-success">-₹{discount.toFixed(2)}</p>
                 </div>
                 <div className="d-flex justify-content-between">
                   <p className="mb-2">TAX:</p>
-                  <p className="mb-2">$14.00</p>
+                  <p className="mb-2">₹{tax.toFixed(2)}</p>
                 </div>
                 <hr />
                 <div className="d-flex justify-content-between">
                   <p className="mb-2">Total price:</p>
-                  <p className="mb-2 fw-bold">$283.00</p>
+                  <p className="mb-2 fw-bold">₹{total.toFixed(2)}</p>
                 </div>
                 <div className="mt-3">
-                  <Button  className="w-100 shadow-0 mb-2 button-custom" onClick={() => { navigate('/checkout') }}>
+                  <Button className="w-100 shadow-0 mb-2 button-custom" 
+                  onClick={() => { navigate('/checkout') }}
+                  disabled={isAnyItemOutOfStock() || cartItems.length === 0}
+                  >
                     CHECKOUT
                   </Button>
                   <Button variant="light" className="w-100 border mt-2">

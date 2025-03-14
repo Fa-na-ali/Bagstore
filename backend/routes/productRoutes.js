@@ -1,10 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const { authorizeAdmin, authenticate } = require('../middlewares/authMiddleware')
-const { addProduct, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts, newProducts, fetchRelatedProducts, filterProducts, } = require('../controllers/productController')
+const { addProduct, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts, newProducts, fetchRelatedProducts, filterProducts,getQuantity } = require('../controllers/productController')
 const imageUpload = require('../imageUpload')
 
 router.route('/new').get(newProducts)
+router.route('/idarray').get(getQuantity)
 router.route('/shop-products').get(authenticate,filterProducts)
 router.route('/')
     .get(authenticate, authorizeAdmin, fetchProducts)

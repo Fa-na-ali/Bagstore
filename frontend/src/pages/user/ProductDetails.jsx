@@ -1,4 +1,4 @@
-import React from 'react'
+import React ,{useState} from 'react'
 import { productApiSlice, useDeleteImageMutation, useFetchRelatedProductsQuery, useGetProductByIdQuery, useUpdateProductMutation } from '../../redux/api/productApiSlice';
 import { useNavigate, useParams } from 'react-router';
 import { Row, Col, Container, Button, Card, Modal, Image } from 'react-bootstrap'
@@ -15,6 +15,7 @@ const ProductDetails = () => {
   const dispatch = useDispatch()
   const { data: product, refetch, isLoading, isError } = useGetProductByIdQuery(id);
   const imageBaseUrl = "http://localhost:5004/uploads/";
+  const [quantity, setQuantity] = useState(1);
   
   console.log(product?._id)
   const { data: products } = useFetchRelatedProductsQuery(id)
@@ -32,10 +33,12 @@ const ProductDetails = () => {
   if (!product) {
     return <div>Product not found.</div>;
   }
-  const addToCartHandler = (product, qty) => {
-    dispatch(addToCart({ ...product, qty }));
-    toast.success("Item added successfully")
+  
+  const addToCartHandler = () => {
+    dispatch(addToCart({ ...product, qty: quantity })); 
+    toast.success("Item added successfully");
   };
+
 
 
   return (
@@ -78,7 +81,7 @@ const ProductDetails = () => {
               <h2 className="mb-3 caption">{product.name}</h2>
               <p className="text-muted mb-4 caption">ID: {product._id}</p>
               <div className="mb-3">
-                <span className="h6 me-2 caption">Price: ${product.price}</span>
+                <span className="h6 me-2 caption">Price: ₹{product.price}</span>
 
               </div>
               <div className="mb-3">
@@ -113,17 +116,23 @@ const ProductDetails = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="quantity" className="form-label caption">Quantity</label>
+              <label htmlFor="quantity" className="form-label caption">
+                  Quantity
+                </label>
                 <input
                   type="number"
                   className="form-control"
                   id="quantity"
-                  value={product.quantity}
+                  value={quantity} 
                   min={1}
-                  style={{ width: '80px' }}
+                  max={5}
+                  onChange={(e) => setQuantity(Number(e.target.value))} 
+                  style={{ width: "80px" }}
                 />
               </div>
-              <Button size="lg" className="mb-3 me-2 button-custom" onClick={()=>addToCartHandler(product,1)}>
+              <Button size="lg" className="mb-3 me-2 button-custom" 
+              onClick={addToCartHandler}
+              disabled={product.quantity===0}>
                 <i className="bi bi-cart-plus"></i> Add to Cart
               </Button>
               <Button variant="outline-secondary" size="lg" className="mb-3">

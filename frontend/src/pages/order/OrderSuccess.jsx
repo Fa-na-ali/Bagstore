@@ -1,36 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button, Form, Image,Modal } from "react-bootstrap";
-import { FaTrash, FaCcMastercard, FaCcVisa, FaCcPaypal } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
-import { useProfileQuery } from "../../redux/api/usersApiSlice";
-import { saveShippingAddress } from "../../redux/features/cart/cartSlice";
-import { GiReceiveMoney } from "react-icons/gi";
-import { BsWallet2 } from "react-icons/bs";
+import { Container, Row, Col, Card, Button, } from "react-bootstrap";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 
 const OrderSuccess = () => {
-    const cart = useSelector((state) => state.cart);
-    const { cartItems } = cart;
-    const {shippingAddress} = cart
-    const imageBaseUrl = "http://localhost:5004/uploads/";
+
+
+    const navigate = useNavigate()
+    const { search } = useLocation();
+    const sp = new URLSearchParams(search);
+    const id = sp.get("id") || "";
+    console.log("id",id)
+
     return (
 
         <>
-            <section className="h-100 h-custom" style={{ backgroundColor: "#eee" }}>
+            <section className="vh-100 h-custom background">
                 <Container className="py-5 h-100">
                     <Row className="d-flex justify-content-center align-items-center h-100">
                         <Col>
                             <Card>
                                 <Card.Body className="p-4">
                                     <Row>
-                                        <h2 className="">Thank You for your Order</h2>
-                                        <h3>Your Order has been placed successfully</h3>
-                                        <p>We will notify you when your items have been shipped</p>
+                                        <h2 className="text-center text-success">Thank You for your Order</h2>
+                                        <h3 className="text-center text-success">Your Order has been placed successfully</h3>
+                                        <p className="text-center caption">We will notify you when your items have been shipped</p>
                                         <hr />
-                                        <h2>Order Summary</h2>
+                                        <div className="d-flex justify-content-center align-items-center gap-3">
+                                            <Button variant="" className="border me-2 button-custom" onClick={() => { navigate(`/order-details/${id}`) }}>
+                                                Order Details
+                                            </Button>
+                                            <Button variant="success" className="shadow-0 border button-custom" onClick={() => { navigate('/shop-products') }}>
+                                                Continue Shopping
+                                            </Button>
+                                        </div>
 
-                                        
+
                                     </Row>
 
                                 </Card.Body>

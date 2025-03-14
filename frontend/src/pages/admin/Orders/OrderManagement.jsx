@@ -32,13 +32,15 @@ const OrderManagement = () => {
     }, [refetch]);
 
   const columns = [
+    { key: "orderId", label: "OrderID" },
 
     {
       key: "userId",
       label: "User",
        
     },
-    { key: "status", label: "Status" }
+    { key: "createdAt", label: "Date" },
+   
   ];
 
   

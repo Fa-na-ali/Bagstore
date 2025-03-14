@@ -22,7 +22,7 @@ const authenticate = async (req, res, next) => {
 
     } catch (error) {
       if (error.name === "TokenExpiredError") {
-        return res.status(401).json({ message: "Token expired" }); // Let frontend handle refresh
+        return res.status(401).json({ message: "Token expired" }); 
       }
       return res.status(401).json({ message: "Not authorized, token invalid" });
     }

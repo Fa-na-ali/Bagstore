@@ -27,7 +27,7 @@ const AdminSidebar=()=>{
             <BiSolidCategory  className="me-3" />
             Category
           </Nav.Link>
-          <Nav.Link href="#" className="py-2 ripple text-white">
+          <Nav.Link as={Link} to='/admin/orders'  className="py-2 ripple text-white">
             <FiShoppingBag className="me-3" />
             Orders
           </Nav.Link>

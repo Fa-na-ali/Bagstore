@@ -56,8 +56,8 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                             </Badge>
                           )
                         ) : 
-                          col.key === "userId" ? (
-                            item.userId?.name || "No Name"
+                          col.key === "userId" || col.key === "category" ? (
+                            item.userId?.name || item.category?.name
                           ) : (
                             item[col.key]
                           )}

@@ -6,6 +6,10 @@
     background-color: #EDE6DF;
 }
 
+.full-height{
+    height:100vh;
+}
+
 .background-two {
     background-color: #0B485D !important;
 }

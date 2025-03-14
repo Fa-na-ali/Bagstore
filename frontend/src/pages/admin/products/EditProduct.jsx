@@ -24,7 +24,7 @@ const EditProduct = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
   const [brand, setBrand] = useState("");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
@@ -252,7 +252,7 @@ const EditProduct = () => {
 
                     <Form.Control
                       type="number"
-                      min="1"
+                      min="0"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
                       className="text-center"

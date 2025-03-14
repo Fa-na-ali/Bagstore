@@ -27,6 +27,7 @@ const EditProfile = () => {
         const userData = { name, email, phone };
         try {
             const response = await update(userData).unwrap();
+             navigate(`/verify-email?email=${email}`)
             console.log("Updated User Data:", response);  
             toast.success("User Edited successfully!"); 
             refetch(); 

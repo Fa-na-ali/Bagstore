@@ -117,6 +117,16 @@ const deleteImage = async (req, res) => {
   }
 }
 
+//to get product quantity
+const getQuantity = async(req,res)=>{
+  const ids = req.query.ids?.split(",") || [];
+  try {
+    const products = await Product.find({ _id: { $in: ids } });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+}
 
 //to get a particular product
 const readProduct = async (req, res) => {
@@ -150,7 +160,7 @@ const fetchProducts = async (req, res) => {
 
     const count = await Product.countDocuments({ ...keyword });
     console.log("count", count)
-    const products = await Product.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+    const products = await Product.find({ ...keyword }).populate("category", "name -_id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
     console.log("products", products)
     res.json({
       products,
@@ -336,7 +346,8 @@ module.exports = {
   updateProduct,
   fetchProducts,
   fetchRelatedProducts,
-  filterProducts
+  filterProducts,
+  getQuantity,
 }
 
 

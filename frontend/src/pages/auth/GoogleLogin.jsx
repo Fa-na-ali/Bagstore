@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from "react-redux";
 import { Button } from "react-bootstrap";
 import { setCredentials } from "../../redux/features/auth/authSlice";
+import { toast } from "react-toastify";
 
 const GoolgeLogin = (props) => {
     const [user, setUser] = useState(null);
@@ -29,9 +30,11 @@ const GoolgeLogin = (props) => {
                 } else if (isExist) {
                     navigate("/");
                 }
+                else
+                    toast.error("You are blocked")
             } else {
                 console.log(authResult);
-                throw new Error(authResult);
+                toast.error("Login Error")
             }
         } catch (e) {
             console.log('Error while Google Login...', e);
