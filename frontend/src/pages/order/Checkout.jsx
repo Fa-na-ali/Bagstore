@@ -30,7 +30,7 @@ const Checkout = () => {
 
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [saveShipping, setSaveShipping] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState("credit");
+  const [selectedPayment, setSelectedPayment] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -282,7 +282,7 @@ const Checkout = () => {
                               {/* Debit Card */}
                               <Col md={4}>
                                 <div
-                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "wallet" ? "border-primary" : ""}`}
+                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "Wallet" ? "border-primary" : ""}`}
                                   onClick={() => setSelectedPayment("Wallet")}
                                   style={{ cursor: "pointer" }}
                                 >
@@ -301,7 +301,7 @@ const Checkout = () => {
                               {/* PayPal */}
                               <Col md={4}>
                                 <div
-                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "paypal" ? "border-primary" : ""}`}
+                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "Paypal" ? "border-primary" : ""}`}
                                   onClick={() => setSelectedPayment("Paypal")}
                                   style={{ cursor: "pointer" }}
                                 >

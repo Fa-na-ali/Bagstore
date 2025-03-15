@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router';
 import { Container, Row, Col, Card, Button, Table, Image, Form } from "react-bootstrap";
-import { useGetOrderDetailsQuery } from '../../../redux/api/ordersApiSlice';
+import { useGetOrderDetailsQuery, useSetItemStatusMutation } from '../../../redux/api/ordersApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar'
-
+import {toast} from 'react-toastify'
 
 
 const OrderDetails = () => {
@@ -14,16 +14,30 @@ const OrderDetails = () => {
 
   const { data: order, error, isLoading, } = useGetOrderDetailsQuery(id);
   const imageBaseUrl = "http://localhost:5004/uploads/";
+  const [itemStatuses, setItemStatuses] = useState({});
+
   const [orderStatus, setOrderStatus] = useState(order?.status);
+  const [setItemStatus] = useSetItemStatusMutation();
   console.log("API Response order:", order);
   console.log("Error:", error);
 
+  useEffect(() => {
+    if (order?.items) {
+      const initialStatuses = order.items.reduce((acc, item) => {
+        acc[item._id] = item.status;  
+        return acc;
+      }, {});
+      setItemStatuses(initialStatuses);
+    }
+  }, [order]);  
+
   if (isLoading) return <div>Loading...</div>;
   if (error) {
-    // Handle HTML responses
+    
     if (error.originalStatus === 404) {
       return <div>Error: Order not found</div>;
     }
+
     return (
       <div>
         <h3>Error</h3>
@@ -32,18 +46,38 @@ const OrderDetails = () => {
       </div>
     );
   }
-  const handleStatusChange = (newStatus) => {
+
+  const handleOrderStatusChange = (newStatus) => {
     setOrderStatus(newStatus);
   };
 
-  const handleSaveChanges = () => {
-    console.log("Saving order status:", orderStatus);
-    // Call API to update order status
+  const handleItemStatusChange = (itemId, newStatus) => {
+    setItemStatuses((prevStatuses) => ({
+      ...prevStatuses,
+      [itemId]: newStatus,
+    }));
   };
+
+  const handleReturnAction = (itemId, action) => {
+    console.log(`Return action: ${action} for item: ${itemId}`);
+    // TODO: Call API to update return status
+  };
+
+  const handleSaveChanges = async(status,item,id) => {
+    try {
+      await setItemStatus({ status,item,id });
+      toast.success("Item status updated successfully")
+    } catch (error) {
+      console.error("Error updating item status:", error);
+    }
+  };
+
   const handleOrderStatus = () => {
 
   }
+
   const address = order?.shippingAddress
+
   return (
     <>
       <Container fluid>
@@ -139,16 +173,45 @@ const OrderDetails = () => {
                         <p className="mb-0 fw-bold">{item.product.price * item.qty}</p>
                       </td>
                       <td className="align-middle">
-                        <Form.Select value={orderStatus} onChange={handleStatusChange}>
-                          <option value="pending">Pending</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
-                        </Form.Select>
+                        {item.status === "cancelled" ? (
+                          <p className="mb-0 fw-bold text-danger">Cancelled</p>
+                        ) : item.status === "returned" ? (
+                          <div>
+                            <p className="mb-0 fw-bold text-warning">Return Request</p>
+                            <p className="mb-0"><strong>Reason:</strong> {item.cancelReason}</p>
+                            <Button
+                              className="me-2"
+                              variant="success"
+                              size="sm"
+                              onClick={() => handleReturnAction(item._id, "approved")}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleReturnAction(item._id, "rejected")}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        ) : (
+                          <Form.Select
+                            value={itemStatuses[item._id]}
+                            onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                          </Form.Select>
+                        )}
                       </td>
                       <td className="align-middle">
-                        <Button className='button-custom' size="sm" onClick={handleSaveChanges}>
-                          Save Changes
-                        </Button>
+                        {item.status !== "cancelled" && item.status !== "returned" && (
+                          <Button className='button-custom' size="sm" onClick={()=>handleSaveChanges(itemStatuses[item._id],item,order._id)}>
+                            Save Changes
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -156,14 +219,13 @@ const OrderDetails = () => {
               </Table>
             </div>
             <Col md={12}>
-              <div className='ms-2 '>
+              <div className='ms-2'>
                 <h5>Order Status</h5>
                 <Row>
                   <Col md={4}>
-                    <Form.Select value={orderStatus} onChange={handleStatusChange}>
-                      <option value="pending">Pending</option>
+                    <Form.Select value={orderStatus} onChange={handleOrderStatusChange}>
                       <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
+                      <option value="cancelled">Not Completed</option>
                     </Form.Select>
                   </Col>
                   <Col md={5}>

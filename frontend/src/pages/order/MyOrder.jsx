@@ -1,9 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
-import { useGetMyOrdersQuery } from '../../redux/api/ordersApiSlice'
+import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 
 const MyOrder = () => {
-  const { data: orders, isLoading, error } = useGetMyOrdersQuery();
+  const { data: orders,refetch, isLoading, error } = useGetMyOrdersQuery();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cancelOrder] = useCancelOrderMutation();
+  const [returnOrder] = useReturnOrderMutation();
 
   console.log("API Response:", orders);
 
@@ -11,10 +19,54 @@ const MyOrder = () => {
   if (error) return <p>Error loading orders</p>;
   const imageBaseUrl = "http://localhost:5004/uploads/";
 
-  const handleCancelOrder = (orderId) => {
-    console.log("Cancel order:", orderId);
-
+  const handleCancelClick = (orderId, item) => {
+    setSelectedOrder(orderId);
+    setSelectedProduct(item);
+    setShowConfirmModal(true);
   };
+
+  const handleCancelOrder =async(orderId,item) => {
+    try {
+      setShowReasonModal(false);
+  
+      const response = await cancelOrder({
+        orderId,
+        item,
+        cancelReason: selectedReason,
+      }).unwrap();
+  
+      console.log("Order cancellation successful:", response );
+      refetch();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      alert(error?.data?.message || "Failed to cancel order. Please try again.");
+    }
+  
+  };
+
+  const handleReturnOrder = async (orderId,item) => {
+    try {
+      setShowReturnModal(false);
+
+      const response = await returnOrder({
+        orderId,
+        item,
+        returnReason: selectedReason,
+      }).unwrap();
+
+      console.log("Return request successful:", response);
+      refetch();
+    } catch (error) {
+      console.error("Error requesting return:", error);
+      alert(error?.data?.message || "Failed to request return. Please try again.");
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmModal(false);
+    setShowReasonModal(true);
+  };
+
   return (
     <>
 
@@ -84,7 +136,7 @@ const MyOrder = () => {
                                           <Button
                                             variant="danger"
                                             size="sm"
-                                            onClick={() => handleCancelOrder(order._id)}
+                                            onClick={() => handleCancelClick(order._id,item)}
                                           >
                                             Cancel
                                           </Button>
@@ -92,7 +144,7 @@ const MyOrder = () => {
                                           <Button
                                             variant="primary"
                                             size="sm"
-                                            onClick={() => handleReturnOrder(order._id)}
+                                            onClick={() => handleReturnOrder(order._id,item)}
                                           >
                                             Return
                                           </Button>
@@ -117,6 +169,71 @@ const MyOrder = () => {
             </Col>
           </Row></Container>
       </section>
+
+       {/* Confirmation Modal */}
+       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Cancellation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to cancel this order?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>No</Button>
+          <Button variant="danger" onClick={handleConfirmCancel}>Yes, Cancel</Button>
+        </Modal.Footer>
+      </Modal>
+
+       {/* Cancellation Reason Modal */}
+       <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Choose a Reason</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Select a cancellation reason:</Form.Label>
+              <Form.Control as="select" value={selectedReason} onChange={(e) => setSelectedReason(e.target.value)}>
+                <option value="">-- Select Reason --</option>
+                <option value="Ordered by mistake">Ordered by mistake</option>
+                <option value="Found a better price">Found a better price</option>
+                <option value="Changed my mind">Changed my mind</option>
+                <option value="Shipping took too long">Shipping took too long</option>
+                <option value="Product details incorrect">Product details incorrect</option>
+                <option value="Other">Other</option>
+              </Form.Control>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReasonModal(false)}>Cancel</Button>
+          <Button variant="danger" onClick={handleCancelOrder} disabled={!selectedReason}>Submit</Button>
+        </Modal.Footer>
+      </Modal>
+
+       {/* Return Reason Modal */}
+       <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Return Request</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Select a return reason:</Form.Label>
+              <Form.Control as="select" value={selectedReason} onChange={(e) => setSelectedReason(e.target.value)}>
+                <option value="">-- Select Reason --</option>
+                <option value="Defective or damaged product">Defective or damaged product</option>
+                <option value="Wrong item delivered">Wrong item delivered</option>
+                <option value="Item not as described">Item not as described</option>
+                <option value="Changed my mind">Changed my mind</option>
+                <option value="Other">Other</option>
+              </Form.Control>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReturnModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleReturnOrder} disabled={!selectedReason}>Submit Return</Button>
+        </Modal.Footer>
+      </Modal>
 
     </>
   )

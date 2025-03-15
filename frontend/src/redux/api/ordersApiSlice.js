@@ -26,11 +26,29 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
     }),
 
     cancelOrder: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/cancel/${orderId}`,
+      query: ({orderId,item,cancelReason}) => ({
+        url: `${ORDERS_URL}/cancel`,
         method: "PUT",
+        body: { orderId, item, cancelReason },
       }),
-      invalidatesTags: ["Order"], // Invalidate cache to update UI
+      invalidatesTags: ["Order"], 
+    }),
+
+    setItemStatus: builder.mutation({
+      query: ({ status,item,id }) => ({
+        url: `${ORDERS_URL}/save-item-status`,
+        method: "PUT",
+        body: { status,item,id},
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
+    returnOrder: builder.mutation({
+      query: ({ orderId, item, returnReason }) => ({
+        url: `${ORDERS_URL}/return-request`,
+        method: "POST",
+        body: { orderId, item, returnReason },
+      }),
     }),
 
     getAllOrders: builder.query({
@@ -61,4 +79,7 @@ export const { useCreateOrderMutation,
   useGetOrderDetailsQuery,
   useGetOrderByIdQuery,
   useGetMyOrdersQuery,
+  useSetItemStatusMutation,
+  useCancelOrderMutation,
+  useReturnOrderMutation,
   useGetAllOrdersQuery } = ordersApiSlice;

@@ -1,7 +1,8 @@
 const Order = require('../models/orderModel');
 const User = require('../models/userModel');
 const Product = require('../models/productModel')
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const Payment = require('../models/paymentModel');
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -9,59 +10,82 @@ async function generateOrderId() {
 }
 //create order
 const createOrder = async (req, res) => {
-  console.log("Order request body:", req.body);
-  const orderId = await generateOrderId();
-  const {
-    userId,
-    items,
-    shippingAddress,
-    paymentMethod,
+  try {
+    console.log("Order request body:", req.body);
+    const orderId = await generateOrderId();
+    const { userId, items, shippingAddress, paymentMethod, totalPrice, couponId } = req.body;
 
-    totalPrice,
-    couponId,
-  } = req.body;
-
-  if (!items || items.length === 0) {
-    res.status(400).json({ message: "No items in the order" })
-
-  }
-  const validatedItems = items.map((item) => {
-    if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-      throw new Error('Each item must have a valid product ID');
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: "No items in the order" });
     }
-    if (!item.qty || item.qty < 1) {
-      throw new Error(`Invalid quantity for product ${item.product}`);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
-    return { product: item.product, qty: item.qty };
-  });
 
-  const order = new Order({
-    orderId,
-    userId,
-    items: validatedItems,
-    shippingAddress,
-    paymentMethod,
-    status:'not completed',
-    totalPrice,
-    couponId,
-  });
+    const validatedItems = items.map((item) => {
+      if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+        throw new Error("Each item must have a valid product ID");
+      }
+      if (!item.qty || item.qty < 1) {
+        throw new Error(`Invalid quantity for product ${item.product}`);
+      }
+      return { product: item.product, qty: item.qty, status: "pending" };
+    });
 
-  const createdOrder = await order.save();
-  console.log("order created")
-  if (paymentMethod === "COD") {
-    await Promise.all(
-      validatedItems.map(async (item) => {
-        const product = await Product.findById(item.product);
-        if (product) {
-          product.stock -= item.qty;
-          await product.save();
-        }
-      })
-    );
-    console.log("Stock updated for COD order");
+    if (paymentMethod === "cod" && totalPrice > 1000) {
+      return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
+    }
+
+    const order = new Order({
+      orderId,
+      userId,
+      items: validatedItems,
+      shippingAddress,
+      paymentMethod,
+      status: "not completed",
+      totalPrice,
+      couponId,
+    });
+
+    const createdOrder = await order.save();
+    console.log("Order created successfully");
+
+    const payment = new Payment({
+      userId: user._id,
+      method: paymentMethod,
+      amount: totalPrice,
+      orderId: createdOrder._id,
+    });
+
+    await payment.save();
+    console.log("Payment recorded successfully");
+
+    if (paymentMethod === "Cash On Delivery") {
+      await Promise.all(
+        createdOrder.items.map(async (item) => {
+          const product = await Product.findById(item.product);
+          if (product) {
+            console.log(`Before Update - Product: ${product._id}, Stock: ${product.quantity}`);
+            product.quantity -= item.qty;
+            await product.save();
+            console.log(`After Update - Product: ${product._id}, Stock: ${product.quantity}`);
+          } else {
+            console.log(`Product not found: ${item.product}`);
+          }
+        })
+      );
+      console.log("Stock updated for COD order");
+    }
+
+    res.status(201).json(createdOrder);
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-  res.status(201).json(createdOrder);
 };
+
 
 //get my orders
 const getMyOrders = async (req, res) => {
@@ -75,7 +99,51 @@ const getMyOrders = async (req, res) => {
   }
 };
 
+//cancel order
+const cancelOrder = async (req, res) => {
+  try {
+    const { orderId, item, cancelReason } = req.body;
+    console.log(req.body)
 
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const order = await Order.findOne({ _id: orderId, userId: user._id });
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
+    if (!orderItem) {
+      return res.status(404).json({ message: "Item not found in order" });
+    }
+
+    if (orderItem.status !== "pending") {
+      return res.status(400).json({ message: "Order can only be cancelled in pending state" });
+    }
+
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.quantity += orderItem.qty;
+      await product.save();
+    }
+
+    orderItem.status = "cancelled";
+    orderItem.cancel_reason = cancelReason || "Not specified";
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order item cancelled successfully",
+    });
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 const getAllOrders = async (req, res) => {
 
@@ -140,6 +208,46 @@ const findOrderById = async (req, res) => {
   }
 };
 
+//set product/item status
+const setItemStatus = async (req, res) => {
+  try {
+    const { status, item, id } = req.body;
+     console.log("req",req.body)
+    if (status == "delivered") {
+      const payment = await Payment.findOne({ orderId: id });
+      if (!payment) {
+        return res.status(400).json({ success: false, message: "Payment not found for this order" });
+      }
+
+      if (payment.status == "pending") {
+        await Payment.updateOne({ _id: payment._id }, { $set: { status: "success" } });
+      }
+    }
+
+    const order = await Order.findOne({ _id: id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
+     console.log("item",orderItem)
+    if (!orderItem) {
+      return res.status(404).json({ message: "Item not found in order" });
+    }
+
+    orderItem.status = status
+
+    await order.save();
+  console.log("status saved",order)
+    return res.status(200).json({ success: true, message: `Order status updated successfully` });
+
+  } catch (error) {
+    console.log("Error in set order status" + error)
+    return res.status(500).json({ success: false, message: `An error occurred` });
+  }
+};
+
 
 
 
@@ -149,7 +257,9 @@ const findOrderById = async (req, res) => {
 
 module.exports = {
   createOrder,
+  cancelOrder,
   getMyOrders,
   getAllOrders,
   findOrderById,
+  setItemStatus,
 }

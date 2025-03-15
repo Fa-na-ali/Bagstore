@@ -4,13 +4,13 @@ const paymentSchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: ["pending", "completed", "failed"],
+      enum: ["pending", "success", "failed", 'refund'],
       required: true,
       default: "pending",
     },
     method: {
       type: String,
-      enum: ["cod", "upi", "wallet", "card"],
+      enum: ["Cash On Delivery", "Paypal", "Wallet",],
       required: true,
     },
     amount: {
@@ -28,9 +28,14 @@ const paymentSchema = new mongoose.Schema(
       ref: "Order",
       required: true,
     },
+    delivery_fee: {
+      type: Number,
+      required: false,
+      default: 0
+    },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 
