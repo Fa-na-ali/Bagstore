@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const Category = require("../models/categoryModel.js");
 const Product = require('../models/productModel.js');
+const STATUS_CODES = require('../middlewares/statusCodes.js');
+const { USR_ID_MISSING, USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_NOT_FOUND } = require('../categoryMsgConstants.js');
 
 //add category
 const addCategory = async (req, res) => {
@@ -8,18 +10,25 @@ console.log("hhhh")
   try {
     const { name } = req.body;
     if (!req.user?._id) {
-      return res.status(401).json({ message: "Unauthorized, user ID missing" });
+      return res.status(STATUS_CODES.UNAUTHORIZED).json({
+         message: USR_ID_MISSING });
     }
   console.log(name)
 
     if (!name) {
-      return res.json({ error: "Name is required" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ 
+        status:"error",
+        message:USR_NAME_RQD,
+       });
     }
 
     const existingCategory = await Category.findOne({name: name });
      console.log(existingCategory)
     if (existingCategory) {
-      return res.json({ message: "Already exists" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ 
+        status:"error",
+        message:CATEGORY_EXT,
+       });
     }
     const category = await Category.create({
       name,
@@ -27,11 +36,17 @@ console.log("hhhh")
       updatedBy: req.user._id,
 
     })
-
-    res.status(201).json(category);
+    return res.status(STATUS_CODES.OK).json({ 
+      status:"success",
+     category
+     });
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ message: error.message });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
+    
   }
 };
 //update category
@@ -41,18 +56,24 @@ const updateCategory = async (req, res) => {
     console.log("upadte",req.params)
     const category = await Category.findByIdAndUpdate({_id:req.params.id}, req.body, { new: true });
     if (!category) {
-      res.status(404);
-      throw new Error(`Category not found with  id ${req.params.id}`);
+      return res.status(STATUS_CODES.NOT_FOUND).json({ 
+        status:"error",
+       message:CATEGORY_NOT_FOUND
+      })
     }
     else {
-      res.json({
+      return res.status(STATUS_CODES.OK).json({ 
+        status:"success",
         _id: category._id,
         name: category.name,
       })
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
   }
 };
 //delete category
@@ -61,15 +82,24 @@ const deleteCategory = async (req, res) => {
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-      return res.status(404).json({ error: "Category not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ 
+        status:"error",
+       message:CATEGORY_NOT_FOUND
+      })
+      
     }
     category.isExist = false;
     await category.save();
-
-    res.json({ message: "Category deleted successfully (soft delete)", category });
+    return res.status(STATUS_CODES.OK).json({ 
+      status:"success",
+     message:CATEGORY_DLT_MSG,
+    })
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
   }
 };
 
@@ -77,10 +107,16 @@ const deleteCategory = async (req, res) => {
 const listCategory = async (req, res) => {
   try {
     const all = await Category.find({}).sort({ createdAt: -1 });
-    res.json(all);
+    return res.status(STATUS_CODES.OK).json({ 
+      status:"success",
+      all
+    })
   } catch (error) {
     console.log(error);
-    return res.status(400).json(error.message);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
   }
 };
 
@@ -88,10 +124,16 @@ const listCategory = async (req, res) => {
 const listExistCategory = async (req, res) => {
   try {
     const categories = await Category.find({ isExist: true });
-    res.staus(201).json(categories);
+    return res.status(STATUS_CODES.OK).json({ 
+      status:"success",
+      categories
+    })
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
   }
 }
 
@@ -102,10 +144,16 @@ const readCategory = async (req, res) => {
     const id = req.params.id;
     const category = await Category.findById({_id:id });
     console.log("read",category)
-    res.status(201).json(category);
+    return res.status(STATUS_CODES.OK).json({ 
+      status:"success",
+      category
+    })
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ message: error.message });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
   }
 };
 //fetch categories on search and pagination
@@ -127,16 +175,20 @@ const fetchCategories = async (req, res) => {
     console.log("count", count)
     const categories = await Category.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
     console.log("products", categories)
-    res.json({
+    return res.status(STATUS_CODES.OK).json({ 
+      status:"success",
       categories,
       count,
       page,
       pages: Math.ceil(count / pageSize),
       hasMore: page < Math.ceil(count / pageSize),
-    });
+     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+      status:"error",
+      message:error.message
+     });
   }
 };
 
@@ -149,10 +201,16 @@ const searchCategory = async (req, res) => {
     try {
       const all = await Category.find({ name: search });
       console.log("search", all)
-      res.status(200).json(all)
+      return res.status(STATUS_CODES.OK).json({ 
+        status:"success",
+        all
+       });
     } catch (error) {
       console.log(error);
-      return res.status(400).json({ message: error.message });
+      return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
+        status:"error",
+        message:error.message
+       });
     }
 };
 

@@ -8,6 +8,9 @@ const axios = require('axios');
 require("dotenv").config();
 const mongoose = require('mongoose')
 const Address = require('../models/addressModel')
+const responseHandler = require('./../middlewares/responseHandler');
+const { USER_VALIDATION_MSG, USER_EXT_MSG, USER_PASS_VALIDATION, USER_REG_MSG, USER_NOT_MSG, USER_LOGIN_MSG, USER_INVALID_MSG, USER_EMAIL_MSG, USER_OTP_MSG, USER_GOOGLE_MSG, USER_LOGOUT_MSG, USER_DELETE_MSG, USER_PASS_RESET_MSG, USER_ID_MSG, ADDRESS_EXIST_MSG, ADDRESS_ADD_MSG, ADDRESS_INVALID_MSG, ADDRESS_NOT_MSG, ADDRESS_UPDATE_MSG, ADDRESS_DELETE_MSG } = require("../messageConstants");
+const STATUS_CODES = require("../middlewares/statusCodes");
 
 const otpStore = new Map();
 //user registration
@@ -15,18 +18,27 @@ const userSignup = async (req, res) => {
     try {
         const { name, email, phone, password, confirmPassword } = req.body
         if (!email || !password || !name || !confirmPassword || !phone) {
-            res.status(400)
-            throw new Error("Please fill all the inputs")
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_VALIDATION_MSG,
+
+            })
         }
 
         const userExists = await User.findOne({ email })
         if (userExists) {
-            res.status(400).send("User already exists")
-            return;
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_EXT_MSG
+            })
+
         }
         if (password !== confirmPassword) {
-            res.status(400)
-            throw new Error("Passwords should match")
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_PASS_VALIDATION
+            })
+
         }
 
         const saltRounds = 10;
@@ -53,20 +65,22 @@ const userSignup = async (req, res) => {
         });
 
         console.log("OTP sent successfully to", email);
-        return res.status(201).json({
-            user,
-            message: "User registered successfully. OTP sent to email.",
-        });
-
+        res.status(STATUS_CODES.CREATED).json({
+            status: "success",
+            message: USER_REG_MSG,
+            user
+        })
 
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
+
     }
 }
 
 //user Login
-
-
 const userLogin = async (req, res) => {
     try {
 
@@ -75,26 +89,37 @@ const userLogin = async (req, res) => {
         const user = await User.findOne({ email }).populate("address");
         if (!user) {
             console.log("User not found!");
-            return res.status(400).json({ message: "User not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            })
         }
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch && user.isExist) {
             const { token, refreshToken } = generateToken(user);
             user.refreshToken = refreshToken;
             await user.save();
             console.log("Generated Token:", token);
-            res.status(201).json({ message: "Loggedin successfully", token, refreshToken, user });
-            return;
+            res.status(STATUS_CODES.OK).json({
+                status: "success",
+                message: USER_LOGIN_MSG,
+                token, refreshToken, user
+            })
+
         }
         else
-            res.status(400).json({ message: "Invalid credentials or blocked" })
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_INVALID_MSG,
 
-
+            })
 
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 
@@ -104,7 +129,10 @@ const resendOtp = async (req, res) => {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(400).json({ message: "Email is required" });
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_EMAIL_MSG
+            })
         }
         const otp = Math.floor(100000 + Math.random() * 900000);
         otpStore.set(email, { otp, expires: Date.now() + 300000 });
@@ -119,11 +147,17 @@ const resendOtp = async (req, res) => {
         });
 
         console.log("OTP sent successfully to", email);
-        res.status(200).json({ message: "OTP sent to email" });
+        res.status(STATUS_CODES.CREATED).json({
+            status: "success",
+            message: USER_OTP_MSG
+        })
 
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 
@@ -131,7 +165,10 @@ const resendOtp = async (req, res) => {
 const googleLogin = async (req, res) => {
     const code = req.query.code;
     if (!code) {
-        return res.status(400).json({ message: "Authorization code is missing!" });
+        res.status(STATUS_CODES.UNAUTHORIZED).json({
+            status: "error",
+            message: USER_GOOGLE_MSG
+        })
     }
     try {
         const googleRes = await oauth2Client.getToken(code);
@@ -156,16 +193,16 @@ const googleLogin = async (req, res) => {
             user.refreshToken = refreshToken;
             await user.save();
             console.log("token generated", token)
-            res.status(200).json({
-                message: 'success',
-                token,
-                refreshToken,
-                user,
-            });
+            res.status(STATUS_CODES.OK).json({
+                status: "success",
+                message: USER_LOGIN_MSG,
+                token, refreshToken, user
+            })
         }
     } catch (err) {
-        res.status(500).json({
-            message: err.message
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: err.msg
         })
     }
 
@@ -177,16 +214,24 @@ const logoutUser = async (req, res) => {
 
         const user = await User.findById(req.user._id);
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
         }
 
         user.refreshToken = null;
         await user.save();
-
-        res.status(200).json({ message: "Logged out successfully" });
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: USER_LOGOUT_MSG
+        });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 
 };
@@ -198,15 +243,23 @@ const deleteUser = async (req, res) => {
         const user = await User.findById(req.params.id);
 
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
         }
         user.isExist = false;
         await user.save();
-
-        res.json({ message: "User deleted successfully (soft delete)", user });
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: USER_DELETE_MSG
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 
@@ -252,16 +305,20 @@ const fetchUsers = async (req, res) => {
         console.log("count", count)
         const user = await User.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
         console.log("users", user)
-        res.json({
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
             user,
             count,
             page,
             pages: Math.ceil(count / pageSize),
-            hasMore: page < Math.ceil(count / pageSize),
-        });
+            hasMore: page < Math.ceil(count / pageSize)
+        })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 
@@ -272,10 +329,16 @@ const searchUser = async (req, res) => {
         try {
             const all = await User.find({ email: search });
             console.log("search", all)
-            res.status(200).json(all)
+            res.status(STATUS_CODES.OK).json({
+                status: "success",
+                all
+            })
         } catch (error) {
             console.log(error);
-            return res.status(400).json({ message: error.message });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                status: "error",
+                message: error.msg
+            })
         }
 };
 
@@ -283,10 +346,16 @@ const searchUser = async (req, res) => {
 const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({})
-        res.json(users)
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            users
+        })
     }
     catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 
 }
@@ -300,7 +369,10 @@ const forgotPassword = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
         }
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = Date.now() + 3 * 60 * 1000;
@@ -315,11 +387,17 @@ const forgotPassword = async (req, res) => {
         };
 
         await transporter.sendMail(mailOptions);
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: USER_OTP_MSG
+        })
 
-        res.json({ message: "OTP sent to your email" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 
@@ -331,23 +409,32 @@ const resetPassword = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
         }
 
         if (newPassword !== confirmPassword) {
-            res.status(400)
-            throw new Error("Passwords should match")
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_PASS_VALIDATION
+            });
         }
-
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
 
         await user.save();
-
-        res.json({ message: "Password reset successful. You can now log in!" });
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: USER_PASS_RESET_MSG
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 //get current user
@@ -356,17 +443,25 @@ const getCurrentUserProfile = async (req, res) => {
         const user = await User.findById(req.user._id).populate("address");
 
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
         }
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+           user
+        });
 
-        res.json(user);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
 };
 
 //edit user profile
-
 const updateUser = async (req, res) => {
     console.log("req", req)
     try {
@@ -374,33 +469,34 @@ const updateUser = async (req, res) => {
         console.log("id to edit user", id)
         const { name, email, phone, } = req.body;
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid User ID" });
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_ID_MSG
+            })
         }
-
         const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
         console.log("user found", user)
         if (!user) {
-            res.status(404);
-            throw new Error(`User not found with  id ${id}`);
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
         }
         else {
             await user.save();
             const { token, refreshToken } = generateToken(user);
             user.refreshToken = refreshToken;
-            return res.status(200).json({
-                token,
-                refreshToken,
-                user,
-
-            })
+            res.status(STATUS_CODES.OK).json({
+                status: "success",
+                token, refreshToken, user
+            });
         }
-
     } catch (error) {
-        res.status(500).json({ message: error.message })
-
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
     }
-
-
 }
 
 //add address
@@ -409,14 +505,17 @@ const addAddress = async (req, res) => {
         const userId = req.user._id;
         const { name, houseName, town, street, state, zipcode, country, phone } = req.body
         if (!name || !houseName || !town || !street || !state || !zipcode || !country || !phone) {
-            res.status(400)
-            throw new Error("Please fill all the inputs")
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_VALIDATION_MSG
+            })
         }
-
         const addressExists = await Address.findOne({ houseName })
         if (addressExists) {
-            res.status(400).send("Address already exists")
-            return;
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: ADDRESS_EXIST_MSG
+            })
         }
         const address = await Address.create({
             name,
@@ -431,9 +530,17 @@ const addAddress = async (req, res) => {
 
         })
         await User.findByIdAndUpdate(userId, { $push: { address: address._id } });
-        res.status(201).json({ message: "Address added successfully!", address });
+        res.status(STATUS_CODES.CREATED).json({
+            status: "success",
+            message: ADDRESS_ADD_MSG,
+            address
+        })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
+
     }
 }
 //get address
@@ -442,18 +549,31 @@ const getAddress = async (req, res) => {
         const id = req.params.id
         console.log("id:", id)
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid address ID" });
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: ADDRESS_INVALID_MSG
+            })
         }
         const address = await Address.findById(id);
 
         if (!address) {
-            return res.status(404).json({ message: "Address not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: ADDRESS_NOT_MSG
+            })
         }
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            address
+        })
 
-        res.json(address);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
+
     }
 };
 
@@ -465,13 +585,23 @@ const updateAddress = async (req, res) => {
         const address = await Address.findByIdAndUpdate(id, { ...req.body }, { new: true });
 
         if (!address) {
-            return res.status(404).json({ message: "Address not found" });
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: ADDRESS_NOT_MSG
+            })
         }
 
         await address.save();
-        res.json({ message: "Address updated successfully", address });
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: ADDRESS_UPDATE_MSG
+        })
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
+
     }
 };
 
@@ -479,37 +609,67 @@ const updateAddress = async (req, res) => {
 const deleteAddress = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user)
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
 
         user.address = user.address.filter((addr) => addr._id.toString() !== req.params.id);
         await user.save();
-
-        res.status(200).json({ message: "Address deleted successfully" });
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: ADDRESS_DELETE_MSG
+        })
     } catch (error) {
-        res.status(500).json({ message: "Error deleting address", error: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
+
     }
 };
 
-const changePassword = async(req,res)=>{
-    const id = req.user._id
-    const {currentPassword,newPassword,confirmPassword} = req.body
-    const exists = await User.findOne({_id: id});
-    if (!exists) {
-        return res.status(404).json({success: false, message: `User not found`});
-    }
+const changePassword = async (req, res) => {
+    try {
+        const id = req.user._id
+        const { currentPassword, newPassword, confirmPassword } = req.body
+        const exists = await User.findOne({ _id: id });
+        if (!exists) {
+            res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
+        }
 
-    const comparePassword = await bcrypt.compare(currentPassword, exists.password);
+        const comparePassword = await bcrypt.compare(currentPassword, exists.password);
 
-    if (!comparePassword) {
-        return res.status(400).json({success: false, message: "Current password is incorrect"});
+        if (!comparePassword) {
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: "Current password is incorrect"
+            });
+        }
+        if (newPassword !== confirmPassword) {
+            res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_PASS_VALIDATION
+            });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hashed_password = await bcrypt.hash(newPassword, salt);
+        await User.updateOne({ _id: req.user._id }, { $set: { password: hashed_password } });
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: "Password updated successfully"
+        });
+    } catch (error) {
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.msg
+        })
+
     }
-    if(newPassword!== confirmPassword){
-        return res.status(400).json({status:'Error',message:"Passwords should match"})
-    }
-    const salt = await bcrypt.genSalt(10);
-    const hashed_password = await bcrypt.hash(newPassword, salt);
-    await User.updateOne({_id: req.user._id}, {$set: {password: hashed_password}});
-    return res.status(200).json({success: true, message: "Password updated successfully"});
 }
 
 

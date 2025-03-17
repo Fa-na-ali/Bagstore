@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
+import { toast } from 'react-toastify'
 
 const MyOrder = () => {
-  const { data: orders,refetch, isLoading, error } = useGetMyOrdersQuery();
+  const { data: orders, refetch, isLoading, error } = useGetMyOrdersQuery();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -25,40 +26,46 @@ const MyOrder = () => {
     setShowConfirmModal(true);
   };
 
-  const handleCancelOrder =async(orderId,item) => {
+  const handleCancelOrder = async (orderId, item) => {
     try {
       setShowReasonModal(false);
-  
+
       const response = await cancelOrder({
         orderId,
         item,
         cancelReason: selectedReason,
       }).unwrap();
-  
-      console.log("Order cancellation successful:", response );
+
+      console.log("Order cancellation successful:", response);
       refetch();
     } catch (error) {
       console.error("Error cancelling order:", error);
       alert(error?.data?.message || "Failed to cancel order. Please try again.");
     }
-  
+
   };
 
-  const handleReturnOrder = async (orderId,item) => {
+  const handleReturnClick = (orderId, item) => {
+    setSelectedOrder(orderId);
+    setSelectedProduct(item);
+    setShowReturnModal(true);
+  };
+
+  const handleReturnOrder = async () => {
     try {
-      setShowReturnModal(false);
 
       const response = await returnOrder({
-        orderId,
-        item,
+        orderId: selectedOrder,
+        item: selectedProduct,
         returnReason: selectedReason,
       }).unwrap();
-
+      if (response)
+        toast.success("Return request sent")
       console.log("Return request successful:", response);
       refetch();
     } catch (error) {
       console.error("Error requesting return:", error);
-      alert(error?.data?.message || "Failed to request return. Please try again.");
+
     }
   };
 
@@ -79,11 +86,11 @@ const MyOrder = () => {
                   <Row>
                     {/* Shopping Cart Section */}
                     <Col lg={12}>
-                    <h2 className="mb-1 text-center heading">MY ORDERS</h2>
+                      <h2 className="mb-1 text-center heading">MY ORDERS</h2>
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                        
-                         
+
+
                         </div>
                       </div>
 
@@ -93,8 +100,8 @@ const MyOrder = () => {
 
                         orders?.map((order) => (
                           <div key={order._id}>
-                             <h5>Order ID: {order.orderId}</h5>
-                            <p>Total Price: ₹{order.totalPrice}</p> 
+                            <h5>Order ID: {order.orderId}</h5>
+                            <p>Total Price: ₹{order.totalPrice}</p>
                             <hr />
                             {order?.items?.length > 0 ? (
                               order.items.map((item) => (
@@ -123,10 +130,10 @@ const MyOrder = () => {
                                         <div className="me-4 text-center" style={{ width: "200px" }}>
                                           <h6
                                             className={`mb-0 ${item.status === "pending" ||
-                                                item.status === "shipped" ||
-                                                item.status === "delivered"
-                                                ? "text-success"
-                                                : "text-danger"
+                                              item.status === "shipped" ||
+                                              item.status === "delivered"
+                                              ? "text-success"
+                                              : "text-danger"
                                               }`}
                                           >
                                             {item.status}
@@ -136,7 +143,7 @@ const MyOrder = () => {
                                           <Button
                                             variant="danger"
                                             size="sm"
-                                            onClick={() => handleCancelClick(order._id,item)}
+                                            onClick={() => handleCancelClick(order._id, item)}
                                           >
                                             Cancel
                                           </Button>
@@ -144,7 +151,7 @@ const MyOrder = () => {
                                           <Button
                                             variant="primary"
                                             size="sm"
-                                            onClick={() => handleReturnOrder(order._id,item)}
+                                            onClick={() => handleReturnClick(order._id, item)}
                                           >
                                             Return
                                           </Button>
@@ -170,8 +177,8 @@ const MyOrder = () => {
           </Row></Container>
       </section>
 
-       {/* Confirmation Modal */}
-       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
+      {/* Confirmation Modal */}
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Cancellation</Modal.Title>
         </Modal.Header>
@@ -182,8 +189,8 @@ const MyOrder = () => {
         </Modal.Footer>
       </Modal>
 
-       {/* Cancellation Reason Modal */}
-       <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)} centered>
+      {/* Cancellation Reason Modal */}
+      <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Choose a Reason</Modal.Title>
         </Modal.Header>
@@ -209,8 +216,8 @@ const MyOrder = () => {
         </Modal.Footer>
       </Modal>
 
-       {/* Return Reason Modal */}
-       <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
+      {/* Return Reason Modal */}
+      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Return Request</Modal.Title>
         </Modal.Header>

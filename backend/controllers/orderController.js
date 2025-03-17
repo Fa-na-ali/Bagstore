@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const Payment = require('../models/paymentModel');
+const Return  = require('../models/returnModel')
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -34,7 +35,7 @@ const createOrder = async (req, res) => {
       return { product: item.product, qty: item.qty, status: "pending" };
     });
 
-    if (paymentMethod === "cod" && totalPrice > 1000) {
+    if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
       return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
     }
 
@@ -59,8 +60,14 @@ const createOrder = async (req, res) => {
       orderId: createdOrder._id,
     });
 
-    await payment.save();
+    const createdPayment = await payment.save();
     console.log("Payment recorded successfully");
+
+    createdOrder.paymentId = createdPayment._id;
+    await createdOrder.save(); 
+
+    console.log("Order updated with paymentId");
+
 
     if (paymentMethod === "Cash On Delivery") {
       await Promise.all(
@@ -91,7 +98,7 @@ const createOrder = async (req, res) => {
 const getMyOrders = async (req, res) => {
   console.log("uuuuuuuser", req.user._id)
   try {
-    const orders = await Order.find({ userId: req.user._id }).populate('items.product');
+    const orders = await Order.find({ userId: req.user._id }).populate('items.product').sort({ createdAt: -1 })
     console.log("orders", orders)
     res.json(orders);
   } catch (error) {
@@ -248,6 +255,40 @@ const setItemStatus = async (req, res) => {
   }
 };
 
+//return order by user
+const returnOrder = async (req, res) => {
+  const { orderId,item, returnReason } = req.body;
+  const user = await User.findOne({_id: req.user._id});
+  if (!user) {
+      return res.json({success: false, message: `User not found`});
+  }
+  const order = await Order.findOne({_id: orderId, userId: user._id});
+  if (!order) {
+      return res.json({success: false, message: `Order not found`});
+  }
+  const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
+     console.log("item",orderItem)
+    if (!orderItem) {
+      return res.status(404).json({ message: "Item not found in order" });
+    }
+  if (item.status !== "delivered") {
+      return res.json({success: false, message: "Order can only be returned after delivery"});
+  }
+
+  const payment = await Payment.findOne({_id: order.paymentId});
+  if (!payment) {
+    return res.status(400).json({ success: false, message: "Payment record not found for this order" });
+}
+ orderItem.returnReason = returnReason
+ orderItem.status = "return requested"
+  await order.save()
+  return res.status(200).json({ success: true, message: "Return request sent successfully" });
+};
+
+
+
+
+
 
 
 
@@ -259,6 +300,7 @@ module.exports = {
   createOrder,
   cancelOrder,
   getMyOrders,
+  returnOrder,
   getAllOrders,
   findOrderById,
   setItemStatus,

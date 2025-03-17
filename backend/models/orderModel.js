@@ -51,13 +51,17 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
           type: String,
-          enum: ['pending', 'delivered', 'cancelled','returned','shipped'],
+          enum: ['pending', 'delivered', 'cancelled','returned','shipped','return requested'],
           default: 'pending',
         },
         cancel_reason: {
           type: String,
           required: false
-      }
+      },
+      returnReason: {
+        type: String,
+        required: false
+    }
       },
     ],
     couponId: {

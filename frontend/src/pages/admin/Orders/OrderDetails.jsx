@@ -29,7 +29,7 @@ const OrderDetails = () => {
       }, {});
       setItemStatuses(initialStatuses);
     }
-  }, [order]);  
+  }, [order?.items]);  
 
   if (isLoading) return <div>Loading...</div>;
   if (error) {
@@ -56,11 +56,6 @@ const OrderDetails = () => {
       ...prevStatuses,
       [itemId]: newStatus,
     }));
-  };
-
-  const handleReturnAction = (itemId, action) => {
-    console.log(`Return action: ${action} for item: ${itemId}`);
-    // TODO: Call API to update return status
   };
 
   const handleSaveChanges = async(status,item,id) => {
@@ -175,15 +170,15 @@ const OrderDetails = () => {
                       <td className="align-middle">
                         {item.status === "cancelled" ? (
                           <p className="mb-0 fw-bold text-danger">Cancelled</p>
-                        ) : item.status === "returned" ? (
+                        ) : item.status === "return requested" ? (
                           <div>
                             <p className="mb-0 fw-bold text-warning">Return Request</p>
-                            <p className="mb-0"><strong>Reason:</strong> {item.cancelReason}</p>
+                            <p className="mb-0"><strong>Reason:</strong> {item.returnReason}</p>
                             <Button
                               className="me-2"
                               variant="success"
                               size="sm"
-                              onClick={() => handleReturnAction(item._id, "approved")}
+                              onClick={() => handleSaveChanges("returned",item,order._id )}
                             >
                               Approve
                             </Button>
@@ -203,6 +198,7 @@ const OrderDetails = () => {
                             <option value="pending">Pending</option>
                             <option value="shipped">Shipped</option>
                             <option value="delivered">Delivered</option>
+                            <option value="returned">Returned</option>
                           </Form.Select>
                         )}
                       </td>

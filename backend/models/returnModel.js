@@ -16,13 +16,19 @@ const Schema = mongoose.Schema({
         ref: 'Payment',
         required: true
     },
+    itemId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'items',
+        required: true
+    },
+
     reason: {
         type: String,
         required: true
     },
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected'],
+        enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
     },
     rejection_reason: {
@@ -31,6 +37,6 @@ const Schema = mongoose.Schema({
     }
 }, {timestamps: {createdAt: "createdAt", updatedAt: "updatedAt"}});
 
-const Return = mongoose.model('Return', productSchema);
+const Return = mongoose.model('Return', Schema);
 
 module.exports = Return;

@@ -1,23 +1,24 @@
-USER_VALIDATION_MSG = "Please fill all the fields"
-USER_EXT_MSG = "User already exists"
-USER_PASS_VALIDATION = "Passwords should match"
-USER_REG_MSG="User registered successfully. OTP sent to email."
-USER_NOT_MSG="User not found"
-USER_LOGIN_MSG="User logged in successfully"
-USER_INVALID_MSG="Invalid credentials or blocked"
-USER_EMAIL_MSG="Email is required" 
-USER_OTP_MSG = "OTP sent to email"
-USER_GOOGLE_MSG =  "Authorization code is missing!"
-USER_LOGOUT_MSG="Logged out successfully"
-USER_DELETE_MSG = "User deleted successfully (soft delete)"
-USER_PASS_RESET_MSG =  "Password reset successful. You can now log in!"
-USER_ID_MSG = "Invalid User ID"
-
-ADDRESS_EXIST_MSG  = "Address already exists"
-ADDRESS_ADD_MSG = "Address added successfully!"
-ADDRESS_INVALID_MSG = "Invalid address ID"
-ADDRESS_NOT_MSG = "Address not found"
-ADDRESS_UPDATE_MSG =  "Address updated successfully"
-ADDRESS_DELETE_MSG = "Address deleted successfully" 
-ADDRESS_ERROR_MSG = "Error deleting address"
-
+module.exports = {
+    USER_VALIDATION_MSG: "Please fill all the fields",
+    USER_EXT_MSG: "User already exists",
+    USER_PASS_VALIDATION: "Passwords should match",
+    USER_REG_MSG: "User registered successfully. OTP sent to email.",
+    USER_NOT_MSG: "User not found",
+    USER_LOGIN_MSG: "User logged in successfully",
+    USER_INVALID_MSG: "Invalid credentials or blocked",
+    USER_EMAIL_MSG: "Email is required",
+    USER_OTP_MSG: "OTP sent to email",
+    USER_GOOGLE_MSG: "Authorization code is missing!",
+    USER_LOGOUT_MSG: "Logged out successfully",
+    USER_DELETE_MSG: "User deleted successfully (soft delete)",
+    USER_PASS_RESET_MSG: "Password reset successful. You can now log in!",
+    USER_ID_MSG: "Invalid User ID",
+    
+    ADDRESS_EXIST_MSG: "Address already exists",
+    ADDRESS_ADD_MSG: "Address added successfully!",
+    ADDRESS_INVALID_MSG: "Invalid address ID",
+    ADDRESS_NOT_MSG: "Address not found",
+    ADDRESS_UPDATE_MSG: "Address updated successfully",
+    ADDRESS_DELETE_MSG: "Address deleted successfully",
+    ADDRESS_ERROR_MSG: "Error deleting address",
+};
