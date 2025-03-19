@@ -14,9 +14,12 @@ const Header = () => {
 
     // Get user info from Redux state
     const { userInfo } = useSelector((state) => state.auth);
-    console.log(userInfo);
-    const id=(userInfo?._id) ? userInfo?._id : userInfo?.user._id
+    console.log("userinfo",userInfo);
+    const id = (userInfo?._id) ? userInfo?._id : userInfo?.user._id
     console.log(id)
+    const cart = useSelector((state) => state.cart);
+    const { cartItems } = cart;
+    console.log("cart",cartItems)
     const [logoutApiCall] = useLogoutMutation();
 
     const logoutHandler = async () => {
@@ -70,13 +73,13 @@ const Header = () => {
 
 
                             <Nav>
-                                {userInfo? (
+                                {userInfo ? (
                                     <Nav.Link
                                         as={Link}
                                         to={`/account`}
                                         className="caption"
                                     >
-                                         {(userInfo.name) ? userInfo.name : userInfo.user.name} 
+                                        {(userInfo.name) ? userInfo.name : userInfo.user.name}
                                     </Nav.Link>
                                 ) : (
                                     <Nav.Link
@@ -94,7 +97,7 @@ const Header = () => {
                                         bg="danger"
                                         className="position-absolute top-3 start-100 translate-middle"
                                     >
-                                        1
+                                        {cartItems?.length}
                                     </Badge>
                                 </Nav.Link>
                                 <Nav.Link as={Link} to="/" className='caption'><FaHeart /></Nav.Link>

@@ -3,7 +3,8 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const Payment = require('../models/paymentModel');
-const Return  = require('../models/returnModel')
+const Return  = require('../models/returnModel');
+const STATUS_CODES = require('../middlewares/statusCodes');
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -21,13 +22,17 @@ const createOrder = async (req, res) => {
     }
 
     const user = await User.findById(userId);
+    console.log("user",user)
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
     const validatedItems = items.map((item) => {
       if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-        throw new Error("Each item must have a valid product ID");
+       return res.status(STATUS_CODES.BAD_REQUEST).json({
+        status:"error",
+        message:""
+       })
       }
       if (!item.qty || item.qty < 1) {
         throw new Error(`Invalid quantity for product ${item.product}`);
@@ -38,6 +43,7 @@ const createOrder = async (req, res) => {
     if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
       return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
     }
+    console.log("validated",validatedItems)
 
     const order = new Order({
       orderId,
@@ -51,7 +57,7 @@ const createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-    console.log("Order created successfully");
+    console.log("Order created successfully",createdOrder);
 
     const payment = new Payment({
       userId: user._id,
@@ -89,7 +95,7 @@ const createOrder = async (req, res) => {
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: error.message });
   }
 };
 

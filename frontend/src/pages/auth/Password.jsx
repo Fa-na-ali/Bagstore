@@ -22,15 +22,20 @@ const Password = () => {
 
     const validatePassword = (password, confirmPassword) => {
         const errors = {};
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
         if (!password) {
-            errors.newPassword = "Password is required";
+            errors.newPassword = "New Password is required";
+        } else if (!passwordRegex.test(password)) {
+            errors.newPassword = "Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character.";
         }
+    
         if (!confirmPassword) {
             errors.confirmPassword = "Please confirm your password";
         } else if (password !== confirmPassword) {
             errors.confirmPassword = "Passwords do not match";
         }
-
+    
         setErrors(errors);
         return Object.keys(errors).length === 0;
     };

@@ -38,14 +38,14 @@ const cartSlice = createSlice({
       return updateCart(state);
     },
     syncCartWithDatabase: (state, action) => {
-      const latestProducts = action.payload; // Array of latest product data from the database
+      const latestProducts = action.payload; 
       state.cartItems = state.cartItems.map((cartItem) => {
         const latestProduct = latestProducts.find((p) => p._id === cartItem._id);
         if (latestProduct) {
           return {
             ...cartItem,
-            quantity: latestProduct.quantity, // Update the stock (quantity) in the cart
-            qty: Math.min(cartItem.qty, latestProduct.quantity), // Ensure qty does not exceed available stock
+            quantity: latestProduct.quantity, 
+            qty: Math.min(cartItem.qty, latestProduct.quantity), 
           };
         }
         return cartItem;

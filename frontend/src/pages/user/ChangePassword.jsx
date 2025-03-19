@@ -21,20 +21,26 @@ const ChangePassword = () => {
 
     const [changePassword, { isLoading }] = useChangePasswordMutation();
 
-    const validatePassword = (currentPassword,newPassword, confirmPassword) => {
+    const validatePassword = (currentPassword, newPassword, confirmPassword) => {
         const errors = {};
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
         if (!currentPassword) {
-            errors.currentPassword = "Password is required";
+            errors.currentPassword = "Current Password is required";
         }
+    
         if (!newPassword) {
             errors.newPassword = "New Password is required";
+        } else if (!passwordRegex.test(newPassword)) {
+            errors.newPassword = "Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character";
         }
+    
         if (!confirmPassword) {
             errors.confirmPassword = "Please confirm your password";
         } else if (newPassword !== confirmPassword) {
             errors.confirmPassword = "Passwords do not match";
         }
-
+    
         setErrors(errors);
         return Object.keys(errors).length === 0;
     };

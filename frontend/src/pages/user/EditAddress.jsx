@@ -7,7 +7,9 @@ const EditAddress = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data: address, refetch,isLoading } = useGetAddressQuery(id)
+    const { data, refetch,isLoading } = useGetAddressQuery(id)
+    console.log("data",data)
+    const address= data?.address
     const [updateAddress] = useUpdateAddressMutation()
 
     const [formData, setFormData] = useState({

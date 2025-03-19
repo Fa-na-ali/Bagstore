@@ -27,7 +27,8 @@ const AddProduct = () => {
   const [showModal, setShowModal] = useState(false);
   const cropperRef = useRef(null);
   const [addProduct, { isLoading }] = useAddProductMutation();
-  const { data: categories } = useFetchCategoriesQuery();
+  const { data } = useFetchCategoriesQuery();
+  const categories = data?.all
   const navigate = useNavigate();
 
   const validate = () => {

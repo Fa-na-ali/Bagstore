@@ -21,9 +21,10 @@ const AddCategory = () => {
 
         try {
             const result = await createCategory({ name }).unwrap();
+            console.log(result)
             setName("");
-            if (result.name) {
-                toast.success(`${result.name} category created successfully.`);
+            if (result?.category?.name) {
+                toast.success(`${result?.category?.name} category created successfully.`);
                 navigate('/admin/category')
             } else if (result.message) {
                 toast.error(result.message); 
@@ -32,7 +33,7 @@ const AddCategory = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error("Creating category failed, try again.");
+            toast.error(error?.data.message);
         }
     };
 

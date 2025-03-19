@@ -7,7 +7,9 @@ import { useDispatch } from 'react-redux';
 import { updateProfile } from '../../redux/features/auth/authSlice';
 
 const EditProfile = () => {
-    const { data: user, refetch } = useProfileQuery()
+    const { data, refetch } = useProfileQuery()
+    console.log("data",data)
+    const user=data?.user
     const navigate = useNavigate()
     
     const [name, setName] = useState("");

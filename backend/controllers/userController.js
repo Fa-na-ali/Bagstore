@@ -61,7 +61,7 @@ const userSignup = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Your OTP Code",
-            text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+            text: `Your OTP code is ${otp}. It is valid for 3 minutes.`,
         });
 
         console.log("OTP sent successfully to", email);
@@ -441,7 +441,7 @@ const resetPassword = async (req, res) => {
 const getCurrentUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).populate("address");
-
+        console.log("user profile", user)
         if (!user) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -450,7 +450,7 @@ const getCurrentUserProfile = async (req, res) => {
         }
         res.status(STATUS_CODES.OK).json({
             status: "success",
-           user
+            user
         });
 
     } catch (error) {
@@ -672,6 +672,93 @@ const changePassword = async (req, res) => {
     }
 }
 
+const uploadImage = async (req, res) => {
+    try {
+        const id = req.params.id;
+        console.log("id",id)
+        console.log("req.files", req.body);
+
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: "No files uploaded"
+            });
+        }
+
+
+        const imageUrls = req.files.map((file) => file.filename);
+        
+
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_ID_MSG
+            });
+        }
+        const user = await User.findById({ _id: req.params.id });
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
+        }
+        user.image = [...imageUrls];
+        await user.save();
+
+        return res.status(STATUS_CODES.OK).json({
+            status: "success",
+            user
+        });
+
+    } catch (error) {
+        console.error("Error in uploadImage:", error);
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: "An error occurred while uploading images"
+        });
+    }
+};
+
+const deleteUserImage = async (req, res) => {
+  console.log("params", req.params)
+  try {
+    const { id, index } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        status: "error",
+        message:  USER_ID_MSG
+      })
+    }
+    const user = await User.findById(id);
+    console.log("user", user)
+    if (!user) 
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        status: "error",
+        message: USER_NOT_MSG
+      });
+     
+
+    if (index < 0 || index >= user.image.length) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ 
+        status:"error",
+        message: "Invalid image index" });
+    }
+
+    user.image.splice(index, 1);
+    await user.save();
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
+      message: "Image Deleted Successfully"
+    });
+  } catch (error) {
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
+  }
+}
 
 
 module.exports = {
@@ -694,4 +781,6 @@ module.exports = {
     getAddress,
     updateAddress,
     deleteAddress,
+    uploadImage,
+    deleteUserImage
 }

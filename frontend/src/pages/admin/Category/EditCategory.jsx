@@ -8,12 +8,13 @@ import { toast } from 'react-toastify';
 const EditCategory = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-   console.log("id",id)
-    const { data: category, refetch, isLoading, isError } = useSpecificCategoriesQuery(id);
+    console.log("id", id)
+    const { data, refetch, isLoading, isError } = useSpecificCategoriesQuery(id);
     const [update, { isLoading: isUpdating }] = useUpdateCategoryMutation();
 
     const [updatingName, setUpdatingName] = useState("");
-console.log("category",category)
+    const category = data?.category
+    console.log("category", category)
     useEffect(() => {
         if (category) {
             setUpdatingName(category.name || "");
@@ -49,7 +50,7 @@ console.log("category",category)
                         <Form className='ms-5'>
                             <Form.Group controlId="categoryName">
                                 <Form.Label className='caption'>Category Name</Form.Label>
-                                <Form.Control type="text" 
+                                <Form.Control type="text"
                                     value={updatingName}
                                     onChange={(e) => setUpdatingName(e.target.value)} />
                             </Form.Group>

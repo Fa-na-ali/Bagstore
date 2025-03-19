@@ -16,9 +16,12 @@ const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: product, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  console.log("product", data)
+  const product = data?.product
   const [update, { isLoading: isUpdating }] = useUpdateProductMutation();
-  const { data: categories } = useFetchCategoriesQuery();
+  const { data: datas } = useFetchCategoriesQuery();
+  const categories = datas?.all
   const [deleteImage] = useDeleteImageMutation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -39,7 +42,7 @@ const EditProduct = () => {
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const productImages = product?.pdImage.map((img) => `${imageBaseUrl}${img}`);
 
-  console.log("product", product)
+  
   useEffect(() => {
     if (product) {
       setName(product.name || "");

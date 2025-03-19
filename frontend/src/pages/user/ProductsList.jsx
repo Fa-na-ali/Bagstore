@@ -9,6 +9,7 @@ import Cards from '../../components/Cards';
 const ProductsList = () => {
 
   const { data: categories } = useFetchCategoriesQuery();
+  console.log("categories",categories)
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
@@ -93,7 +94,7 @@ const ProductsList = () => {
                     <Accordion.Header>Categories</Accordion.Header>
                     <Accordion.Body>
                       <ul className="list-unstyled">
-                        {categories?.map((category) => (
+                        {categories?.all.map((category) => (
                           <li key={category._id} className="d-flex align-items-center">
                             <input
                               type="checkbox"

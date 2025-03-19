@@ -18,7 +18,7 @@ const productSchema = new Schema({
     trim: true
   },
   pdImage: {
-    type: [String], // Array of image URLs
+    type: [String], 
     default: []
   },
   price: {

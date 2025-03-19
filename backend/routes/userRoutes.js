@@ -19,10 +19,13 @@ const { userSignup,
     deleteAddress,
     resetPassword,
     changePassword,
+    uploadImage,
+    deleteUserImage,
 } = require('../controllers/userController')
-const { authorizeAdmin, authenticate } = require('../middlewares/authMiddleware')
+const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlewares/authMiddleware')
 const generaterefreshToken = require('../middlewares/generateRefreshToken')
 const {verifyOtp, verifyOtpPass }= require('../middlewares/verifyOtp')
+const imageUpload=require("../imageUpload")
 
 
 router.route('/register').post(userSignup)
@@ -31,13 +34,15 @@ router.route('/auth/refresh').post(generaterefreshToken)
 router.route('/verify-otp').post(verifyOtp)
 router.route('/resend-otp').post(resendOtp)
 router.route('/google').get(googleLogin)
-router.route('/account').get(authenticate,getCurrentUserProfile)
-router.route('/account/edit').put(authenticate,updateUser)
-router.route('/account/add-address').post(authenticate,addAddress)
-router.route('/account/edit-address/:id').get(authenticate,getAddress).put(authenticate,updateAddress)
-router.route("/account/delete-address/:id").delete(authenticate, deleteAddress);
-router.route('/change-password').post(authenticate,changePassword)
+router.route('/account').get(authenticate,blockDisabledUsers,getCurrentUserProfile)
+router.route('/account/edit').put(authenticate,blockDisabledUsers,updateUser)
+router.route('/account/add-address').post(authenticate,blockDisabledUsers,addAddress)
+router.route('/account/edit-address/:id').get(authenticate,blockDisabledUsers,getAddress).put(authenticate,blockDisabledUsers,updateAddress)
+router.route("/account/delete-address/:id").delete(authenticate,blockDisabledUsers,deleteAddress);
+router.route('/change-password').post(authenticate,blockDisabledUsers,changePassword)
 router.route('/forgot-password').post(forgotPassword)
+router.route('/upload/:id').post(authenticate,blockDisabledUsers,imageUpload.array("image"),uploadImage)
+router.route('/:id/:index').delete(authenticate, blockDisabledUsers, deleteUserImage)
 router.route('/verify-otp-password').post(verifyOtpPass)
 router.route('/reset-password').post(resetPassword)
 router.route('/').get(authenticate,authorizeAdmin,fetchUsers)

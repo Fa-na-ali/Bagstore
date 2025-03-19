@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { Container, Row, Col, Card, Button, Table, Image, Form } from "react-bootstrap";
 import { useGetOrderDetailsQuery, useSetItemStatusMutation } from '../../../redux/api/ordersApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar'
-import {toast} from 'react-toastify'
+import { toast } from 'react-toastify'
 
 
 const OrderDetails = () => {
@@ -24,16 +24,16 @@ const OrderDetails = () => {
   useEffect(() => {
     if (order?.items) {
       const initialStatuses = order.items.reduce((acc, item) => {
-        acc[item._id] = item.status;  
+        acc[item._id] = item.status;
         return acc;
       }, {});
       setItemStatuses(initialStatuses);
     }
-  }, [order?.items]);  
+  }, [order?.items]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) {
-    
+
     if (error.originalStatus === 404) {
       return <div>Error: Order not found</div>;
     }
@@ -58,9 +58,9 @@ const OrderDetails = () => {
     }));
   };
 
-  const handleSaveChanges = async(status,item,id) => {
+  const handleSaveChanges = async (status, item, id) => {
     try {
-      await setItemStatus({ status,item,id });
+      await setItemStatus({ status, item, id });
       toast.success("Item status updated successfully")
     } catch (error) {
       console.error("Error updating item status:", error);
@@ -168,8 +168,8 @@ const OrderDetails = () => {
                         <p className="mb-0 fw-bold">{item.product.price * item.qty}</p>
                       </td>
                       <td className="align-middle">
-                        {item.status === "cancelled" ? (
-                          <p className="mb-0 fw-bold text-danger">Cancelled</p>
+                        {(item.status === "cancelled")||(item.status==="returned")||(item.status==="delivered") ? (
+                          <p className="mb-0 fw-bold text-danger">{item.status}</p>
                         ) : item.status === "return requested" ? (
                           <div>
                             <p className="mb-0 fw-bold text-warning">Return Request</p>
@@ -178,7 +178,7 @@ const OrderDetails = () => {
                               className="me-2"
                               variant="success"
                               size="sm"
-                              onClick={() => handleSaveChanges("returned",item,order._id )}
+                              onClick={() => handleSaveChanges("returned", item, order._id)}
                             >
                               Approve
                             </Button>
@@ -192,19 +192,18 @@ const OrderDetails = () => {
                           </div>
                         ) : (
                           <Form.Select
-                            value={itemStatuses[item._id]}
-                            onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="returned">Returned</option>
-                          </Form.Select>
+                          value={itemStatuses[item._id]}
+                          onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
+                        >
+                          <option value={item.status}>{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</option>  
+                          {item.status === "pending" && <option value="shipped">Shipped</option>}
+                          {item.status === "shipped" && <option value="delivered">Delivered</option>}
+                        </Form.Select>
                         )}
                       </td>
                       <td className="align-middle">
-                        {item.status !== "cancelled" && item.status !== "returned" && (
-                          <Button className='button-custom' size="sm" onClick={()=>handleSaveChanges(itemStatuses[item._id],item,order._id)}>
+                        {item.status !== "cancelled" && item.status !== "returned" && item.status!=="delivered" &&(
+                          <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order._id)}>
                             Save Changes
                           </Button>
                         )}

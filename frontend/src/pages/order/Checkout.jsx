@@ -17,7 +17,7 @@ const Checkout = () => {
   console.log("iii", user)
   const { cartItems } = cart;
   console.log(cart.cartItems)
-  const address = user?.address || [];
+  const address = user?.user?.address || [];
   console.log("add", address)
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const navigate = useNavigate()
@@ -36,8 +36,8 @@ const Checkout = () => {
   useEffect(() => {
     refetch();
 
-    if (user?.address && user.address.length > 0) {
-      setSelectedAddress(user.address[0]._id);
+    if (user?.user?.address && user?.user.address.length > 0) {
+      setSelectedAddress(user?.user.address[0]._id);
     }
   }, [user, refetch]);
 
@@ -75,7 +75,7 @@ const Checkout = () => {
     }
     try {
       const res = await createOrder({
-        userId: user?._id,
+        userId: user?.user._id,
         items: formattedItems,
         shippingAddress: cart?.shippingAddress,
         paymentMethod: cart?.paymentMethod,

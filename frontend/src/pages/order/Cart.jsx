@@ -19,10 +19,11 @@ const Cart = () => {
 
   const productIds = cartItems.map((item) => item._id);
   const { data: latestProducts } = useGetProductsByIdsQuery(productIds);
+  console.log("data",latestProducts)
 
   useEffect(() => {
     if (latestProducts) {
-      dispatch(syncCartWithDatabase(latestProducts));
+      dispatch(syncCartWithDatabase(latestProducts?.products));
     }
   }, [latestProducts, dispatch]);
 

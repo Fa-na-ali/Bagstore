@@ -13,7 +13,8 @@ const ProductDetails = () => {
   console.log("id", id)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { data: product, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  const product=data?.product
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const [quantity, setQuantity] = useState(1);
   
@@ -146,7 +147,7 @@ const ProductDetails = () => {
             <div className='text-center py-5'>
               <h4 className='mt-4 mb-5 heading'><strong>RELATED PRODUCTS</strong></h4>
               <Cards
-                products={products}
+                products={products?.relatedProducts}
 
               />
             </div>

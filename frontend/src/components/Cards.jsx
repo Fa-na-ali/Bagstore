@@ -1,16 +1,21 @@
 import React from 'react';
 import { Container, Row, Col, Modal, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
+import { addToCart } from '../redux/features/cart/cartSlice';
 
 const Cards = ({ products }) => {
   const imageBaseUrl = 'http://localhost:5004/uploads/';
   const navigate = useNavigate();
-
-  const cartHandler = () => {
+  const dispatch = useDispatch();
+  const items =products || products?.all
+  
+  const cartHandler = (product) => {
+    dispatch(addToCart({ ...product, qty: 1 })); 
     toast.success('Item added to cart');
-    navigate('/cart');
+  
   };
 
   return (
@@ -25,15 +30,15 @@ const Cards = ({ products }) => {
               <Card className='shadow-lg hover-shadow h-100 d-flex flex-column'>
                 <div
                   className='bg-image hover-zoom ripple ripple-surface ripple-surface-light'
-                  style={{ height: '400px', overflow: 'hidden', position: 'relative' }} // Added position: relative
+                  style={{ height: '400px', overflow: 'hidden', position: 'relative' }} 
                 >
                   {/* Stock Status Badge */}
                   <div
                     style={{
-                      position: 'absolute', // Position the badge absolutely
-                      top: '10px', // Distance from the top
-                      right: '10px', // Distance from the right
-                      zIndex: 1, // Ensure the badge is above the image
+                      position: 'absolute', 
+                      top: '10px', 
+                      right: '10px', 
+                      zIndex: 1, 
                     }}
                   >
                     {product.quantity > 0 ? (
@@ -74,7 +79,7 @@ const Cards = ({ products }) => {
                     {/* Add to Cart Button */}
                     <Button
                       className='button-custom'
-                      onClick={cartHandler}
+                      onClick={()=>cartHandler(product)}
                       disabled={product.quantity <= 0 || !product.category?.isExist }
                     >
                       Add to cart

@@ -8,6 +8,7 @@ import wallet from '../assets/images/wallet.webp'
 import { useGetNewProductsQuery } from '../redux/api/productApiSlice';
 
 import Cards from './Cards';
+import { useSelector } from 'react-redux';
 
 const Home = () => {
   const [show, setShow] = useState(null);
@@ -24,7 +25,8 @@ const Home = () => {
   
   const productImages = products?.pdImage?.map((img) => `${imageBaseUrl}${img}`);
   console.log("images", productImages)
-
+  const {refreshToken} = useSelector(state=>state.auth)
+  console.log("refresf",refreshToken)
 
   return (
     <>
@@ -56,7 +58,7 @@ const Home = () => {
           <div className='text-center py-5'>
             <h4 className='mt-4 mb-5 heading'><strong>NEW PRODUCTS</strong></h4>
               <Cards
-              products={products}
+              products={products?.all}
               
               />
           </div>

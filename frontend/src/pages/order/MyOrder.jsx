@@ -31,8 +31,8 @@ const MyOrder = () => {
       setShowReasonModal(false);
 
       const response = await cancelOrder({
-        orderId,
-        item,
+        orderId:selectedOrder,
+        item:selectedProduct,
         cancelReason: selectedReason,
       }).unwrap();
 

@@ -33,18 +33,18 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
     resetPassword: builder.mutation({
       query: (data) => ({
-          url: `${USERS_URL}/reset-password`,
-          method: "POST",
-          body: data,
+        url: `${USERS_URL}/reset-password`,
+        method: "POST",
+        body: data,
       }),
-  }),
-  changePassword: builder.mutation({
-    query: (data) => ({
+    }),
+    changePassword: builder.mutation({
+      query: (data) => ({
         url: `${USERS_URL}/change-password`,
         method: "POST",
         body: data,
+      }),
     }),
-}),
     verifyOtp: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/verify-otp`,
@@ -76,6 +76,21 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/account`,
       }),
     }),
+    uploadImage: builder.mutation({
+      query: ({ id, userData }) => ({
+        url: `${USERS_URL}/upload/${id}`,
+        method: "POST",
+        body: userData,
+      })
+    }),
+    deleteUserImage: builder.mutation({
+      query: ({ id, index }) => ({
+        url: `${USERS_URL}/${id}/${index}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Product"],
+    }),
+
     getUsers: builder.query({
       query: () => ({
         url: USERS_URL,
@@ -120,26 +135,26 @@ export const userApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["User"],
     }),
     getAddress: builder.query({
-      query: (id) =>({
+      query: (id) => ({
         url: `${USERS_URL}/account/edit-address/${id}`,
       }),
       providesTags: ["Address"],
-  }),
-  updateAddress: builder.mutation({
+    }),
+    updateAddress: builder.mutation({
       query: ({ id, ...data }) => ({
-          url: `${USERS_URL}/account/edit-address/${id}`,
-          method: "PUT",
-          body: data,
+        url: `${USERS_URL}/account/edit-address/${id}`,
+        method: "PUT",
+        body: data,
       }),
       invalidatesTags: ["Address"],
-  }),
-  deleteAddress: builder.mutation({
-    query: (id) => ({
-      url: `${USERS_URL}/account/delete-address/${id}`,
-      method: "DELETE",
     }),
-    invalidatesTags: ["User"],
-  }),
+    deleteAddress: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/account/delete-address/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -147,7 +162,7 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useVerifyOtpMutation,
-  useForgotPasswordMutation ,
+  useForgotPasswordMutation,
   useVerifyOtpPassMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
@@ -163,5 +178,7 @@ export const {
   useAddAddressMutation,
   useGetAddressQuery,
   useUpdateAddressMutation,
-  useDeleteAddressMutation
+  useDeleteAddressMutation,
+  useUploadImageMutation,
+  useDeleteUserImageMutation,
 } = userApiSlice;
