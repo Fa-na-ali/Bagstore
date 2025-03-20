@@ -41,6 +41,9 @@ import OrderDetails from './pages/admin/Orders/OrderDetails';
 import OrderDetail from './pages/order/OrderDetail';
 import EmailVerify from './pages/user/EmailVerify';
 import ChangePassword from './pages/user/ChangePassword';
+import Wishlist from './pages/user/Wishlist';
+import AddCoupon from './pages/admin/Coupons/AddCoupon';
+import CreateOffer from './pages/admin/Offers/CreateOffer';
 
 
 
@@ -74,7 +77,7 @@ export const router = createBrowserRouter(
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/verify-email" element={<EmailVerify />} />
 
- 
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout/>} />
         <Route path="/mine" element={<MyOrder/>} />
@@ -96,7 +99,10 @@ export const router = createBrowserRouter(
         <Route path="/admin/orders" element={<OrderManagement/>} />
         <Route path='/admin/orders/edit/:id' element={<OrderDetails/>}/>
 
-        
+        <Route path="/admin/coupons/add" element={<AddCoupon/>} />
+
+
+        <Route path="/admin/offers/add" element={<CreateOffer/>} />
 
 
       </Route>

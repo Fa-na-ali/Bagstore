@@ -1,21 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Modal, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
+import { useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 
 const Cards = ({ products }) => {
   const imageBaseUrl = 'http://localhost:5004/uploads/';
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const items =products || products?.all
+  const [likedProducts, setLikedProducts] = useState({});
+  const [update] = useUpdateWishlistMutation()
   
   const cartHandler = (product) => {
     dispatch(addToCart({ ...product, qty: 1 })); 
     toast.success('Item added to cart');
   
+  };
+
+  const toggleLike = async (productId,color) => {
+    const isLiked = !likedProducts[productId]; 
+    setLikedProducts((prev) => ({ ...prev, [productId]: isLiked })); 
+
+    try {
+      if (isLiked) {
+        
+        const res = await update({productId,color}).unwrap();
+        console.log("res",res)
+       if(res.status==='success')
+        toast.success("Added to Wishlist")
+      }else{
+         
+        const res = await update({productId,color}).unwrap();
+        console.log("res",res)
+        toast.success("Removed from Wishlist")
+
+      }
+
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      toast.error('Failed to update wishlist');
+      setLikedProducts((prev) => ({ ...prev, [productId]: !isLiked }));
+    }
   };
 
   return (
@@ -84,8 +113,14 @@ const Cards = ({ products }) => {
                     >
                       Add to cart
                     </Button>
-                    <Button variant='light' className='border icon-hover'>
-                      <FaHeart className='text-danger' />
+                    <Button
+                      variant='light'
+                      className='border icon-hover'
+                      onClick={() => toggleLike(product._id,product.color)} 
+                    >
+                      <FaHeart
+                        className={likedProducts[product._id] ? 'text-danger' : 'text-muted'} 
+                      />
                     </Button>
                   </div>
                 </Card.Body>

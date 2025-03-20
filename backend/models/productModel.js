@@ -17,8 +17,11 @@ const productSchema = new Schema({
     type: String,
     trim: true
   },
+  offer: {
+    type: String,
+  },
   pdImage: {
-    type: [String], 
+    type: [String],
     default: []
   },
   price: {
@@ -66,8 +69,8 @@ const productSchema = new Schema({
     required: true
   }
 },
-{
-    timestamps: true, 
+  {
+    timestamps: true,
   }
 );
 

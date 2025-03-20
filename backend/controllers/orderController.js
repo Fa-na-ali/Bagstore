@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const Payment = require('../models/paymentModel');
-const Return  = require('../models/returnModel');
+const Return = require('../models/returnModel');
 const STATUS_CODES = require('../middlewares/statusCodes');
 
 async function generateOrderId() {
@@ -22,28 +22,29 @@ const createOrder = async (req, res) => {
     }
 
     const user = await User.findById(userId);
-    console.log("user",user)
+    console.log("user", user)
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const validatedItems = items.map((item) => {
+    const validatedItems = [];
+    for (const item of items) {
       if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-       return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status:"error",
-        message:""
-       })
+        console.log("Invalid product ID:", item.product);
+        return res.status(400).json({ status: "error", message: "Invalid product ID" });
       }
       if (!item.qty || item.qty < 1) {
-        throw new Error(`Invalid quantity for product ${item.product}`);
+        console.log("Invalid quantity:", item.qty);
+        return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
       }
-      return { product: item.product, qty: item.qty, status: "pending" };
-    });
-
-    if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
-      return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
+      validatedItems.push({ product: item.product, qty: item.qty, status: "pending" });
     }
-    console.log("validated",validatedItems)
+    console.log("Validated Items:", validatedItems);
+
+   // if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
+    //  return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
+    //}
+    console.log("validated", validatedItems)
 
     const order = new Order({
       orderId,
@@ -57,7 +58,7 @@ const createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-    console.log("Order created successfully",createdOrder);
+    console.log("Order created successfully", createdOrder);
 
     const payment = new Payment({
       userId: user._id,
@@ -70,7 +71,7 @@ const createOrder = async (req, res) => {
     console.log("Payment recorded successfully");
 
     createdOrder.paymentId = createdPayment._id;
-    await createdOrder.save(); 
+    await createdOrder.save();
 
     console.log("Order updated with paymentId");
 
@@ -225,7 +226,7 @@ const findOrderById = async (req, res) => {
 const setItemStatus = async (req, res) => {
   try {
     const { status, item, id } = req.body;
-     console.log("req",req.body)
+    console.log("req", req.body)
     if (status == "delivered") {
       const payment = await Payment.findOne({ orderId: id });
       if (!payment) {
@@ -244,7 +245,7 @@ const setItemStatus = async (req, res) => {
     }
 
     const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
-     console.log("item",orderItem)
+    console.log("item", orderItem)
     if (!orderItem) {
       return res.status(404).json({ message: "Item not found in order" });
     }
@@ -252,7 +253,7 @@ const setItemStatus = async (req, res) => {
     orderItem.status = status
 
     await order.save();
-  console.log("status saved",order)
+    console.log("status saved", order)
     return res.status(200).json({ success: true, message: `Order status updated successfully` });
 
   } catch (error) {
@@ -263,30 +264,30 @@ const setItemStatus = async (req, res) => {
 
 //return order by user
 const returnOrder = async (req, res) => {
-  const { orderId,item, returnReason } = req.body;
-  const user = await User.findOne({_id: req.user._id});
+  const { orderId, item, returnReason } = req.body;
+  const user = await User.findOne({ _id: req.user._id });
   if (!user) {
-      return res.json({success: false, message: `User not found`});
+    return res.json({ success: false, message: `User not found` });
   }
-  const order = await Order.findOne({_id: orderId, userId: user._id});
+  const order = await Order.findOne({ _id: orderId, userId: user._id });
   if (!order) {
-      return res.json({success: false, message: `Order not found`});
+    return res.json({ success: false, message: `Order not found` });
   }
   const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
-     console.log("item",orderItem)
-    if (!orderItem) {
-      return res.status(404).json({ message: "Item not found in order" });
-    }
+  console.log("item", orderItem)
+  if (!orderItem) {
+    return res.status(404).json({ message: "Item not found in order" });
+  }
   if (item.status !== "delivered") {
-      return res.json({success: false, message: "Order can only be returned after delivery"});
+    return res.json({ success: false, message: "Order can only be returned after delivery" });
   }
 
-  const payment = await Payment.findOne({_id: order.paymentId});
+  const payment = await Payment.findOne({ _id: order.paymentId });
   if (!payment) {
     return res.status(400).json({ success: false, message: "Payment record not found for this order" });
-}
- orderItem.returnReason = returnReason
- orderItem.status = "return requested"
+  }
+  orderItem.returnReason = returnReason
+  orderItem.status = "return requested"
   await order.save()
   return res.status(200).json({ success: true, message: "Return request sent successfully" });
 };

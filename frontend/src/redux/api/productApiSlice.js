@@ -73,6 +73,21 @@ export const productApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Product"],
     }),
 
+    updateWishlist: builder.mutation({
+      query: ({ productId, color }) => ({
+        url: `${PRODUCT_URL}/update-wishlist`,
+        method: "POST",
+        body: { productId, color },
+      }),
+      invalidatesTags: ["Product"],
+    }),
+
+    getWishlist: builder.query({
+      query: () => `${PRODUCT_URL}/get-wishlist`,
+      keepUnusedDataFor: 5,
+    }),
+
+
     createReview: builder.mutation({
       query: (data) => ({
         url: `${PRODUCT_URL}/${data.productId}/reviews`,
@@ -133,5 +148,7 @@ export const {
   useUploadProductImageMutation,
   useFetchRelatedProductsQuery,
   useFilterProductsQuery,
-  useGetProductsByIdsQuery
+  useGetProductsByIdsQuery,
+  useUpdateWishlistMutation,
+  useGetWishlistQuery,
 } = productApiSlice;

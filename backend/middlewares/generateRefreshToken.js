@@ -6,8 +6,8 @@ const generaterefreshToken = async(req,res)=>{
     console.log("refresh",refreshToken)
 
     try {
-      const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
-      const user = await User.findById(decoded.userId);
+      //const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+      const user = await User.findOne(refreshToken);
        console.log("decoded user",user)
       if (!user || user.refreshToken !== refreshToken) {
         return res.status(403).json({ message: "Invalid refresh token" });
@@ -18,7 +18,7 @@ const generaterefreshToken = async(req,res)=>{
         expiresIn:process.env.ACCESS_EXPIRY,
       });
   
-      res.json({ token });
+      res.status(200).json({ token });
     } catch (error) {
       res.status(403).json({ message: "Invalid refresh token" });
     }

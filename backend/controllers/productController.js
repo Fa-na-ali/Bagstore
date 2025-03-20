@@ -3,6 +3,9 @@ const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const STATUS_CODES = require('../middlewares/statusCodes');
 const { PRODUCT_ADDED, PRODUCT_NOT_FOUND, PRODUCT_DELETED, PRODUCT_INVALID, PRODUCT_IMG_DELETED } = require('../productMsgConstants');
+const User = require('../models/userModel');
+const { USER_NOT_MSG } = require('../messageConstants');
+const Wishlist = require('../models/wishlistModel');
 
 //add Product
 const addProduct = async (req, res) => {
@@ -100,7 +103,7 @@ const updateProduct = async (req, res) => {
         status: "error",
         message: PRODUCT_NOT_FOUND
       });
-     
+
     }
     else {
       await product.save();
@@ -131,12 +134,12 @@ const deleteImage = async (req, res) => {
     }
     const product = await Product.findById(id);
     console.log("prooo", product)
-    if (!product) 
+    if (!product)
       return res.status(STATUS_CODES.NOT_FOUND).json({
         status: "error",
         message: PRODUCT_NOT_FOUND
       });
-     
+
 
     if (index < 0 || index >= product.pdImage.length) {
       return res.status(400).json({ error: "Invalid image index" });
@@ -163,7 +166,7 @@ const getQuantity = async (req, res) => {
     const products = await Product.find({ _id: { $in: ids } });
     return res.status(STATUS_CODES.OK).json({
       status: "success",
-     products
+      products
     });
   } catch (error) {
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -182,7 +185,7 @@ const readProduct = async (req, res) => {
     console.log("read", product)
     return res.status(STATUS_CODES.OK).json({
       status: "success",
-     product
+      product
     });
   } catch (error) {
     console.log(error);
@@ -249,7 +252,7 @@ const fetchAllProducts = async (req, res) => {
       totalPages: Math.ceil(totalProducts / limit),
       currentPage: page
     });
-   
+
   } catch (error) {
     console.error(error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -277,7 +280,7 @@ const fetchRelatedProducts = async (req, res) => {
         status: "error",
         message: PRODUCT_NOT_FOUND
       });
-     
+
     }
     console.log("currentpro", currentProduct)
     const relatedProducts = await Product.find({
@@ -289,10 +292,10 @@ const fetchRelatedProducts = async (req, res) => {
       .limit(6)
       .sort({ createdAt: -1 });
 
-      return res.status(STATUS_CODES.OK).json({
-        status: "success",
-       relatedProducts
-      });
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
+      relatedProducts
+    });
   } catch (error) {
     console.error(error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -405,7 +408,7 @@ const deleteProduct = async (req, res) => {
         status: "error",
         message: PRODUCT_NOT_FOUND
       });
-     
+
     }
     return res.status(STATUS_CODES.OK).json({
       status: "SUCCESS",
@@ -421,6 +424,73 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+//addto wishlist
+const updateWishlist = async (req, res) => {
+  const { productId, color } = req.body;
+  const user = await User.findOne({ _id: req.user._id });
+  if (!user) {
+    return res.status(STATUS_CODES.NOT_FOUND).json({
+      status: 'error',
+      message: USER_NOT_MSG
+    });
+  }
+
+  const wishlist = await Wishlist.findOne({ productId });
+  if (!wishlist) {
+    const new_wishlist = await Wishlist.create({
+      userId: user._id,
+      productId,
+      color,
+    });
+    return res.status(STATUS_CODES.OK).json({
+      status: 'success',
+      message: "Product added to wishlist successfully"
+    });
+  } else {
+    await Wishlist.deleteOne({ productId });
+    return res.status(STATUS_CODES.OK).json({
+      status: 'success',
+      message: "Product removed from wishlist successfully"
+    });
+  }
+};
+
+//load wishlist
+const fetchWishlist = async (req, res) => {
+  console.log("id",req.user._id)
+  try {
+    const userId = req.user._id
+   console.log("id", userId);
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
+      status: "error",
+      message: USER_NOT_MSG
+    })
+  }
+
+
+    const wishlist = await Wishlist.find({ userId}).populate( "productId");
+    console.log(wishlist);
+    if (!wishlist) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        status: "error",
+        message: "wishlist not found"
+      });
+    }
+    return res.status(STATUS_CODES.OK).json({
+      status: "sucess",
+      message: "",
+      wishlist
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "Server error", error
+    });
+  }
+};
+
 module.exports = {
   addProduct,
   newProducts,
@@ -432,6 +502,8 @@ module.exports = {
   fetchRelatedProducts,
   filterProducts,
   getQuantity,
+  updateWishlist,
+  fetchWishlist,
 }
 
 

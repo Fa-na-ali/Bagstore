@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    refreshToken:{
+    refreshToken: {
       type: String,
     },
     phone: {
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     image: {
-      type: [String], 
+      type: [String],
       default: []
     },
     isAdmin: {
@@ -37,15 +37,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    coupon: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Coupon',
+      required: false
+    },
     address: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Address",
       }
-    ], 
+    ],
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

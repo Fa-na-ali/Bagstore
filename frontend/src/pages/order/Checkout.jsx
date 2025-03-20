@@ -4,7 +4,7 @@ import { FaTrash, FaCcMastercard, FaCcVisa, FaCcPaypal } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useProfileQuery } from "../../redux/api/usersApiSlice";
-import { clearCartItems, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
+import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
@@ -86,10 +86,13 @@ const Checkout = () => {
       console.log('res', res)
       const id = res?._id
       if (!id) {
-        throw new Error("Order ID not found in the response.");
+        toast.error(res?.message);
       }
-      dispatch(clearCartItems())
-      navigate(`/order-success?id=${id}`)
+      else{
+        dispatch(clearCartItems())
+        navigate(`/order-success?id=${id}`)
+      }
+      
     } catch (error) {
       toast.error(error);
     }
@@ -148,7 +151,7 @@ const Checkout = () => {
                                 <div style={{ width: "80px" }}>
                                   <h5 className="mb-0">₹{item.price * item.qty}</h5>
                                 </div>
-                                <Button variant="link" className="text-danger p-0">
+                                <Button variant="link" className="text-danger p-0" onClick={() => dispatch(removeFromCart(item._id))}>
                                   <FaTrash size={18} />
                                 </Button>
                               </div>
