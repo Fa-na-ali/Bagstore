@@ -103,12 +103,24 @@ const createOrder = async (req, res) => {
 
 //get my orders
 const getMyOrders = async (req, res) => {
-  console.log("uuuuuuuser", req.user._id)
   try {
-    const orders = await Order.find({ userId: req.user._id }).populate('items.product').sort({ createdAt: -1 })
-    console.log("orders", orders)
-    res.json(orders);
+    console.log("User ID:", req.user._id);
+    console.log("Query Params:", req.query);
+
+    const filters = { userId: req.user._id };
+    const { searchTerm } = req.query;
+
+    if (searchTerm) {
+      filters.orderId = searchTerm; 
+    }
+    const orders = await Order.find(filters)
+      .populate("items.product") 
+      .sort({ createdAt: -1 }); 
+
+    console.log("Orders:", orders);
+    res.status(200).json(orders);
   } catch (error) {
+    console.error("Error fetching orders:", error);
     res.status(500).json({ error: error.message });
   }
 };

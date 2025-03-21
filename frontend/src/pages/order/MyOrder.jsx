@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Form, Image, Modal, InputGroup, FormControl } from "react-bootstrap";
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 import { toast } from 'react-toastify'
 
 const MyOrder = () => {
-  const { data: orders, refetch, isLoading, error } = useGetMyOrdersQuery();
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: orders, refetch, isLoading, error } = useGetMyOrdersQuery(searchTerm);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -31,8 +32,8 @@ const MyOrder = () => {
       setShowReasonModal(false);
 
       const response = await cancelOrder({
-        orderId:selectedOrder,
-        item:selectedProduct,
+        orderId: selectedOrder,
+        item: selectedProduct,
         cancelReason: selectedReason,
       }).unwrap();
 
@@ -69,6 +70,11 @@ const MyOrder = () => {
     }
   };
 
+  const searchHandler = (e) => {
+    e.preventDefault();
+    refetch();
+  };
+
   const handleConfirmCancel = () => {
     setShowConfirmModal(false);
     setShowReasonModal(true);
@@ -78,6 +84,28 @@ const MyOrder = () => {
     <>
 
       <section className="h-100 h-custom" style={{ backgroundColor: "#eee" }}>
+        <Row className='py-5'>
+          <Col lg={6}></Col>
+          <Col lg={3}></Col>
+
+          <Col lg={3} className="d-flex justify-content-end gap-3">
+            <InputGroup className="mb-3">
+              <Form onSubmit={searchHandler} method="GET" className="d-flex">
+                <FormControl
+                  type="search"
+                  placeholder="Search"
+                  aria-label="Search"
+                  aria-describedby="search-addon"
+                  value={searchTerm}
+                  onChange={(e) => { setSearchTerm(e.target.value) }}
+                />
+                <Button type='submit' variant="outline-primary" id="search-addon">
+                  Search
+                </Button>
+              </Form>
+            </InputGroup>
+          </Col>
+        </Row>
         <Container className="py-5 h-100">
           <Row className="d-flex justify-content-center align-items-center h-100">
             <Col>

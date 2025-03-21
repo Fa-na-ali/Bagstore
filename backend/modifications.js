@@ -124,3 +124,67 @@
 //     res.status(500).json({ message: "Internal Server Error" });
 //   }
 // };
+
+
+const apply_coupon = async (req, res) => {
+    const { coupon_code, min_amount } = req.body;
+    const coupon = await coupon_model.findOne({coupon_code: coupon_code});
+    if (!coupon || coupon.limit <= 0) {
+        return res.json({success: false, message: "Invalid coupon code"});
+    }
+    if (coupon.expiry < new Date()) {
+        return res.json({success: false, message: "Coupon has expired"});
+    }
+    if (coupon.status == false) {
+        return res.json({success: false, message: "Coupon is inactive"});
+    }
+    if (min_amount && coupon.min_amount > min_amount) {
+        return res.json({success: false, message: "Coupon minimum amount requirement not met"});
+    }
+
+    if (min_amount && coupon.max_amount < min_amount) {
+        return res.json({success: false, message: "Coupon maximum amount requirement exceeded"});
+    }
+    const user = await user_model.findOne({_id: req.session.user.id});
+
+    if (coupon.users.includes(user._id)) {
+        if (coupon.type == 'single') {
+            delete user.coupon;
+            await user.save();
+            return res.json({success: false, message: "Coupon already applied"});
+        }
+        coupon.limit -= 1;
+        user.coupon = coupon._id;
+    } else {
+        user.coupon = coupon._id;
+        coupon.users.push(user._id);
+        coupon.limit -= 1;
+    }
+
+    await user.save();
+    await coupon.save();
+    return res.json({success: true, message: "Coupon applied successfully"});
+};
+
+const remove_coupon = async (req, res) => {
+    const { coupon_code } = req.body;
+    const coupon = await coupon_model.findOne({coupon_code: coupon_code});
+    if (!coupon) {
+        return res.json({ success: false, message: "Coupon not found" });
+    }
+    const user = await user_model.findOne({_id: req.session.user.id});
+    if (!user) {
+        return res.json({ success: false, message: "User not found" });
+    }
+    if (user.coupon.toString() == coupon._id.toString()) {
+        delete user.coupon;
+        coupon.users.pull(user._id)
+        if (coupon.type == "multiple") {
+            coupon.limit += 1;
+        }
+    }
+
+    await user.save();
+    await coupon.save();
+    return res.json({ success: true, message: "Coupon removed successfully" });
+}
