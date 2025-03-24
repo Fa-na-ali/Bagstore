@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlewares/authMiddleware')
-const { addProduct, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts, newProducts, fetchRelatedProducts, filterProducts,getQuantity, updateWishlist, fetchWishlist } = require('../controllers/productController')
+const { addProduct, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts, newProducts, fetchRelatedProducts, filterProducts,getQuantity, updateWishlist, fetchWishlist, removeFromWishlist } = require('../controllers/productController')
 const imageUpload = require('../imageUpload')
 
 router.route('/new').get(newProducts)
@@ -18,6 +18,7 @@ router.route('/:id')
     .put(authenticate,blockDisabledUsers, authorizeAdmin, imageUpload.array("pdImage"), updateProduct)
 router.route('/:id/:index').delete(authenticate, blockDisabledUsers,authorizeAdmin, deleteImage)
 router.route('/update-wishlist').post(authenticate,blockDisabledUsers,updateWishlist)
+router.route('/remove-wishlist').delete(authenticate,blockDisabledUsers,removeFromWishlist)
 
 
 

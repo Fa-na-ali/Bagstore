@@ -188,3 +188,160 @@ const remove_coupon = async (req, res) => {
     await coupon.save();
     return res.json({ success: true, message: "Coupon removed successfully" });
 }
+
+const createOrder = async (req, res) => {
+    
+    try {
+        const { userId, items, shippingAddress, paymentMethod, totalPrice, couponId } = req.body;
+        if (!items || items.length === 0) {
+            return res.status(400).json({ message: "No items in the order" });
+          }
+
+        const user = await User.findById(userId);
+            console.log("user", user)
+            if (!user) {
+              return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+         const validatedItems = [];
+            for (const item of items) {
+              if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+                console.log("Invalid product ID:", item.product);
+                return res.status(400).json({ status: "error", message: "Invalid product ID" });
+              }
+              if (!item.qty || item.qty < 1) {
+                console.log("Invalid quantity:", item.qty);
+                return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
+              }
+              validatedItems.push({ product: item.product, qty: item.qty, status: "pending" });
+            }
+            console.log("Validated Items:", validatedItems);
+        
+           if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
+             return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
+            }
+            console.log("validated", validatedItems)
+        if (paymentMethod == "wallet") {
+            const wallet = await Wallet.findOne({ userId: user._id })
+            if (!wallet || wallet.balance < totalPrice) {
+                return res.json({ success: false, message: "Insufficient balance in wallet" });
+            }
+            wallet.balance -= totalPrice;
+            wallet.transactions.push({
+                amount: totalPrice,
+                type: "debit",
+                description: "Order payment",
+            });
+            await wallet.save();
+        }
+
+        let paymentData = new Payment({
+            userId: user._id,
+            method: paymentMethod,
+            amount: totalPrice,
+        });
+
+        if (paymentMethod == "razorpay" && razorpay_order_id != "") {
+            paymentData.razorpay_order_id = razorpay_order_id;
+            paymentData.status = status;
+        }
+
+        if (paymentMethod == "wallet") {
+            paymentData.status = "success";
+        }
+
+        if (!isNaN(coupon_discount)) {
+            paymentData.coupon_discount = coupon_discount;
+        }
+
+        const payment = await paymentData.save();
+
+        let orders = [];
+        const parsedCarts = JSON.parse(carts);
+
+        for (const cartId of parsedCarts) {
+            const product_cart = await cart_model.findOne({ _id: cartId }).session(session);
+            if (!product_cart) continue;
+
+            const product = await product_model.findOne({ _id: product_cart.product }).session(session);
+            if (!product) continue;
+
+            let variant = product.variants.find((v) => v.name === product_cart.variant);
+            if (!variant) continue;
+
+            const colorDetail = variant.colors.find((color) => color.color === product_cart.color);
+            if (!colorDetail) continue;
+
+            if (colorDetail.quantity < product_cart.quantity) {
+                return res.json({ success: false, message: `Insufficient quantity in stock for selected color` });
+            }
+
+            let finalPrice = product_cart.quantity * colorDetail.price;
+            if (product.offer && product.offer !== "none") {
+                const offer = await offer_model.findOne({ name: product.offer }).session(session);
+                if (offer) {
+                    finalPrice -= Math.ceil(colorDetail.price * offer.discount / 100);
+                }
+            }
+
+            const order_item = new order_model({
+                user_id: user._id,
+                product_id: product._id,
+                name: product.title,
+                variant: variant.name,
+                color: product_cart.color,
+                quantity: product_cart.quantity,
+                image: product_cart.image,
+                price: finalPrice,
+                payment: payment._id,
+                address: address,
+                discount: product_cart.discount,
+            });
+
+            const order = await order_item.save({ session });
+            orders.push(order._id);
+
+            colorDetail.quantity -= product_cart.quantity;
+
+            variant.colors = variant.colors.map((color) => {
+                if (color.color === product_cart.color) {
+                    color.quantity = colorDetail.quantity;
+                }
+                return color;
+            });
+            product.variants = product.variants.map((v) => v.name === variant.name ? variant : v);
+            product.ordered += 1;
+            await product.save({ session });
+
+            await cart_model.deleteOne({ _id: product_cart._id }).session(session);
+        }
+
+        await payment_model.updateOne(
+            { _id: payment._id },
+            { $set: { orders: orders } },
+            { session }
+        );
+
+        user.coupon = null;
+        await user.save({ session });
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(200).json({
+            success: true,
+            message: "Order placed successfully",
+            order_id: payment._id,
+        });
+
+    } catch (error) {
+        console.error("Error placing order:", error);
+        await session.abortTransaction();
+        session.endSession();
+
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while placing the order",
+        });
+    }
+};
+

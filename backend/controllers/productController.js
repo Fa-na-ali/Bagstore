@@ -457,19 +457,17 @@ const updateWishlist = async (req, res) => {
 
 //load wishlist
 const fetchWishlist = async (req, res) => {
-  console.log("id",req.user._id)
+  console.log("id", req.user._id)
   try {
     const userId = req.user._id
-   console.log("id", userId);
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
-      status: "error",
-      message: USER_NOT_MSG
-    })
-  }
-
-
-    const wishlist = await Wishlist.find({ userId}).populate( "productId");
+    console.log("id", userId);
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        status: "error",
+        message: USER_NOT_MSG
+      })
+    }
+    const wishlist = await Wishlist.find({ userId }).populate("productId");
     console.log(wishlist);
     if (!wishlist) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -479,6 +477,41 @@ const fetchWishlist = async (req, res) => {
     }
     return res.status(STATUS_CODES.OK).json({
       status: "sucess",
+      message: "",
+      wishlist
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "Server error", error
+    });
+  }
+};
+
+//remove from wishlist
+const removeFromWishlist = async (req, res) => {
+  const { userId } = req.user._id;
+  const { productId } = req.body;
+  console.log("userIx", userId);
+  console.log("productId", productId);
+  try {
+    const wishlist = await Wishlist.findOne({ userId });
+
+    if (!wishlist) {
+      res.status(STATUS_CODES.BAD_REQUEST).json({
+        status: "error",
+        message: "wishlist not found"
+      });
+    }
+
+    wishlist.products = wishlist.productId.filter(
+      (id) => id.toString() != productId
+    );
+    console.log(wishlist.products);
+    await wishlist.save();
+    res.status(STATUS_CODES.OK).json({
+      status: "success",
       message: "",
       wishlist
     });
@@ -504,6 +537,7 @@ module.exports = {
   getQuantity,
   updateWishlist,
   fetchWishlist,
+  removeFromWishlist,
 }
 
 
