@@ -171,6 +171,7 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+//get all orders in admin
 const getAllOrders = async (req, res) => {
 
   try {
@@ -197,8 +198,10 @@ const getAllOrders = async (req, res) => {
     const totalOrders = await Order.countDocuments(query);
 
     res.json({
+      status:"success",
+      message:"",
       orders,
-      currentPage: page,
+       page,
       pages: Math.ceil(totalOrders / limit),
     });
   } catch (error) {
@@ -263,7 +266,11 @@ const setItemStatus = async (req, res) => {
     }
 
     orderItem.status = status
+    const allDelivered = order.items.every((i) => i.status === "delivered");
 
+    if (allDelivered) {
+      order.status = "completed";
+    }
     await order.save();
     console.log("status saved", order)
     return res.status(200).json({ success: true, message: `Order status updated successfully` });

@@ -192,6 +192,7 @@ const remove_coupon = async (req, res) => {
 const createOrder = async (req, res) => {
     
     try {
+        const orderId = await generateOrderId();
         const { userId, items, shippingAddress, paymentMethod, totalPrice, couponId } = req.body;
         if (!items || items.length === 0) {
             return res.status(400).json({ message: "No items in the order" });
@@ -284,42 +285,34 @@ const createOrder = async (req, res) => {
                 }
             }
 
-            const order_item = new order_model({
-                user_id: user._id,
-                product_id: product._id,
-                name: product.title,
-                variant: variant.name,
-                color: product_cart.color,
-                quantity: product_cart.quantity,
-                image: product_cart.image,
-                price: finalPrice,
-                payment: payment._id,
-                address: address,
-                discount: product_cart.discount,
+            const order_item = new Order({
+                userId: user._id,
+                productId: product._id,
+                items: validatedItems,
+                shippingAddress,
+                paymentMethod,
+                status: "not completed",
+                totalPrice,
+                couponId,
+                paymentId: payment._id,
+               // discount: offer discount on a particular product,(should be added to the items)
             });
 
-            const order = await order_item.save({ session });
-            orders.push(order._id);
+            const order = await order_item.save();
+           
 
             colorDetail.quantity -= product_cart.quantity;
 
-            variant.colors = variant.colors.map((color) => {
-                if (color.color === product_cart.color) {
-                    color.quantity = colorDetail.quantity;
-                }
-                return color;
-            });
-            product.variants = product.variants.map((v) => v.name === variant.name ? variant : v);
             product.ordered += 1;
-            await product.save({ session });
+            await product.save();
 
-            await cart_model.deleteOne({ _id: product_cart._id }).session(session);
+           
         }
 
-        await payment_model.updateOne(
+        await Payment.updateOne(
             { _id: payment._id },
             { $set: { orders: orders } },
-            { session }
+            
         );
 
         user.coupon = null;

@@ -155,8 +155,52 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
-  }),
-});
+
+    addCoupon: builder.mutation({
+      query: (couponData) => ({
+        url: `${USERS_URL}/admin/coupons/add`,
+        method: "POST",
+        body: couponData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+
+    GetAllCoupons: builder.query({
+      query: ({ keyword, page }) => ({
+        url: `${USERS_URL}/admin/coupons`,
+        params: { keyword, page }
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ["Coupons"],
+    }),
+
+    deleteCoupon: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/coupons/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Coupons"],
+    }),
+
+    getCouponById: builder.query({
+      query: (id) => `${USERS_URL}/admin/coupons/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Coupon", id: id },
+      ],
+    }),
+
+    updateCoupon: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `${USERS_URL}/admin/coupons/edit/${id}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+
+  })
+})
 
 export const {
   useLoginMutation,
@@ -181,4 +225,9 @@ export const {
   useDeleteAddressMutation,
   useUploadImageMutation,
   useDeleteUserImageMutation,
+  useAddCouponMutation,
+  useGetCouponByIdQuery,
+  useUpdateCouponMutation,
+  useGetAllCouponsQuery,
+  useDeleteCouponMutation,
 } = userApiSlice;

@@ -31,7 +31,7 @@ const AdminSidebar=()=>{
             <FiShoppingBag className="me-3" />
             Orders
           </Nav.Link>
-          <Nav.Link href="#" className="py-2 ripple text-white">
+          <Nav.Link as={Link} to='/admin/coupons'  className="py-2 ripple text-white">
             <MdOutlineLocalOffer className="me-3" />
             Coupons
           </Nav.Link>

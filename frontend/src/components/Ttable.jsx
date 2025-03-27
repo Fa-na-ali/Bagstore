@@ -35,7 +35,7 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                     <td>{index + 1}</td>
                     {columns.map((col) => (
                       <td className="caption" key={col.key}>
-                        {col.key === "isExist" ? (
+                        {(col.key === "isExist")||(col.key === "status") ? (
                           item[col.key] ? (
                             <Badge bg="success" pill>
                               Active

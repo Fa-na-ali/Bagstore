@@ -3,6 +3,10 @@ import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import AdminSidebar from "../../../components/AdminSidebar";
+import { useAddCouponMutation } from "../../../redux/api/usersApiSlice";
+import { toast } from "react-toastify";
+
+
 
 const AddCoupon = () => {
     const [formData, setFormData] = useState({
@@ -17,20 +21,42 @@ const AddCoupon = () => {
         limit: "",
         type: "single",
     });
+    const [addCoupon] = useAddCouponMutation()
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         console.log("Form Data:", formData);
-        // Add your form submission logic here
+        try {
+            const response = await addCoupon(formData).unwrap();
+            console.log(response)
+            toast.success(response.message); 
+        } catch (err) {
+            toast.error(err.data?.message || "Failed to add coupon"); 
+        }
     };
 
-    // Initialize flatpickr for date pickers
-    React.useEffect(() => {
+    // const handleDateChange = (name, date) => {
+    //     if (date) {
+    //         const year = date.getFullYear();
+    //         const month = String(date.getMonth() + 1).padStart(2, "0");
+    //         const day = String(date.getDate()).padStart(2, "0"); 
+    //         const formattedDate = `${year}-${month}-${day}`;
+            
+    //         setFormData((prev) => ({
+    //             ...prev,
+    //             [name]: formattedDate, 
+    //         }));
+    //     }
+    // };
+    
+    
+ React.useEffect(() => {
         const activationPicker = flatpickr("#activation", {
             dateFormat: "d-M-Y",
             minDate: "today",
@@ -161,7 +187,7 @@ const AddCoupon = () => {
                                         <Form.Control
                                             type="number"
                                             id="min_amount"
-                                            name="min_amount"
+                                            name="minAmount"
                                             placeholder="Minimum purchase amount"
                                             value={formData.min_amount}
                                             onChange={handleChange}
@@ -178,7 +204,7 @@ const AddCoupon = () => {
                                         <Form.Control
                                             type="number"
                                             id="max_amount"
-                                            name="max_amount"
+                                            name="maxAmount"
                                             placeholder="Maximum purchase amount"
                                             value={formData.max_amount}
                                             onChange={handleChange}

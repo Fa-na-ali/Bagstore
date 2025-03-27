@@ -86,8 +86,8 @@ const OrderDetail = () => {
           Download Invoice
         </Button>
       </div>
-      <h2 className="text-center pt-5">ORDER DETAILS</h2>
-      <p className="text-center">Order Id : {order.orderId}</p>
+      <h2 className="text-center pt-5 heading">ORDER DETAILS</h2>
+      <p className="text-center caption">Order Id : {order.orderId}</p>
       <Container id="order-details" className="">
         <Row className="d-flex justify-content-center  h-100">
           <Col>
@@ -108,39 +108,34 @@ const OrderDetail = () => {
                       <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Name</p>
-                          <p className="lead fw-normal mb-0">{item.product.name}</p>
+                          <p className="lead fw-normal mb-0 caption">{item.product.name}</p>
                         </div>
                       </Col>
-                      <Col md={1} className="d-flex justify-content-center">
+                      <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Color</p>
-                          <p className="lead fw-normal mb-0">{item.product.color}</p>
+                          <p className="lead fw-normal mb-0 caption">{item.product.color}</p>
                         </div>
                       </Col>
-                      <Col md={1} className="d-flex justify-content-center">
+                      <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Quantity</p>
-                          <p className="lead fw-normal mb-0">{item.qty}</p>
+                          <p className="lead fw-normal mb-0 caption">{item.qty}</p>
                         </div>
                       </Col>
                       <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Price</p>
-                          <p className="lead fw-normal mb-0">₹{item.product.price}</p>
+                          <p className="lead fw-normal mb-0 caption">₹{item.product.price}</p>
                         </div>
                       </Col>
                       <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Total</p>
-                          <p className="lead fw-normal mb-0">₹{item.product.price * item.qty}</p>
+                          <p className="lead fw-normal mb-0 caption">₹{item.product.price * item.qty}</p>
                         </div>
                       </Col>
-                      <Col md={2} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">Action</p>
-                          <Button variant="danger" onClick={() => { handleCancel(order._id, item.product._id) }}>Cancel</Button>
-                        </div>
-                      </Col>
+                      
                     </Row>
                   </Card.Body>
                 </Card>
@@ -151,14 +146,14 @@ const OrderDetail = () => {
         </Row>
         <Row>
           <Col md={10}>
-            <h4>Shipping Address</h4>
-            <p>{order.shippingAddress.name}, {order.shippingAddress.houseName}, {order.shippingAddress.town},</p>
-            <p>{order.shippingAddress.street}, {order.shippingAddress.zipcode}, {order.shippingAddress.country}, {order.shippingAddress.phone}</p>
+            <h4 className="heading">Shipping Address</h4>
+            <p className="caption">{order.shippingAddress.name}, {order.shippingAddress.houseName}, {order.shippingAddress.town},</p>
+            <p className="caption">{order.shippingAddress.street}, {order.shippingAddress.zipcode}, {order.shippingAddress.country}, {order.shippingAddress.phone}</p>
           </Col>
           <Col md={2}>
-            <h4>Payment Details</h4>
-            <p>Method:{order.paymentMethod}</p>
-            <p>Total Price:{order.totalPrice}</p>
+            <h4 className="heading" >Payment Details</h4>
+            <p className="caption">Method:{order.paymentMethod}</p>
+            <p className="caption">Total Price:{order.totalPrice}</p>
           </Col>
 
         </Row>

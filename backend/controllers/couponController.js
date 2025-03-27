@@ -3,6 +3,7 @@ const Coupon = require("../models/couponModel");
 
 //create coupon
 const addCoupon = async (req, res) => {
+    console.log("Received Coupon Data:", req.body);
     try {
         const {
             name,
@@ -27,7 +28,8 @@ const addCoupon = async (req, res) => {
         await coupon.save();
         return res.status(STATUS_CODES.OK).json({
             status: "success",
-            message: "Coupon added successfully"
+            message: "Coupon added successfully",
+            coupon
         });
     } catch (error) {
         console.log("Error in adding coupon" + error)
@@ -41,16 +43,28 @@ const addCoupon = async (req, res) => {
 //get coupons
 const getCoupons = async (req, res) => {
     try {
-        const { page = 1, limit = 6 } = req.body;
-        const coupons = await Coupon.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
-        const total = await Coupon.countDocuments();
+        const limit = 6;
+        const page = Number(req.query.page) || 1;
+        const keyword = req.query.keyword
+            ? {
+                name: {
+                    $regex: req.query.keyword,
+                    $options: "i",
+                },
+            }
+            : {};
+            const count = await Coupon.countDocuments({ ...keyword });
+        const coupons = await Coupon.find({ ...keyword }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
+        
         return res.status(200).json({
             status: "success",
             message: "",
             coupons,
             //time: timer,
-            totalPages: Math.ceil(total / limit),
-            currentPage: Number(page),
+            count,
+            page,
+            pages: Math.ceil(count / limit),
+            hasMore: page < Math.ceil(count / limit),
         });
     } catch (error) {
         console.log("Error in getting coupons", error);
@@ -63,9 +77,10 @@ const getCoupons = async (req, res) => {
 
 //edit coupon
 const editCoupon = async (req, res) => {
+    const id = req.params.id
+    console.log(id)
     try {
         const {
-            id,
             name,
             description,
             activation,
@@ -100,9 +115,45 @@ const editCoupon = async (req, res) => {
 
 //delete coupon
 const deleteCoupon = async (req, res) => {
-    const {id} = req.params;
-    await Coupon.deleteOne({_id: id});
+    const { id } = req.params;
+    await Coupon.deleteOne({ _id: id });
     return res.status(STATUS_CODES.OK).json({
         status: "success",
-        message: "Coupon deleted successfully"});
+        message: "Coupon deleted successfully"
+    });
 };
+
+const getCouponById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const coupon = await Coupon.findById(id);
+
+        if (!coupon) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: "Coupon not found",
+            });
+        }
+
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
+            coupon,
+        });
+    } catch (error) {
+        console.error("Error fetching coupon:", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: "An error occurred while retrieving the coupon",
+        });
+    }
+};
+
+
+module.exports = {
+    addCoupon,
+    getCoupons,
+    deleteCoupon,
+    editCoupon,
+    getCouponById
+}

@@ -26,6 +26,7 @@ const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlew
 const generaterefreshToken = require('../middlewares/generateRefreshToken')
 const {verifyOtp, verifyOtpPass }= require('../middlewares/verifyOtp')
 const imageUpload=require("../imageUpload")
+const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon } = require('../controllers/couponController')
 
 
 router.route('/register').post(userSignup)
@@ -50,6 +51,12 @@ router.route('/:id').delete(authenticate,authorizeAdmin,deleteUser)
 router.route('/adminLogin').post(userLogin, authorizeAdmin)
 router.route("/logout").post(authenticate,logoutUser)
 router.route("/search/:search").get(authenticate,authorizeAdmin,searchUser)
+router.route('/admin/coupons/add').post(authenticate,authorizeAdmin,blockDisabledUsers,addCoupon)
+router.route('/admin/coupons').get(authenticate,authorizeAdmin,blockDisabledUsers,getCoupons)
+router.route('/admin/coupons/:id')
+.delete(authenticate,authorizeAdmin,blockDisabledUsers,deleteCoupon)
+.get(authenticate,authorizeAdmin,blockDisabledUsers,getCouponById)
+.put(authenticate,authorizeAdmin,blockDisabledUsers,editCoupon)
 
 
 module.exports = router

@@ -133,7 +133,7 @@ const ProductDetails = () => {
               </div>
               <Button size="lg" className="mb-3 me-2 button-custom" 
               onClick={addToCartHandler}
-              disabled={product.quantity <= 0 || !product.category?.isExist }>
+              disabled={product?.quantity <= 0 || !product?.category?.isExist }>
                 <i className="bi bi-cart-plus"></i> Add to Cart
               </Button>
               <Button variant="outline-secondary" size="lg" className="mb-3">

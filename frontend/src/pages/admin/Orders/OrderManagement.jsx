@@ -83,11 +83,11 @@ const OrderManagement = () => {
                       }}
                     >
                       <option value="">Sort by</option>
-                      <option value="pending">Pending</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
+                      <option value="completed">Completed</option>
+                      <option value="not completed">Not completed</option>
+                      {/* <option value="delivered">Delivered</option>
                       <option value="cancelled">Cancelled</option>
-                      <option value="returned">Returned</option>
+                      <option value="returned">Returned</option> */}
                     </Form.Select>
                   </Form.Group>
                 </Col>

@@ -12,7 +12,7 @@ const OrderDetails = () => {
   const { id } = useParams();
   console.log("id", id)
 
-  const { data: order, error, isLoading, } = useGetOrderDetailsQuery(id);
+  const { data: order, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const [itemStatuses, setItemStatuses] = useState({});
 
@@ -61,6 +61,7 @@ const OrderDetails = () => {
   const handleSaveChanges = async (status, item, id) => {
     try {
       await setItemStatus({ status, item, id });
+      refetch()
       toast.success("Item status updated successfully")
     } catch (error) {
       console.error("Error updating item status:", error);
@@ -168,7 +169,7 @@ const OrderDetails = () => {
                         <p className="mb-0 fw-bold">{item.product.price * item.qty}</p>
                       </td>
                       <td className="align-middle">
-                        {(item.status === "cancelled")||(item.status==="returned")||(item.status==="delivered") ? (
+                        {(item.status === "cancelled") || (item.status === "returned") || (item.status === "delivered") ? (
                           <p className="mb-0 fw-bold text-danger">{item.status}</p>
                         ) : item.status === "return requested" ? (
                           <div>
@@ -182,27 +183,27 @@ const OrderDetails = () => {
                             >
                               Approve
                             </Button>
-                            <Button
+                            {/* <Button
                               variant="danger"
                               size="sm"
                               onClick={() => handleReturnAction(item._id, "rejected")}
                             >
                               Reject
-                            </Button>
+                            </Button> */}
                           </div>
                         ) : (
                           <Form.Select
-                          value={itemStatuses[item._id]}
-                          onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
-                        >
-                          <option value={item.status}>{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</option>  
-                          {item.status === "pending" && <option value="shipped">Shipped</option>}
-                          {item.status === "shipped" && <option value="delivered">Delivered</option>}
-                        </Form.Select>
+                            value={itemStatuses[item._id]}
+                            onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
+                          >
+                            <option value={item.status}>{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</option>
+                            {item.status === "pending" && <option value="shipped">Shipped</option>}
+                            {item.status === "shipped" && <option value="delivered">Delivered</option>}
+                          </Form.Select>
                         )}
                       </td>
                       <td className="align-middle">
-                        {item.status !== "cancelled" && item.status !== "returned" && item.status!=="delivered" &&(
+                        {item.status !== "cancelled" && item.status !== "returned" && item.status !== "delivered" && (
                           <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order._id)}>
                             Save Changes
                           </Button>
@@ -217,15 +218,13 @@ const OrderDetails = () => {
               <div className='ms-2'>
                 <h5>Order Status</h5>
                 <Row>
-                  <Col md={4}>
-                    <Form.Select value={orderStatus} onChange={handleOrderStatusChange}>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Not Completed</option>
-                    </Form.Select>
-                  </Col>
                   <Col md={5}>
-                    <Button className='button-custom mt-1' size="sm" onClick={handleOrderStatus}>
-                      SET STATUS
+                    <Button
+                      className='mt-1'
+                      size="sm"
+                      variant={order.status === "completed" ? "success" : "danger"}
+                    >
+                      {order.status}
                     </Button>
                   </Col>
                 </Row>

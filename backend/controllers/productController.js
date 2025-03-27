@@ -181,7 +181,7 @@ const readProduct = async (req, res) => {
   try {
 
     const id = req.params.id;
-    const product = await Product.findById({ _id: id });
+    const product = await Product.findById({ _id: id }).populate("category")
     console.log("read", product)
     return res.status(STATUS_CODES.OK).json({
       status: "success",

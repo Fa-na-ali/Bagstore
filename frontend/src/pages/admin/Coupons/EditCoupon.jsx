@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, } from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import AdminSidebar from "../../../components/AdminSidebar";
+import { useGetCouponByIdQuery, useUpdateCouponMutation } from "../../../redux/api/usersApiSlice";
+import { useNavigate, useParams } from "react-router";
 
-const AddCoupon = () => {
+const EditCoupon = () => {
+    const { id } = useParams();
+      const navigate = useNavigate();
+    
+      const { data, refetch, isLoading, isError } = useGetCouponByIdQuery(id);
+      console.log(data)
+      const coupon=data?.coupon
+      const [update] = useUpdateCouponMutation();
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -18,15 +27,38 @@ const AddCoupon = () => {
         type: "single",
     });
 
+    useEffect(() => {
+        if (coupon) {
+            setFormData({
+                name: coupon.name || "",
+                description: coupon.description || "",
+                activation: coupon.activation ? new Date(coupon.activation).toISOString().split("T")[0]: "",
+                expiry: coupon.expiry ? new Date(coupon.expiry).toISOString().split("T")[0] : "",
+                discount: coupon.discount || "",
+                status: coupon.status || true,
+                minAmount: coupon.minAmount || "",
+                maxAmount: coupon.maxAmount || "",
+                limit: coupon.limit || "",
+                type: coupon.type || "single",
+            });
+        }
+    }, [coupon]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         console.log("Form Data:", formData);
-        // Add your form submission logic here
+        try {
+            await update({ id, ...formData });
+            refetch(); 
+           // navigate("/admin/coupons"); 
+        } catch (error) {
+            console.error("Error updating coupon:", error);
+        }
     };
 
     // Initialize flatpickr for date pickers
@@ -70,10 +102,9 @@ const AddCoupon = () => {
                                 type="text"
                                 id="name"
                                 name="name"
-                                placeholder="Enter Coupon Name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                required
+                                
                             />
                         </Form.Group>
 
@@ -84,10 +115,9 @@ const AddCoupon = () => {
                                 id="description"
                                 name="description"
                                 rows={4}
-                                placeholder="Enter Coupon description..."
                                 value={formData.description}
                                 onChange={handleChange}
-                                required
+                               
                             />
                         </Form.Group>
 
@@ -101,7 +131,7 @@ const AddCoupon = () => {
                                         name="activation"
                                         value={formData.activation}
                                         onChange={handleChange}
-                                        required
+                                        
                                     />
                                 </Form.Group>
                             </Col>
@@ -114,7 +144,7 @@ const AddCoupon = () => {
                                         name="expiry"
                                         value={formData.expiry}
                                         onChange={handleChange}
-                                        required
+                                       
                                     />
                                 </Form.Group>
                             </Col>
@@ -131,7 +161,7 @@ const AddCoupon = () => {
                                         placeholder="Enter amount"
                                         value={formData.discount}
                                         onChange={handleChange}
-                                        required
+                                        
                                     />
                                 </Form.Group>
                             </Col>
@@ -143,7 +173,7 @@ const AddCoupon = () => {
                                         name="status"
                                         value={formData.status}
                                         onChange={handleChange}
-                                        required
+                                       
                                     >
                                         <option value={true}>Active</option>
                                         <option value={false}>Inactive</option>
@@ -161,11 +191,11 @@ const AddCoupon = () => {
                                         <Form.Control
                                             type="number"
                                             id="min_amount"
-                                            name="min_amount"
+                                            name="minAmount"
                                             placeholder="Minimum purchase amount"
-                                            value={formData.min_amount}
+                                            value={formData.minAmount}
                                             onChange={handleChange}
-                                            required
+                                           
                                         />
                                     </div>
                                 </Form.Group>
@@ -178,11 +208,11 @@ const AddCoupon = () => {
                                         <Form.Control
                                             type="number"
                                             id="max_amount"
-                                            name="max_amount"
+                                            name="maxAmount"
                                             placeholder="Maximum purchase amount"
-                                            value={formData.max_amount}
+                                            value={formData.maxAmount}
                                             onChange={handleChange}
-                                            required
+                                           
                                         />
                                     </div>
                                 </Form.Group>
@@ -200,7 +230,7 @@ const AddCoupon = () => {
                                         placeholder="Enter limit"
                                         value={formData.limit}
                                         onChange={handleChange}
-                                        required
+                                       
                                     />
                                 </Form.Group>
                             </Col>
@@ -212,7 +242,7 @@ const AddCoupon = () => {
                                         name="type"
                                         value={formData.type}
                                         onChange={handleChange}
-                                        required
+                                       
                                     >
                                         <option value="single">Single</option>
                                         <option value="multiple">Multiple</option>
@@ -223,7 +253,7 @@ const AddCoupon = () => {
 
                         <div className="text-center gap-3 mt-4">
                             <Button className="button-custom" type="submit">
-                                Create Coupon
+                                Update Coupon
                             </Button>
                         </div>
                     </Form>
@@ -233,4 +263,4 @@ const AddCoupon = () => {
     );
 };
 
-export default AddCoupon;
+export default EditCoupon;

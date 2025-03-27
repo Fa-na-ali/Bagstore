@@ -90,7 +90,7 @@ const VerifyOTPPass = () => {
                 <Col md={6}>
                     <div className="text-center">
                         <h3 className="mb-4 heading">Enter OTP</h3>
-                        <p>We have sent an OTP to your email: <strong>{email}</strong></p>
+                        <p>We have sent an OTP to your email</p>
 
                         <Form onSubmit={handleSubmit}>
                             <div className="d-flex justify-content-center gap-2 mb-3">

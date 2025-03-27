@@ -54,7 +54,7 @@ const MyOrder = () => {
 
   const handleReturnOrder = async () => {
     try {
-
+      setShowReturnModal(false);
       const response = await returnOrder({
         orderId: selectedOrder,
         item: selectedProduct,

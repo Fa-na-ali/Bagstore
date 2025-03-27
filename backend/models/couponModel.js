@@ -23,11 +23,11 @@ const Schema  = mongoose.Schema({
         type: Number,
         required: true
     },
-    min_amount: {
+    minAmount: {
         type: Number,
         required: true
     },
-    max_amount: {
+    maxAmount: {
         type: Number,
         required: true
     },
@@ -65,7 +65,7 @@ Schema.pre("save", async function(next) {
     next();
 })
 
-const Coupon = mongoose.model("Coupon", categorySchema);
+const Coupon = mongoose.model("Coupon", Schema);
 
 cron.schedule('0 * * * *', async () => {
     try {

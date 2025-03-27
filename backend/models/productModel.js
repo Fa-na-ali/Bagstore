@@ -60,6 +60,10 @@ const productSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Offer'
   },
+  ordered: {
+    type: Number,
+    default: 0
+},
   createdBy: {
     type: String,
     required: true

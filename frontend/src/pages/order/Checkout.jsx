@@ -316,7 +316,7 @@ const Checkout = () => {
                                     onChange={() => handlePaymentMethod("Paypal")}
                                   />
                                   <FaCcPaypal size={32} className="text-body" />
-                                  <span>PayPal</span>
+                                  <span>Paypal</span>
                                 </div>
                               </Col>
                             </Row>
