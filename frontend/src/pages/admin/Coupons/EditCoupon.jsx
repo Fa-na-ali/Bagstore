@@ -8,12 +8,12 @@ import { useNavigate, useParams } from "react-router";
 
 const EditCoupon = () => {
     const { id } = useParams();
-      const navigate = useNavigate();
-    
-      const { data, refetch, isLoading, isError } = useGetCouponByIdQuery(id);
-      console.log(data)
-      const coupon=data?.coupon
-      const [update] = useUpdateCouponMutation();
+    const navigate = useNavigate();
+
+    const { data, refetch, isLoading, isError } = useGetCouponByIdQuery(id);
+    console.log(data)
+    const coupon = data?.coupon
+    const [update] = useUpdateCouponMutation();
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -32,7 +32,7 @@ const EditCoupon = () => {
             setFormData({
                 name: coupon.name || "",
                 description: coupon.description || "",
-                activation: coupon.activation ? new Date(coupon.activation).toISOString().split("T")[0]: "",
+                activation: coupon.activation ? new Date(coupon.activation).toISOString().split("T")[0] : "",
                 expiry: coupon.expiry ? new Date(coupon.expiry).toISOString().split("T")[0] : "",
                 discount: coupon.discount || "",
                 status: coupon.status || true,
@@ -49,13 +49,14 @@ const EditCoupon = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log("Form Data:", formData);
         try {
-            await update({ id, ...formData });
-            refetch(); 
-           // navigate("/admin/coupons"); 
+            await update({ id, ...formData }).unwrap()
+            navigate("/admin/coupons");
+            toast.success('Coupon Edited successfully!');
+
         } catch (error) {
             console.error("Error updating coupon:", error);
         }
@@ -104,7 +105,7 @@ const EditCoupon = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                
+
                             />
                         </Form.Group>
 
@@ -117,7 +118,7 @@ const EditCoupon = () => {
                                 rows={4}
                                 value={formData.description}
                                 onChange={handleChange}
-                               
+
                             />
                         </Form.Group>
 
@@ -131,7 +132,7 @@ const EditCoupon = () => {
                                         name="activation"
                                         value={formData.activation}
                                         onChange={handleChange}
-                                        
+
                                     />
                                 </Form.Group>
                             </Col>
@@ -144,7 +145,7 @@ const EditCoupon = () => {
                                         name="expiry"
                                         value={formData.expiry}
                                         onChange={handleChange}
-                                       
+
                                     />
                                 </Form.Group>
                             </Col>
@@ -161,7 +162,7 @@ const EditCoupon = () => {
                                         placeholder="Enter amount"
                                         value={formData.discount}
                                         onChange={handleChange}
-                                        
+
                                     />
                                 </Form.Group>
                             </Col>
@@ -173,7 +174,7 @@ const EditCoupon = () => {
                                         name="status"
                                         value={formData.status}
                                         onChange={handleChange}
-                                       
+
                                     >
                                         <option value={true}>Active</option>
                                         <option value={false}>Inactive</option>
@@ -195,7 +196,7 @@ const EditCoupon = () => {
                                             placeholder="Minimum purchase amount"
                                             value={formData.minAmount}
                                             onChange={handleChange}
-                                           
+
                                         />
                                     </div>
                                 </Form.Group>
@@ -212,7 +213,7 @@ const EditCoupon = () => {
                                             placeholder="Maximum purchase amount"
                                             value={formData.maxAmount}
                                             onChange={handleChange}
-                                           
+
                                         />
                                     </div>
                                 </Form.Group>
@@ -230,7 +231,7 @@ const EditCoupon = () => {
                                         placeholder="Enter limit"
                                         value={formData.limit}
                                         onChange={handleChange}
-                                       
+
                                     />
                                 </Form.Group>
                             </Col>
@@ -242,7 +243,7 @@ const EditCoupon = () => {
                                         name="type"
                                         value={formData.type}
                                         onChange={handleChange}
-                                       
+
                                     >
                                         <option value="single">Single</option>
                                         <option value="multiple">Multiple</option>

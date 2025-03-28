@@ -3,10 +3,13 @@ import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import AdminSidebar from "../../../components/AdminSidebar";
-import { useAddOfferMutation } from "../../../redux/api/usersApiSlice";
-import { useNavigate } from "react-router";
+import { useGetOfferByIdQuery, useUpdateOfferMutation } from "../../../redux/api/usersApiSlice";
+import { useNavigate, useParams } from "react-router";
+import { toast } from "react-toastify";
 
-const CreateOffer = () => {
+const EditOffer = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: "",
         type: "products",
@@ -16,24 +19,24 @@ const CreateOffer = () => {
         discount: "",
         minAmount: "",
     });
-    const [errors, setErrors] = useState({});
-    const [addOffer] = useAddOfferMutation()
-    const navigate = useNavigate()
+    const { data, refetch, isLoading, isError } = useGetOfferByIdQuery(id);
+    console.log(data)
+    const offer = data?.offer
+    const [update] = useUpdateOfferMutation();
 
-    const validateForm = () => {
-        let newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Offer name is required";
-        if (!formData.description.trim()) newErrors.description = "Description is required";
-        if (!formData.activation) newErrors.activation = "Activation date is required";
-        if (!formData.expiry) newErrors.expiry = "Expiry date is required";
-        if (formData.activation && formData.expiry && new Date(formData.expiry) <= new Date(formData.activation)) {
-            newErrors.expiry = "Expiry date must be after activation date";
+    useEffect(() => {
+        if (offer) {
+            setFormData({
+                name: offer.name || "",
+                description: offer.description || "",
+                activation: offer.activation ? new Date(offer.activation).toISOString().split("T")[0] : "",
+                expiry: offer.expiry ? new Date(offer.expiry).toISOString().split("T")[0] : "",
+                discount: offer.discount || "",
+                minAmount: offer.minAmount || "",
+                type: offer.type || "single",
+            });
         }
-        if (!formData.discount || formData.discount <= 0) newErrors.discount = "Discount must be a positive number";
-        if (!formData.minAmount || formData.minAmount <= 0) newErrors.minAmount = "Minimum amount must be a positive number";
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+    }, [offer]);
 
 
     const handleChange = (e) => {
@@ -54,20 +57,17 @@ const CreateOffer = () => {
         }
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log("Form Data:", formData);
-        if (!validateForm()) return;
         try {
-            const response = await addOffer(formData).unwrap();
-            console.log(response)
-            navigate('/admin/offers')
-            toast.success(response.message);
-        } catch (err) {
-            toast.error(err.data?.message || "Failed to add coupon");
-        }
+            await update({ id, ...formData }).unwrap()
+            navigate("/admin/offers");
+            toast.success('Offer Edited successfully!');
 
+        } catch (error) {
+            console.error("Error updating coupon:", error);
+        }
     };
 
     useEffect(() => {
@@ -118,13 +118,10 @@ const CreateOffer = () => {
                                 type="text"
                                 id="name"
                                 name="name"
-                                placeholder="Enter offer name (e.g., Dhamaka2024)"
                                 value={formData.name}
                                 onChange={handleChange}
-                                isInvalid={!!errors.name}
                                 style={{ width: "100%" }}
                             />
-                            <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
@@ -134,7 +131,6 @@ const CreateOffer = () => {
                                 name="type"
                                 value={formData.type}
                                 onChange={handleChange}
-
                                 style={{ width: "100%" }}
                             >
                                 <option value="products">Products</option>
@@ -148,13 +144,10 @@ const CreateOffer = () => {
                                 as="textarea"
                                 id="description"
                                 name="description"
-                                placeholder="Type here"
                                 value={formData.description}
                                 onChange={handleChange}
-                                isInvalid={!!errors.description}
                                 style={{ width: "100%", height: "95px" }}
                             />
-                            <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
                         </Form.Group>
 
                         <Row className="mb-3">
@@ -165,13 +158,10 @@ const CreateOffer = () => {
                                         type="date"
                                         id="activation"
                                         name="activation"
-                                        placeholder="dd-mm-yyyy"
                                         value={formData.activation}
                                         onChange={handleChange}
-                                        isInvalid={!!errors.activation}
                                         style={{ width: "100%" }}
                                     />
-                                    <Form.Control.Feedback type="invalid">{errors.activation}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -181,13 +171,10 @@ const CreateOffer = () => {
                                         type="date"
                                         id="expiry"
                                         name="expiry"
-                                        placeholder="dd-mm-yyyy"
                                         value={formData.expiry}
                                         onChange={handleChange}
-                                        isInvalid={!!errors.expiry}
                                         style={{ width: "100%" }}
                                     />
-                                    <Form.Control.Feedback type="invalid">{errors.expiry}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -202,10 +189,8 @@ const CreateOffer = () => {
                                         name="discount"
                                         value={formData.discount}
                                         onChange={handleChange}
-                                        isInvalid={!!errors.discount}
                                         style={{ width: "100%" }}
                                     />
-                                    <Form.Control.Feedback type="invalid">{errors.discount}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -217,13 +202,10 @@ const CreateOffer = () => {
                                             type="number"
                                             id="min_amount"
                                             name="minAmount"
-                                            placeholder="Minimum purchase amount"
                                             value={formData.minAmount}
                                             onChange={handleChange}
-                                            isInvalid={!!errors.minAmount}
                                             style={{ width: "100%" }}
                                         />
-                                        <Form.Control.Feedback type="invalid">{errors.minAmount}</Form.Control.Feedback>
                                     </div>
                                 </Form.Group>
                             </Col>
@@ -231,7 +213,7 @@ const CreateOffer = () => {
 
                         <div className="gap-3 mt-4 text-center">
                             <Button className="button-custom " type="submit">
-                                Create Offer
+                                Edit Offer
                             </Button>
                         </div>
                     </Form>
@@ -241,4 +223,4 @@ const CreateOffer = () => {
     );
 };
 
-export default CreateOffer;
+export default EditOffer;

@@ -26,7 +26,8 @@ const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlew
 const generaterefreshToken = require('../middlewares/generateRefreshToken')
 const {verifyOtp, verifyOtpPass }= require('../middlewares/verifyOtp')
 const imageUpload=require("../imageUpload")
-const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon } = require('../controllers/couponController')
+const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser } = require('../controllers/couponController')
+const { createOffer, getoffers, editOffer, deleteOffer, getOfferById } = require('../controllers/offerController')
 
 
 router.route('/register').post(userSignup)
@@ -51,12 +52,20 @@ router.route('/:id').delete(authenticate,authorizeAdmin,deleteUser)
 router.route('/adminLogin').post(userLogin, authorizeAdmin)
 router.route("/logout").post(authenticate,logoutUser)
 router.route("/search/:search").get(authenticate,authorizeAdmin,searchUser)
+router.route("/coupons").get(authenticate, blockDisabledUsers,getAllCouponsUser)
 router.route('/admin/coupons/add').post(authenticate,authorizeAdmin,blockDisabledUsers,addCoupon)
 router.route('/admin/coupons').get(authenticate,authorizeAdmin,blockDisabledUsers,getCoupons)
+router.route('/admin/coupons/edit/:id').put(authenticate,authorizeAdmin,blockDisabledUsers,editCoupon)
 router.route('/admin/coupons/:id')
 .delete(authenticate,authorizeAdmin,blockDisabledUsers,deleteCoupon)
 .get(authenticate,authorizeAdmin,blockDisabledUsers,getCouponById)
-.put(authenticate,authorizeAdmin,blockDisabledUsers,editCoupon)
+router.route('/admin/offers/add').post(authenticate,authorizeAdmin,blockDisabledUsers,createOffer)
+router.route('/admin/offers').get(authenticate,authorizeAdmin,blockDisabledUsers,getoffers)
+router.route('/admin/offers/edit/:id').put(authenticate,authorizeAdmin,blockDisabledUsers,editOffer)
+router.route('/admin/offers/:id')
+.delete(authenticate,authorizeAdmin,blockDisabledUsers,deleteOffer)
+.get(authenticate,authorizeAdmin,blockDisabledUsers,getOfferById)
+
 
 
 module.exports = router

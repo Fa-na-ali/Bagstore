@@ -5,29 +5,30 @@ import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'reac
 import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
-import { useDeleteCouponMutation, useGetAllCouponsQuery } from '../../../redux/api/usersApiSlice';
+import { useDeleteOfferMutation, useGetAllOffersQuery } from '../../../redux/api/usersApiSlice';
 
-const CouponManagement = () => {
+const OfferManagement = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  let { data, refetch: load, error, isLoading } = useGetAllCouponsQuery({ keyword: searchTerm, page: currentPage });
-  const coupons = data?.coupons || [];
-  console.log(coupons)
-  const [deleteCoupon] = useDeleteCouponMutation();
+  let { data, refetch: load, error, isLoading } = useGetAllOffersQuery({ keyword: searchTerm, page: currentPage });
+  const offers = data?.offers || [];
+  console.log(offers)
+  const [deleteOffer] = useDeleteOfferMutation();
 
   const columns = [
-    { key: "coupon_code", label: "Coupon Code" },
+    { key: "name", label: "Offer Name" },
     { key: "discount", label: "Discount" }, 
     { key: "minAmount", label: "Min" },
-    { key: "maxAmount", label: "Max" },
+    { key: "type", label: "Type" },
     { key: "expiry", label: "Expiry" },
+    { key: "status", label: "Status" },
     { key: "createdAt", label: "created At" },
-    { key: "status", label: "Status" }
+    
   ];
 
   useEffect(() => {
-    if (coupons)
+    if (offers)
       load()
 
   }, [load]);
@@ -48,7 +49,7 @@ const CouponManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Do you want to delete")) {
       try {
-        await deleteCoupon(id);
+        await deleteOffer(id);
         toast.success(" Deleted Successfully")
         load();
 
@@ -68,11 +69,11 @@ const CouponManagement = () => {
           </Col>
 
           <Col lg={9} className="p-4 background-one vw-75">
-            <h2 className='text-center my-5 heading'>COUPONS</h2>
+            <h2 className='text-center my-5 heading'>OFFERS</h2>
             <div className="table-title my-5">
               <Row className="align-items-center">
                 <Col lg={6}>
-                  <Link to="/admin/coupons/add">
+                  <Link to="/admin/offers/add">
                     <Button className="me-2 button-custom">
                       <MdOutlineAdd /> <span>Add New</span>
                     </Button>
@@ -98,10 +99,10 @@ const CouponManagement = () => {
                 </Col>
               </Row>
             </div>
-            {(coupons) && (coupons.length > 0 ) ? (
+            {(offers) && (offers.length > 0 ) ? (
               <Ttable
-              naming="coupons"
-              data={coupons}
+              naming="offers"
+              data={offers}
               columns={columns}
               onDelete={handleDelete}
               onPage={handlePageChange}
@@ -122,4 +123,4 @@ const CouponManagement = () => {
   );
 };
 
-export default CouponManagement;
+export default OfferManagement;

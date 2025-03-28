@@ -46,6 +46,8 @@ import AddCoupon from './pages/admin/Coupons/AddCoupon';
 import CreateOffer from './pages/admin/Offers/CreateOffer';
 import EditCoupon from './pages/admin/Coupons/EditCoupon';
 import CouponManagement from './pages/admin/Coupons/CouponManagement';
+import OfferManagement from './pages/admin/Offers/OfferManagement';
+import EditOffer from './pages/admin/Offers/EditOffer';
 
 
 
@@ -105,8 +107,9 @@ export const router = createBrowserRouter(
         <Route path="/admin/coupons/add" element={<AddCoupon/>} />
         <Route path="/admin/coupons/edit/:id" element={<EditCoupon/>} />
 
-
+        <Route path="/admin/offers" element={<OfferManagement/>} />
         <Route path="/admin/offers/add" element={<CreateOffer/>} />
+        <Route path="/admin/offers/edit/:id" element={<EditOffer/>} />
 
 
       </Route>

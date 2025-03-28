@@ -167,7 +167,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    GetAllCoupons: builder.query({
+    getAllCoupons: builder.query({
       query: ({ keyword, page }) => ({
         url: `${USERS_URL}/admin/coupons`,
         params: { keyword, page }
@@ -176,9 +176,16 @@ export const userApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Coupons"],
     }),
 
+    getAllCouponsUser: builder.query({
+      query: () => ({
+        url: `${USERS_URL}/coupons`,
+      
+      }),
+    }),
+
     deleteCoupon: builder.mutation({
       query: (id) => ({
-        url: `${USERS_URL}/coupons/${id}`,
+        url: `${USERS_URL}/admin/coupons/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Coupons"],
@@ -192,8 +199,51 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
 
     updateCoupon: builder.mutation({
-      query: ({ id, formData }) => ({
+      query: ({ id,...formData }) => ({
         url: `${USERS_URL}/admin/coupons/edit/${id}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+
+    addOffer: builder.mutation({
+      query: (formData) => ({
+        url: `${USERS_URL}/admin/offers/add`,
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+
+    getAllOffers: builder.query({
+      query: ({ keyword, page }) => ({
+        url: `${USERS_URL}/admin/offers`,
+        params: { keyword, page }
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ["Offers"],
+    }),
+
+    deleteOffer: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/admin/offers/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Offer"],
+    }),
+
+    getOfferById: builder.query({
+      query: (id) => `${USERS_URL}/admin/offers/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Offer", id: id },
+      ],
+    }),
+
+    updateOffer: builder.mutation({
+      query: ({ id,...formData }) => ({
+        url: `${USERS_URL}/admin/offers/edit/${id}`,
         method: "PUT",
         body: formData,
       }),
@@ -230,4 +280,10 @@ export const {
   useUpdateCouponMutation,
   useGetAllCouponsQuery,
   useDeleteCouponMutation,
+  useGetAllCouponsUserQuery,
+  useAddOfferMutation,
+  useGetAllOffersQuery,
+  useUpdateOfferMutation,
+  useDeleteOfferMutation,
+  useGetOfferByIdQuery,
 } = userApiSlice;

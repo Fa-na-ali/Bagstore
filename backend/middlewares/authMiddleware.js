@@ -7,29 +7,29 @@ const authenticate = async (req, res, next) => {
   let token;
 
   const authHeader = req.headers.authorization;
-  console.log("Authorization Header:", authHeader); // Debug authorization header
+  console.log("Authorization Header:", authHeader); 
 
   if (authHeader && authHeader.startsWith("Bearer")) {
     token = authHeader.split(" ")[1];
-    console.log("Token:", token); // Debug token
+    console.log("Token:", token); 
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Decoded Token:", decoded); // Debug decoded token
+      console.log("Decoded Token:", decoded); 
 
       req.user = await User.findById(decoded.userId).select("-password");
-      console.log("User Retrieved from DB:", req.user); // Debug user
+      console.log("User Retrieved from DB:", req.user); 
       next();
     } catch (error) {
       if (error.name === "TokenExpiredError") {
-        console.log("Token expired"); // Debug token expiry
+        console.log("Token expired"); 
         return res.status(401).json({ message: "Token expired" });
       }
-      console.log("Token invalid:", error); // Debug token invalidation
+      console.log("Token invalid:", error); 
       return res.status(401).json({ message: "Not authorized, token invalid" });
     }
   } else {
-    console.log("No authorization header or invalid format"); // Debug missing header
+    console.log("No authorization header or invalid format"); 
     return res.status(401).json({ message: "Not authorized, no token" });
   }
 };
@@ -43,7 +43,7 @@ const blockDisabledUsers = (req, res, next) => {
 };
 
 
-
+//authorization
   const authorizeAdmin = (req, res, next) => {
     if (req.user && req.user.isAdmin) {
       next();

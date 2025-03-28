@@ -5,6 +5,8 @@ import "flatpickr/dist/flatpickr.min.css";
 import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddCouponMutation } from "../../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
+
 
 
 
@@ -21,7 +23,30 @@ const AddCoupon = () => {
         limit: "",
         type: "single",
     });
+    const [errors, setErrors] = useState({});
     const [addCoupon] = useAddCouponMutation()
+    const navigate=useNavigate()
+
+    const validateForm = () => {
+        let newErrors = {};
+        if (!formData.name.trim()) newErrors.name = "Coupon name is required";
+        if (!formData.description.trim()) newErrors.description = "Description is required";
+        if (!formData.activation) newErrors.activation = "Activation date is required";
+        if (!formData.expiry) newErrors.expiry = "Expiry date is required";
+        if (formData.activation && formData.expiry && formData.expiry <= formData.activation) {
+            newErrors.expiry = "Expiry date must be after activation date";
+        }
+        if (!formData.discount || formData.discount <= 0) newErrors.discount = "Enter a valid discount";
+        if (!formData.minAmount || formData.minAmount <= 0) newErrors.minAmount = "Enter a valid minimum amount";
+        if (!formData.maxAmount || formData.maxAmount <= 0) newErrors.maxAmount = "Enter a valid maximum amount";
+        if (formData.minAmount && formData.maxAmount && Number(formData.minAmount) >= Number(formData.maxAmount)) {
+            newErrors.maxAmount = "Max amount must be greater than min amount";
+        }
+        if (!formData.limit || formData.limit <= 0) newErrors.limit = "Enter a valid usage limit";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
 
     const handleChange = (e) => {
@@ -32,28 +57,30 @@ const AddCoupon = () => {
     const handleSubmit = async(e) => {
         e.preventDefault();
         console.log("Form Data:", formData);
+        if (!validateForm()) return;
         try {
             const response = await addCoupon(formData).unwrap();
             console.log(response)
             toast.success(response.message); 
+            navigate('/admin/coupons')
         } catch (err) {
             toast.error(err.data?.message || "Failed to add coupon"); 
         }
     };
 
-    // const handleDateChange = (name, date) => {
-    //     if (date) {
-    //         const year = date.getFullYear();
-    //         const month = String(date.getMonth() + 1).padStart(2, "0");
-    //         const day = String(date.getDate()).padStart(2, "0"); 
-    //         const formattedDate = `${year}-${month}-${day}`;
+    const handleDateChange = (name, date) => {
+        if (date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0"); 
+            const formattedDate = `${year}-${month}-${day}`;
             
-    //         setFormData((prev) => ({
-    //             ...prev,
-    //             [name]: formattedDate, 
-    //         }));
-    //     }
-    // };
+            setFormData((prev) => ({
+                ...prev,
+                [name]: formattedDate, 
+            }));
+       }
+    };
     
     
  React.useEffect(() => {
@@ -65,6 +92,7 @@ const AddCoupon = () => {
                 if (activationDate) {
                     expiryPicker.set("minDate", new Date(activationDate.getTime() + 24 * 60 * 60 * 1000));
                     expiryPicker.setDate(null);
+                    handleDateChange("activation", activationDate);
                 }
             },
         });
@@ -72,6 +100,12 @@ const AddCoupon = () => {
         const expiryPicker = flatpickr("#expiry", {
             dateFormat: "d-M-Y",
             minDate: "today",
+            onChange: function (selectedDates) {
+                const expiryDate = selectedDates[0];
+                if (expiryDate) {
+                    handleDateChange("expiry", expiryDate);
+                }
+            },
         });
 
         return () => {
@@ -99,8 +133,9 @@ const AddCoupon = () => {
                                 placeholder="Enter Coupon Name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                required
+                                isInvalid={!!errors.name}  
                             />
+                             <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
@@ -113,8 +148,9 @@ const AddCoupon = () => {
                                 placeholder="Enter Coupon description..."
                                 value={formData.description}
                                 onChange={handleChange}
-                                required
+                                isInvalid={!!errors.description}
                             />
+                            <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
                         </Form.Group>
 
                         <Row className="mb-3">
@@ -127,8 +163,9 @@ const AddCoupon = () => {
                                         name="activation"
                                         value={formData.activation}
                                         onChange={handleChange}
-                                        required
+                                        isInvalid={!!errors.activation}
                                     />
+                                    <Form.Control.Feedback type="invalid">{errors.activation}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -140,8 +177,9 @@ const AddCoupon = () => {
                                         name="expiry"
                                         value={formData.expiry}
                                         onChange={handleChange}
-                                        required
+                                        isInvalid={!!errors.expiry}
                                     />
+                                     <Form.Control.Feedback type="invalid">{errors.expiry}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -157,8 +195,9 @@ const AddCoupon = () => {
                                         placeholder="Enter amount"
                                         value={formData.discount}
                                         onChange={handleChange}
-                                        required
+                                        isInvalid={!!errors.discount}
                                     />
+                                     <Form.Control.Feedback type="invalid">{errors.discount}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -169,7 +208,7 @@ const AddCoupon = () => {
                                         name="status"
                                         value={formData.status}
                                         onChange={handleChange}
-                                        required
+                                        
                                     >
                                         <option value={true}>Active</option>
                                         <option value={false}>Inactive</option>
@@ -189,10 +228,11 @@ const AddCoupon = () => {
                                             id="min_amount"
                                             name="minAmount"
                                             placeholder="Minimum purchase amount"
-                                            value={formData.min_amount}
+                                            value={formData.minAmount}
                                             onChange={handleChange}
-                                            required
+                                            isInvalid={!!errors.minAmount}
                                         />
+                                         <Form.Control.Feedback type="invalid">{errors.minAmount}</Form.Control.Feedback>
                                     </div>
                                 </Form.Group>
                             </Col>
@@ -206,10 +246,11 @@ const AddCoupon = () => {
                                             id="max_amount"
                                             name="maxAmount"
                                             placeholder="Maximum purchase amount"
-                                            value={formData.max_amount}
+                                            value={formData.maxAmount}
                                             onChange={handleChange}
-                                            required
+                                            isInvalid={!!errors.maxAmount}
                                         />
+                                         <Form.Control.Feedback type="invalid">{errors.maxAmount}</Form.Control.Feedback>
                                     </div>
                                 </Form.Group>
                             </Col>
@@ -226,8 +267,9 @@ const AddCoupon = () => {
                                         placeholder="Enter limit"
                                         value={formData.limit}
                                         onChange={handleChange}
-                                        required
+                                        isInvalid={!!errors.limit}
                                     />
+                                    <Form.Control.Feedback type="invalid">{errors.limit}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -238,10 +280,10 @@ const AddCoupon = () => {
                                         name="type"
                                         value={formData.type}
                                         onChange={handleChange}
-                                        required
+                                        
                                     >
                                         <option value="single">Single</option>
-                                        <option value="multiple">Multiple</option>
+                                       
                                     </Form.Select>
                                 </Form.Group>
                             </Col>

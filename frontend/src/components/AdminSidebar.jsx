@@ -35,7 +35,7 @@ const AdminSidebar=()=>{
             <MdOutlineLocalOffer className="me-3" />
             Coupons
           </Nav.Link>
-          <Nav.Link href="#" className="py-2 ripple text-white">
+          <Nav.Link as={Link} to='/admin/offers' className="py-2 ripple text-white">
           <BiSolidOffer  className="me-3"/>
            Offer
           </Nav.Link>

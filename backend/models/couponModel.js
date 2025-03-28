@@ -35,6 +35,10 @@ const Schema  = mongoose.Schema({
         type: Boolean,
         default: true
     },
+    isExist: {
+        type: Boolean,
+        default: true,
+      },
     type: {
         type: String,
         required: true,

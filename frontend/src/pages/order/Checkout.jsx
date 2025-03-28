@@ -9,6 +9,7 @@ import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
+import CouponModal from "./CouponModal";
 
 const Checkout = () => {
 
@@ -32,6 +33,9 @@ const Checkout = () => {
   const [saveShipping, setSaveShipping] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [cModal, setCModal] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [applied, setApplied] = useState(false);
 
   useEffect(() => {
     refetch();
@@ -65,6 +69,16 @@ const Checkout = () => {
     dispatch(savePaymentMethod(method));
 
   }
+  const handleApplyCoupon = () => {
+    if (coupon.trim()) {
+      setApplied(true);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCoupon("");
+    setApplied(false);
+  };
 
   const handlePlaceOrder = async () => {
 
@@ -80,7 +94,7 @@ const Checkout = () => {
         shippingAddress: cart?.shippingAddress,
         paymentMethod: cart?.paymentMethod,
         shippingPrice: cart?.shippingPrice,
-        couponId: null, 
+        couponId: null,
         totalPrice: cart?.totalPrice,
       }).unwrap();
       console.log('res', res)
@@ -88,11 +102,11 @@ const Checkout = () => {
       if (!id) {
         toast.error(res?.message);
       }
-      else{
+      else {
         dispatch(clearCartItems())
         navigate(`/order-success?id=${id}`)
       }
-      
+
     } catch (error) {
       toast.error(error);
     }
@@ -254,6 +268,38 @@ const Checkout = () => {
                       </Card>
                     </Col>
                   </Row>
+                  <Row className="mt-5">
+                    <Col md={6}>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter Coupon Code"
+                        value={coupon}
+                        onChange={(e) => setCoupon(e.target.value)}
+                        disabled={applied} 
+                      />
+                    </Col>
+                    <Col md={2}>
+                      {applied ? (
+                        <Button variant="danger" onClick={handleRemoveCoupon}>
+                          Remove
+                        </Button>
+                      ) : (
+                        <Button variant="success" onClick={handleApplyCoupon}>
+                          Apply
+                        </Button>
+                      )}
+                    </Col>
+                  </Row>
+
+                  <Row className="mt-2">
+                    <Col>
+                      <span>Get a coupon.</span>
+                      <Button variant="link" onClick={() => setCModal(true)}>
+                        Show Available Coupons
+                      </Button>
+                    </Col>
+                  </Row>
+                  <CouponModal show={cModal} handleClose={() => setCModal(false)} />
                   <Row>
                     <Col lg={7}>
 
