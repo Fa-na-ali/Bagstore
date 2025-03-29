@@ -13,6 +13,9 @@ const categorySchema = new mongoose.Schema({
         type: Boolean,
         default: true,
       },
+      offer: {
+        type: String
+    },
     createdBy: {
         type: String,
         required: true

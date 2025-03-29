@@ -9,15 +9,20 @@ import { useAddProductMutation } from '../../../redux/api/productApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar';
 import { toast } from 'react-toastify';
 import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
+import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 
 
 const AddProduct = () => {
+  const { data: off } = useGetAllOffersToAddQuery()
+  console.log(off)
+  const offers = off?.offers
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [brand, setBrand] = useState("");
+  const [offer, setOffer] = useState("")
   const [color, setColor] = useState('');
   const [size, setSize] = useState('');
   const [files, setFiles] = useState([]);
@@ -79,6 +84,7 @@ const AddProduct = () => {
       productData.append("name", name);
       productData.append("description", description);
       productData.append("price", price);
+      productData.append("offer", offer);
       productData.append("category", category);
       productData.append("quantity", quantity);
       productData.append("brand", brand);
@@ -91,7 +97,7 @@ const AddProduct = () => {
       croppedImages.forEach((file) => {
         productData.append('pdImage', file);
       });
-      console.log("pp", name, description, price, category, quantity, color, brand,size,croppedImages)
+      console.log("pp", name, description, price, category, quantity, color, brand, size, croppedImages)
       const { data } = await addProduct(productData).unwrap()
       toast.success('Product added successfully!');
       navigate('/admin/products')
@@ -119,6 +125,7 @@ const AddProduct = () => {
                   {errors.name}
                 </Form.Control.Feedback>
               </Form.Group>
+
               <Form.Group as={Col} controlId="formGridCategory">
                 <Form.Label className="caption">Category</Form.Label>
                 <Form.Select className="text-secondary"
@@ -137,7 +144,17 @@ const AddProduct = () => {
                 </Form.Control.Feedback>
               </Form.Group>
 
+              <Form.Group as={Col} controlId="formGridPrice">
+                <Form.Label className='caption'>Price</Form.Label>
+                <Form.Control type="number" placeholder="Enter Price" value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  isInvalid={!!errors.price} />
+                <Form.Control.Feedback type="invalid">
+                  {errors.price}
+                </Form.Control.Feedback>
+              </Form.Group>
             </Row>
+
             <Form.Group className="mb-3" controlId="formDesc">
               <Form.Label className='caption'>Description</Form.Label>
               <Form.Control type="text" placeholder="Enter Description"
@@ -149,15 +166,21 @@ const AddProduct = () => {
                 {errors.description}
               </Form.Control.Feedback>
             </Form.Group>
+
             <Row className="mb-3">
-              <Form.Group as={Col} controlId="formGridPrice">
-                <Form.Label className='caption'>Price</Form.Label>
-                <Form.Control type="number" placeholder="Enter Price" value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  isInvalid={!!errors.price} />
-                <Form.Control.Feedback type="invalid">
-                  {errors.price}
-                </Form.Control.Feedback>
+
+              <Form.Group as={Col} controlId="offer">
+                <Form.Label className="caption">Offer</Form.Label>
+                <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
+                  <option value="none">None</option>
+                  {offers
+                    ?.filter((offer) => offer.type === "products")
+                    .map((offer) => (
+                      <option key={offer.name} value={offer.name}>
+                        {offer.name}
+                      </option>
+                    ))}
+                </Form.Select>
               </Form.Group>
 
               <Form.Group as={Col} controlId="formGridColor">

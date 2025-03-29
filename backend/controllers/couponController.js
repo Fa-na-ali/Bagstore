@@ -179,7 +179,7 @@ const getCouponById = async (req, res) => {
 //get all coupons in user side
  const getAllCouponsUser = async (req, res) => {
     try {
-        const coupons = await Coupon.find({});  // Fetch all coupons from DB
+        const coupons = await Coupon.find({status:true});  
 
         if (!coupons.length) {
            return  res.status(STATUS_CODES.NOT_FOUND).json({

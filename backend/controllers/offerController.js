@@ -157,6 +157,35 @@ const getOfferById = async (req, res) => {
     }
 };
 
+//getting available offers 
+const getAllOffers = async (req, res) => {
+    try {
+        const offers = await Offer.find({status:true});  
+
+        if (!offers.length) {
+           return  res.status(STATUS_CODES.NOT_FOUND).json({
+                status:"error",
+                message:"Offers not found"
+            })
+            
+        }
+    
+        return res.status(STATUS_CODES.OK).json({ 
+            status:"success",
+            message:"",
+            offers
+        });
+        
+    } catch (error) {
+        console.log(error)
+       return  res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: "Server Error",
+        });
+    }
+   
+}
+
 
 module.exports = {
     createOffer,
@@ -164,5 +193,5 @@ module.exports = {
     getoffers,
     editOffer,
     deleteOffer,
-
+getAllOffers,
 }

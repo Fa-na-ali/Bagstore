@@ -8,7 +8,7 @@ const { USR_ID_MISSING, USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_N
 const addCategory = async (req, res) => {
 console.log("hhhh")
   try {
-    const { name } = req.body;
+    const { name,offer } = req.body;
     if (!req.user?._id) {
       return res.status(STATUS_CODES.UNAUTHORIZED).json({
          message: USR_ID_MISSING });
@@ -32,6 +32,7 @@ console.log("hhhh")
     }
     const category = await Category.create({
       name,
+      offer,
       createdBy: req.user._id,
       updatedBy: req.user._id,
 

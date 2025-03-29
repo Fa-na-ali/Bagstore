@@ -18,6 +18,7 @@ const CouponManagement = () => {
 
   const columns = [
     { key: "coupon_code", label: "Coupon Code" },
+    { key: "name", label: "Coupon Name" },
     { key: "discount", label: "Discount" }, 
     { key: "minAmount", label: "Min" },
     { key: "maxAmount", label: "Max" },

@@ -6,11 +6,13 @@ const { PRODUCT_ADDED, PRODUCT_NOT_FOUND, PRODUCT_DELETED, PRODUCT_INVALID, PROD
 const User = require('../models/userModel');
 const { USER_NOT_MSG } = require('../messageConstants');
 const Wishlist = require('../models/wishlistModel');
+const Offer = require('../models/offerModel');
+const Category = require('../models/categoryModel');
 
 //add Product
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand, size, color } = req.body;
+    const { name, description, price, category, offer, quantity, brand, size, color } = req.body;
     const files = req.files;
     console.log(req.body)
     console.log(req.files)
@@ -25,10 +27,9 @@ const addProduct = async (req, res) => {
     if (!color) return res.status(400).json({ error: "Color is required" });
     if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
 
-
+   
     const imageUrls = files.map((file) => file.filename);
-
-
+    
     const product = await Product.create({
       name,
       description,
@@ -36,6 +37,7 @@ const addProduct = async (req, res) => {
       category,
       quantity,
       size,
+      offer:offer||"",
       price,
       color,
       pdImage: imageUrls,
@@ -59,7 +61,7 @@ const addProduct = async (req, res) => {
 //NEW products
 const newProducts = async (req, res) => {
   try {
-    const all = await Product.find({}).sort({ createdAt: -1 }).limit(6);
+    const all = await Product.find({}).sort({ createdAt: -1 }).limit(6).populate('category');
     return res.status(STATUS_CODES.OK).json({
       status: "success",
       all
@@ -113,6 +115,7 @@ const updateProduct = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error)
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: error.message

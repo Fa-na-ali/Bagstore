@@ -82,7 +82,23 @@ const ProductDetails = () => {
               <h2 className="mb-3 caption">{product.name}</h2>
               <p className="text-muted mb-4 caption">ID: {product._id}</p>
               <div className="mb-3">
-                <span className="h6 me-2 caption">Price: ₹{product.price}</span>
+                {/* <span className="h6 me-2 caption">Price: ₹{product.price}</span> */}
+                {product.salesPrice ? (
+                      product.salesPrice !== product.price ? (
+                        <>
+                          <span className='text-decoration-line-through text-muted me-2'>
+                            ₹{product.price}
+                          </span>
+                          <span className='text-success fw-bold'>
+                            ₹{product.salesPrice}
+                          </span>
+                        </>
+                      ) : (
+                        <span className='caption'>₹{product.price}</span>
+                      )
+                    ) : (
+                      <span className='caption'>₹{product.price}</span>
+                    )}
 
               </div>
               <div className="mb-3">

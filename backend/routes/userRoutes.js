@@ -27,7 +27,7 @@ const generaterefreshToken = require('../middlewares/generateRefreshToken')
 const {verifyOtp, verifyOtpPass }= require('../middlewares/verifyOtp')
 const imageUpload=require("../imageUpload")
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser } = require('../controllers/couponController')
-const { createOffer, getoffers, editOffer, deleteOffer, getOfferById } = require('../controllers/offerController')
+const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
 
 
 router.route('/register').post(userSignup)
@@ -65,7 +65,6 @@ router.route('/admin/offers/edit/:id').put(authenticate,authorizeAdmin,blockDisa
 router.route('/admin/offers/:id')
 .delete(authenticate,authorizeAdmin,blockDisabledUsers,deleteOffer)
 .get(authenticate,authorizeAdmin,blockDisabledUsers,getOfferById)
-
-
+router.route('/admin/alloffers').get(authenticate,authorizeAdmin,blockDisabledUsers,getAllOffers)
 
 module.exports = router

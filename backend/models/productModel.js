@@ -24,6 +24,7 @@ const productSchema = new Schema({
     type: [String],
     default: []
   },
+  
   price: {
     type: Number,
     required: true,
@@ -56,9 +57,9 @@ const productSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Review'
   },
-  offerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Offer'
+  offer: {
+    type: String,
+    
   },
   ordered: {
     type: Number,

@@ -5,9 +5,14 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddCategoryMutation } from "../../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
+import { useGetAllOffersToAddQuery } from "../../../redux/api/usersApiSlice";
 
 const AddCategory = () => {
+    const { data: off } = useGetAllOffersToAddQuery()
+      console.log(off)
+      const offers = off?.offers
     const [name, setName] = useState("");
+    const [offer, setOffer] = useState("")
     const [createCategory] = useAddCategoryMutation();
     const navigate=useNavigate()
 
@@ -20,7 +25,7 @@ const AddCategory = () => {
         }
 
         try {
-            const result = await createCategory({ name }).unwrap();
+            const result = await createCategory({ name,offer }).unwrap();
             console.log(result)
             setName("");
             if (result?.category?.name) {
@@ -57,6 +62,18 @@ const AddCategory = () => {
                                     required
                                 />
                             </Form.Group>
+
+                            <Form.Group controlId="offer" className="mt-3">
+                            <Form.Label className="caption">Offer</Form.Label>
+                            <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
+                                <option value="none">None</option>
+                                {offers?.filter((o) => o.type === "category").map((o) => (
+                                    <option key={o.name} value={o.name}>
+                                        {o.name}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
                         </Form>
                     </Col>
                     <Col lg={4} className="my-5">

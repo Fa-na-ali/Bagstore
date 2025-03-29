@@ -11,14 +11,19 @@ import { toast } from 'react-toastify';
 import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
+import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 const EditProduct = () => {
 
   const { id } = useParams();
   const navigate = useNavigate();
+  const { data: off } = useGetAllOffersToAddQuery()
+    console.log(off)
+    const offers = off?.offers
 
   const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
   console.log("product", data)
   const product = data?.product
+  console.log(product?.category?.name)
   const [update, { isLoading: isUpdating }] = useUpdateProductMutation();
   const { data: datas } = useFetchCategoriesQuery();
   const categories = datas?.all
@@ -27,6 +32,7 @@ const EditProduct = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
+  const [offer,setOffer] = useState("")
   const [quantity, setQuantity] = useState(0);
   const [brand, setBrand] = useState("");
   const [color, setColor] = useState("");
@@ -42,13 +48,14 @@ const EditProduct = () => {
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const productImages = product?.pdImage.map((img) => `${imageBaseUrl}${img}`);
 
-  
+
   useEffect(() => {
     if (product) {
       setName(product.name || "");
       setDescription(product.description || "");
       setPrice(product.price || 0);
-      setCategory(product.category || "");
+      setOffer(product.offer || "")
+      setCategory(product?.category?._id || "");
       setQuantity(product.quantity || 1);
       setBrand(product.brand || "");
       setColor(product.color || "");
@@ -57,22 +64,22 @@ const EditProduct = () => {
       if (product?.pdImage) {
         setFiles(product.pdImage.map((img) => `${imageBaseUrl}${img}`));
       }
-     
+
     }
-   
+
   }, [product,]);
 
   //on upload
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files)
-  //  console.log("image up",newFiles)
-    const fileURLs =newFiles.map((file) => URL.createObjectURL(file));
+    //  console.log("image up",newFiles)
+    const fileURLs = newFiles.map((file) => URL.createObjectURL(file));
     setFiles((prevFiles) => {
       const updatedFiles = [...prevFiles, ...fileURLs];
-    //  console.log("Updated length", updatedFiles);  // Correctly logs updated length
+      //  console.log("Updated length", updatedFiles);  // Correctly logs updated length
       return updatedFiles;
-  });
-   // console.log("length", files)
+    });
+    // console.log("length", files)
   }
   //to remove image
   const removeImage = async (id, index) => {
@@ -122,55 +129,53 @@ const EditProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-   
-      const productData = new FormData();
-      productData.append("name", name);
-      productData.append("description", description);
-      productData.append("price", price);
-      productData.append("category", category);
-      productData.append("quantity", quantity);
-      productData.append("brand", brand);
-      productData.append("color", color);
-      productData.append("size", size);
 
-      let finalImages = croppedImages.length ? croppedImages : files; 
+    const productData = new FormData();
+    productData.append("name", name);
+    productData.append("description", description);
+    productData.append("price", price);
+    productData.append("category", category);
+    productData.append("offer", offer);
+    productData.append("quantity", quantity);
+    productData.append("brand", brand);
+    productData.append("color", color);
+    productData.append("size", size);
 
-      // Convert Object URLs to actual File objects
-      const convertedFiles = await Promise.all(
-        finalImages.map(async (file) => {
-          if (file instanceof File) return file; 
-    
-          // Fetch image from Object URL (blob:http://...)
-          const response = await fetch(file); 
-          const blob = await response.blob(); 
-    
-          // Convert Blob to File
-          return new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
-        })
-      );
-    
-      // Append images to FormData
-      convertedFiles.forEach((file) => productData.append("pdImage", file));
-    
+    let finalImages = croppedImages.length ? croppedImages : files;
 
-       console.log("prooo",productData)
-      console.log("pp", {name, description, price, category, quantity, color, brand, productId: product._id, images:convertedFiles,})
-      try {
+    // Convert Object URLs to actual File objects
+    const convertedFiles = await Promise.all(
+      finalImages.map(async (file) => {
+        if (file instanceof File) return file;
+
+        // Fetch image from Object URL (blob:http://...)
+        const response = await fetch(file);
+        const blob = await response.blob();
+
+        // Convert Blob to File
+        return new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
+      })
+    );
+
+    // Append images to FormData
+    convertedFiles.forEach((file) => productData.append("pdImage", file));
+
+
+    console.log("prooo", productData)
+    console.log("pp", { name, description, price, category, quantity,offer, color, brand, productId: product._id, images: convertedFiles, })
+    try {
       const { data } = await update({ id: product?._id, formData: productData }).unwrap()
       toast.success('Product Edited successfully!');
-     navigate('/admin/products')
+      navigate('/admin/products')
       refetch();
     } catch (error) {
       toast.error(error?.data?.message || 'Failed to edit product');
     }
   };
 
-
-
   return (
 
     <>
-
       <Container fluid>
         <Row className="g-0">
           <Col lg={2} className="d-none d-lg-block">
@@ -186,6 +191,13 @@ const EditProduct = () => {
                     onChange={(e) => setName(e.target.value)}
                   />
                 </Form.Group>
+                <Form.Group as={Col} controlId="formGridPrice">
+                  <Form.Label className='caption'>Price</Form.Label>
+                  <Form.Control type="number" value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                  />
+                </Form.Group>
+
                 <Form.Group as={Col} controlId="formGridCategory">
                   <Form.Label className="caption">Category</Form.Label>
                   <Form.Select className="text-secondary"
@@ -213,12 +225,19 @@ const EditProduct = () => {
 
               </Form.Group>
               <Row className="mb-3">
-                <Form.Group as={Col} controlId="formGridPrice">
-                  <Form.Label className='caption'>Price</Form.Label>
-                  <Form.Control type="number" value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
 
+                <Form.Group as={Col} controlId="offer">
+                  <Form.Label className="caption">Offer</Form.Label>
+                  <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
+                    <option value="">None</option>
+                    {offers
+                      ?.filter((offer) => offer.type === "products")
+                      .map((offer) => (
+                        <option key={offer.name} value={offer.name}>
+                          {offer.name}
+                        </option>
+                      ))}
+                  </Form.Select>
                 </Form.Group>
 
                 <Form.Group as={Col} controlId="formGridColor">

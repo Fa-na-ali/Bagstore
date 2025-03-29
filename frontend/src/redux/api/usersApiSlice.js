@@ -249,6 +249,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    getAllOffersToAdd: builder.query({
+      query: () => ({
+        url: `${USERS_URL}/admin/alloffers/`,
+      
+      }),
+    }),
+
   })
 })
 
@@ -286,4 +293,5 @@ export const {
   useUpdateOfferMutation,
   useDeleteOfferMutation,
   useGetOfferByIdQuery,
+  useGetAllOffersToAddQuery,
 } = userApiSlice;

@@ -21,6 +21,7 @@ console.log(data)
     { key: "category", label: "Category" },
     { key: "price", label: "Price" },
     { key: "quantity", label: "Quantity" },
+    { key: "salesPrice", label: "Sales Price" },
     { key: "color", label: "Color" },
     { key: "brand", label: "Brand" },
     { key: "isExist", label: "Status" }

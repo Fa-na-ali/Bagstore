@@ -102,7 +102,24 @@ const Cards = ({ products }) => {
                   <div className='text-reset text-decoration-none text-center'>
                     <p className='caption'>{product.color}</p>
                   </div>
-                  <h6 className='mb-3 caption text-center'>INR {product.price}</h6>
+                  <div className='text-center mb-3'>
+                    {product.salesPrice ? (
+                      product.salesPrice !== product.price ? (
+                        <>
+                          <span className='text-decoration-line-through text-muted me-2'>
+                            ₹{product.price}
+                          </span>
+                          <span className='text-success fw-bold'>
+                            ₹{product.salesPrice}
+                          </span>
+                        </>
+                      ) : (
+                        <span className='caption'>₹{product.price}</span>
+                      )
+                    ) : (
+                      <span className='caption'>₹{product.price}</span>
+                    )}
+                  </div>
 
                   <div className='d-flex justify-content-center gap-3 mt-auto'>
                     {/* Add to Cart Button */}
