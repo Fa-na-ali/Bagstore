@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-boo
 import { FaTrash, FaCcMastercard, FaCcVisa, FaCcPaypal } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { useProfileQuery } from "../../redux/api/usersApiSlice";
+import { useApplyCouponMutation, useProfileQuery } from "../../redux/api/usersApiSlice";
 import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
@@ -36,6 +36,7 @@ const Checkout = () => {
   const [cModal, setCModal] = useState(false);
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState(false);
+  const [applyCoupon, { isLoading: applyingCoupon }] = useApplyCouponMutation();
 
   useEffect(() => {
     refetch();
@@ -69,9 +70,19 @@ const Checkout = () => {
     dispatch(savePaymentMethod(method));
 
   }
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async() => {
     if (coupon.trim()) {
-      setApplied(true);
+      try {
+        const res = await applyCoupon({ coupon_code: coupon, minAmount: total }).unwrap();
+        if (res.success) {
+          toast.success(res.message);
+          setApplied(true);
+        } else {
+          toast.error(res.message);
+        }
+      } catch (error) {
+        toast.error("Failed to apply coupon.");
+      }
     }
   };
 
@@ -114,7 +125,7 @@ const Checkout = () => {
   };
   console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const discount = subtotal * 0.1;
+  const discount = cartItems.reduce((acc, item) => acc + item.discount*item.qty, 0);
   const tax = subtotal * 0.05;
   const total = subtotal - discount + tax;
   const id = selectedAddress
@@ -162,10 +173,19 @@ const Checkout = () => {
                                 <div style={{ width: "50px" }}>
                                   <h5 className="fw-normal mb-0">{item.qty}</h5>
                                 </div>
-                                <div style={{ width: "80px" }}>
-                                  <h5 className="mb-0">₹{item.price * item.qty}</h5>
+                                <div style={{ width: "100px" }}>
+                                {item.originalPrice !== item.discountedPrice ? (
+                            <>
+                              <span className="text-decoration-line-through text-muted me-2">
+                                ₹{item.originalPrice}
+                              </span>
+                              <span className="text-success fw-bold">₹{item.discountedPrice}</span>
+                            </>
+                          ) : (
+                            <span>₹{item.price}</span>
+                          )}
                                 </div>
-                                <Button variant="link" className="text-danger p-0" onClick={() => dispatch(removeFromCart(item._id))}>
+                                <Button variant="link" className="text-danger p-5" onClick={() => dispatch(removeFromCart(item._id))}>
                                   <FaTrash size={18} />
                                 </Button>
                               </div>

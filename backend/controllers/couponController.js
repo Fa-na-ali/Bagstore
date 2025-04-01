@@ -1,5 +1,6 @@
 const STATUS_CODES = require("../middlewares/statusCodes");
 const Coupon = require("../models/couponModel");
+const User = require('../models/userModel');
 
 //create coupon
 const addCoupon = async (req, res) => {
@@ -205,6 +206,57 @@ const getCouponById = async (req, res) => {
    
 }
 
+//applyCoupon
+const applyCoupon = async (req, res) => {
+    try {
+        const { coupon_code, minAmount } = req.body;
+    const coupon = await Coupon.findOne({coupon_code: coupon_code});
+    if (!coupon || coupon.limit <= 0) {
+        return res.json({success: false, message: "Invalid coupon code"});
+    }
+    if (coupon.expiry < new Date()) {
+        return res.json({success: false, message: "Coupon has expired"});
+    }
+    if (coupon.status == false) {
+        return res.json({success: false, message: "Coupon is inactive"});
+    }
+    if (minAmount && coupon.minAmount > minAmount) {
+        return res.json({success: false, message: "Coupon minimum amount requirement not met"});
+    }
+
+    if (minAmount && coupon.maxAmount < minAmount) {
+        return res.json({success: false, message: "Coupon maximum amount requirement exceeded"});
+    }
+    const user = await User.findOne({_id: req.user._id});
+
+    if (coupon.users.includes(user._id)) {
+        if (coupon.type == 'single') {
+            delete user.coupon;
+            await user.save();
+            return res.json({success: false, message: "Coupon already applied"});
+        }
+        coupon.limit -= 1;
+        user.coupon = coupon._id;
+    } else {
+        user.coupon = coupon._id;
+        coupon.users.push(user._id);
+        coupon.limit -= 1;
+    }
+
+    await user.save();
+    await coupon.save();
+    return res.json({success: true, message: "Coupon applied successfully"});
+        
+    } catch (error) {
+        console.log(error)
+       return  res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: "Server Error",
+        });
+    }
+    
+};
+
 
 module.exports = {
     addCoupon,
@@ -213,4 +265,5 @@ module.exports = {
     editCoupon,
     getCouponById,
     getAllCouponsUser,
+    applyCoupon
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Modal, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
@@ -6,36 +6,91 @@ import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
 import { useUpdateWishlistMutation } from '../redux/api/productApiSlice';
+import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
 
 const Cards = ({ products }) => {
   const imageBaseUrl = 'http://localhost:5004/uploads/';
+  const { data: off } = useGetAllOffersToAddQuery()
+  console.log(off)
+  const offers = off?.offers
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const items =products || products?.all
+  console.log("pdts", products)
+  const items = products || products?.all
   const [likedProducts, setLikedProducts] = useState({});
+  const [discounts, setDiscounts] = useState({});
+  const [salesPrices, setSalesPrices] = useState({})
   const [update] = useUpdateWishlistMutation()
-  
+
   const cartHandler = (product) => {
-    dispatch(addToCart({ ...product, qty: 1 })); 
+    const finalPrice = salesPrices[product._id] || product.price;
+    dispatch(addToCart({ ...product,
+      originalPrice:product.price,  
+      discountedPrice: finalPrice,
+      discount:(product.price-finalPrice), qty: 1 }));
     toast.success('Item added to cart');
-  
+
   };
 
-  const toggleLike = async (productId,color) => {
-    const isLiked = !likedProducts[productId]; 
-    setLikedProducts((prev) => ({ ...prev, [productId]: isLiked })); 
+
+  useEffect(() => {
+    if (!products || !offers) return;
+
+    const newDiscounts = {};
+    const newSalesPrices = {};
+
+    products.forEach((product) => {
+      let productDiscount = 0;
+      let categoryDiscount = 0;
+
+      // Find Product Offer Discount
+      offers.forEach((offer) => {
+        if (offer.name === product.offer) {
+          productDiscount = offer.discount;
+        }
+      });
+
+      // Find Category Offer Discount
+      if (product.category && product.category.offer) {
+        offers.forEach((offer) => {
+          if (offer.type === "category" && offer.name === product.category.offer) {
+            categoryDiscount = offer.discount;
+          }
+        });
+      }
+
+      // Apply the highest discount
+      const finalDiscount = Math.max(productDiscount, categoryDiscount);
+      newDiscounts[product._id] = finalDiscount;
+
+      // Calculate Sales Price
+      if (finalDiscount !== 0) {
+        newSalesPrices[product._id] = product.price - (finalDiscount / 100) * product.price;
+      } else {
+        newSalesPrices[product._id] = product.price;
+      }
+    });
+
+    setDiscounts(newDiscounts);
+    setSalesPrices(newSalesPrices);
+  }, [products, offers]);
+
+
+  const toggleLike = async (productId, color) => {
+    const isLiked = !likedProducts[productId];
+    setLikedProducts((prev) => ({ ...prev, [productId]: isLiked }));
 
     try {
       if (isLiked) {
-        
-        const res = await update({productId,color}).unwrap();
-        console.log("res",res)
-       if(res.status==='success')
-        toast.success("Added to Wishlist")
-      }else{
-         
-        const res = await update({productId,color}).unwrap();
-        console.log("res",res)
+
+        const res = await update({ productId, color }).unwrap();
+        console.log("res", res)
+        if (res.status === 'success')
+          toast.success("Added to Wishlist")
+      } else {
+
+        const res = await update({ productId, color }).unwrap();
+        console.log("res", res)
         toast.success("Removed from Wishlist")
 
       }
@@ -54,20 +109,21 @@ const Cards = ({ products }) => {
           const productImages = product.pdImage?.length
             ? product.pdImage.map((img) => `${imageBaseUrl}${img}`)
             : ['https://via.placeholder.com/300'];
+
           return (
             <Col key={product._id} lg={4} md={6} className='mb-4'>
               <Card className='shadow-lg hover-shadow h-100 d-flex flex-column'>
                 <div
                   className='bg-image hover-zoom ripple ripple-surface ripple-surface-light'
-                  style={{ height: '400px', overflow: 'hidden', position: 'relative' }} 
+                  style={{ height: '400px', overflow: 'hidden', position: 'relative' }}
                 >
                   {/* Stock Status Badge */}
                   <div
                     style={{
-                      position: 'absolute', 
-                      top: '10px', 
-                      right: '10px', 
-                      zIndex: 1, 
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      zIndex: 1,
                     }}
                   >
                     {product.quantity > 0 ? (
@@ -103,40 +159,36 @@ const Cards = ({ products }) => {
                     <p className='caption'>{product.color}</p>
                   </div>
                   <div className='text-center mb-3'>
-                    {product.salesPrice ? (
-                      product.salesPrice !== product.price ? (
-                        <>
-                          <span className='text-decoration-line-through text-muted me-2'>
-                            ₹{product.price}
-                          </span>
-                          <span className='text-success fw-bold'>
-                            ₹{product.salesPrice}
-                          </span>
-                        </>
-                      ) : (
-                        <span className='caption'>₹{product.price}</span>
-                      )
-                    ) : (
-                      <span className='caption'>₹{product.price}</span>
-                    )}
+                  {discounts[product._id] !== 0 ? (
+                    <>
+                      <span className='text-decoration-line-through text-muted me-2'>
+                        ₹{product.price}
+                      </span>
+                      <span className='text-success fw-bold'>
+                        ₹{salesPrices[product._id]}
+                      </span>
+                    </>
+                  ) : (
+                    <span>₹{product.price}</span>
+                  )}
                   </div>
 
                   <div className='d-flex justify-content-center gap-3 mt-auto'>
                     {/* Add to Cart Button */}
                     <Button
                       className='button-custom'
-                      onClick={()=>cartHandler(product)}
-                      disabled={product.quantity <= 0 || !product.category?.isExist }
+                      onClick={() => cartHandler(product)}
+                      disabled={product.quantity <= 0 || !product.category?.isExist}
                     >
                       Add to cart
                     </Button>
                     <Button
                       variant='light'
                       className='border icon-hover'
-                      onClick={() => toggleLike(product._id,product.color)} 
+                      onClick={() => toggleLike(product._id, product.color)}
                     >
                       <FaHeart
-                        className={likedProducts[product._id] ? 'text-danger' : 'text-muted'} 
+                        className={likedProducts[product._id] ? 'text-danger' : 'text-muted'}
                       />
                     </Button>
                   </div>

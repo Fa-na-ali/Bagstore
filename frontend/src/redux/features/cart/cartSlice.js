@@ -12,7 +12,6 @@ const cartSlice = createSlice({
     addToCart: (state, action) => {
       const item = action.payload;
       const existItem = state.cartItems.find((x) => x._id === item._id);
-
       if (existItem) {
 
         const newQuantity = existItem.qty + item.qty;
@@ -21,18 +20,18 @@ const cartSlice = createSlice({
         if (newQuantity > maxAllowed) {
 
           state.cartItems = state.cartItems.map((x) =>
-            x._id === existItem._id ? { ...x, qty: maxAllowed } : x
+            x._id === existItem._id ? { ...x, qty: maxAllowed, } : x
           );
           toast.error(`You can only add up to ${maxAllowed} units of this product`);
         } else {
 
           state.cartItems = state.cartItems.map((x) =>
-            x._id === existItem._id ? { ...x, qty: newQuantity } : x
+            x._id === existItem._id ? { ...x, qty: newQuantity,} : x
           );
         }
       } else {
 
-        state.cartItems = [...state.cartItems, item];
+        state.cartItems = [...state.cartItems,item];
       }
 
       return updateCart(state);
@@ -45,7 +44,8 @@ const cartSlice = createSlice({
           return {
             ...cartItem,
             quantity: latestProduct.quantity, 
-            qty: Math.min(cartItem.qty, latestProduct.quantity), 
+            qty: Math.min(cartItem.qty, latestProduct.quantity),
+           
           };
         }
         return cartItem;

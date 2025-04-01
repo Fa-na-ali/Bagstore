@@ -206,6 +206,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    applyCoupon: builder.mutation({
+      query: (couponData) => ({
+        url: `${USERS_URL}/applyCoupon`,
+        method: "POST",
+        body: couponData,
+      }),
+    }),
+
     addOffer: builder.mutation({
       query: (formData) => ({
         url: `${USERS_URL}/admin/offers/add`,
@@ -294,4 +302,5 @@ export const {
   useDeleteOfferMutation,
   useGetOfferByIdQuery,
   useGetAllOffersToAddQuery,
+  useApplyCouponMutation
 } = userApiSlice;

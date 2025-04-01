@@ -1,4 +1,4 @@
-import React ,{useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import { productApiSlice, useDeleteImageMutation, useFetchRelatedProductsQuery, useGetProductByIdQuery, useUpdateProductMutation } from '../../redux/api/productApiSlice';
 import { useNavigate, useParams } from 'react-router';
 import { Row, Col, Container, Button, Card, Modal, Image } from 'react-bootstrap'
@@ -6,6 +6,7 @@ import Cards from '../../components/Cards';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/features/cart/cartSlice';
+import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice';
 
 
 const ProductDetails = () => {
@@ -14,29 +15,69 @@ const ProductDetails = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
-  const product=data?.product
+  const product = data?.product
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const [quantity, setQuantity] = useState(1);
-  
+  const [discounts, setDiscounts] = useState(0);
+  const [salesPrices, setSalesPrices] = useState(0)
+  const { data: off } = useGetAllOffersToAddQuery()
+  console.log(off)
+  const offers = off?.offers
+
   console.log(product?._id)
   const { data: products } = useFetchRelatedProductsQuery(id)
   console.log(products)
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
-  if (isError) {
-    return <div>Error loading product details.</div>;
-  }
-
-  console.log("product", product);
-
-  if (!product) {
-    return <div>Product not found.</div>;
-  }
+  useEffect(() => {
+    if (product && offers) {
+      let newDiscounts = 0;
+      let newSalesPrices = product.price;
   
+      let productDiscount = 0;
+      let categoryDiscount = 0;
+  
+      // Find Product Offer Discount
+      offers.forEach((offer) => {
+        if (offer.name === product.offer) {
+          productDiscount = offer.discount;
+        }
+      });
+  
+      // Find Category Offer Discount
+      if (product.category && product.category.offer) {
+        offers.forEach((offer) => {
+          if (offer.type === "category" && offer.name === product.category.offer) {
+            categoryDiscount = offer.discount;
+          }
+        });
+      }
+  
+      // Apply the highest discount
+      const finalDiscount = Math.max(productDiscount, categoryDiscount);
+      newDiscounts = finalDiscount;
+  
+      // Calculate Sales Price
+      if (finalDiscount !== 0) {
+        newSalesPrices = product.price - (finalDiscount / 100) * product.price;
+      }
+  
+      setDiscounts(newDiscounts);
+      setSalesPrices(newSalesPrices);
+    }
+  }, [product, offers]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading product details.</div>;
+  if (!product) return <div>Product not found.</div>;
+  
+
   const addToCartHandler = () => {
-    dispatch(addToCart({ ...product, qty: quantity })); 
+    dispatch(addToCart({
+      ...product,
+      originalPrice: product.price,
+      discountedPrice: salesPrices,
+      discount: (product.price - salesPrices), qty: 1
+    }));
     toast.success("Item added successfully");
   };
 
@@ -83,22 +124,18 @@ const ProductDetails = () => {
               <p className="text-muted mb-4 caption">ID: {product._id}</p>
               <div className="mb-3">
                 {/* <span className="h6 me-2 caption">Price: ₹{product.price}</span> */}
-                {product.salesPrice ? (
-                      product.salesPrice !== product.price ? (
-                        <>
-                          <span className='text-decoration-line-through text-muted me-2'>
-                            ₹{product.price}
-                          </span>
-                          <span className='text-success fw-bold'>
-                            ₹{product.salesPrice}
-                          </span>
-                        </>
-                      ) : (
-                        <span className='caption'>₹{product.price}</span>
-                      )
-                    ) : (
-                      <span className='caption'>₹{product.price}</span>
-                    )}
+                {discounts !== 0 ? (
+                    <>
+                      <span className='text-decoration-line-through text-muted me-2'>
+                        ₹{product.price}
+                      </span>
+                      <span className='text-success fw-bold'>
+                        ₹{salesPrices}
+                      </span>
+                    </>
+                  ) : (
+                    <span>₹{product.price}</span>
+                  )}
 
               </div>
               <div className="mb-3">
@@ -133,23 +170,23 @@ const ProductDetails = () => {
               </div>
 
               <div className="mb-4">
-              <label htmlFor="quantity" className="form-label caption">
+                <label htmlFor="quantity" className="form-label caption">
                   Quantity
                 </label>
                 <input
                   type="number"
                   className="form-control"
                   id="quantity"
-                  value={quantity} 
+                  value={quantity}
                   min={1}
                   max={5}
-                  onChange={(e) => setQuantity(Number(e.target.value))} 
+                  onChange={(e) => setQuantity(Number(e.target.value))}
                   style={{ width: "80px" }}
                 />
               </div>
-              <Button size="lg" className="mb-3 me-2 button-custom" 
-              onClick={addToCartHandler}
-              disabled={product?.quantity <= 0 || !product?.category?.isExist }>
+              <Button size="lg" className="mb-3 me-2 button-custom"
+                onClick={addToCartHandler}
+                disabled={product?.quantity <= 0 || !product?.category?.isExist}>
                 <i className="bi bi-cart-plus"></i> Add to Cart
               </Button>
               <Button variant="outline-secondary" size="lg" className="mb-3">
