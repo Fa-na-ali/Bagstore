@@ -88,10 +88,10 @@ export const productApiSlice = apiSlice.injectEndpoints({
     }),
 
     removeFromWishlist: builder.mutation({
-      query: (productId) => ({
-        url: `/wishlist/remove`,
+      query: (product) => ({
+        url: `${PRODUCT_URL}/remove/wishlist`,
         method: "DELETE",
-        body: { productId },
+        body: product ,
       }),
       invalidatesTags: ["Wishlist"],
     }),

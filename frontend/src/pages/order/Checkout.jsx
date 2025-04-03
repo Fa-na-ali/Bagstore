@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
-import { FaTrash, FaCcMastercard, FaCcVisa, FaCcPaypal } from "react-icons/fa";
+import { FaTrash, } from "react-icons/fa";
+import { SiRazorpay } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { useApplyCouponMutation, useProfileQuery } from "../../redux/api/usersApiSlice";
+import { useApplyCouponMutation, useProfileQuery, useRemoveCouponMutation } from "../../redux/api/usersApiSlice";
 import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
@@ -33,10 +34,13 @@ const Checkout = () => {
   const [saveShipping, setSaveShipping] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [couponDiscount,setCouponDiscount] = useState(0)
+  const [couponId,setCouponId] = useState("")
   const [cModal, setCModal] = useState(false);
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState(false);
   const [applyCoupon, { isLoading: applyingCoupon }] = useApplyCouponMutation();
+  const [removeCoupon, { isLoading: removingCoupon }] = useRemoveCouponMutation();
 
   useEffect(() => {
     refetch();
@@ -72,11 +76,16 @@ const Checkout = () => {
   }
   const handleApplyCoupon = async() => {
     if (coupon.trim()) {
+      setApplied(true);
       try {
         const res = await applyCoupon({ coupon_code: coupon, minAmount: total }).unwrap();
-        if (res.success) {
+        console.log("coupon res",res)
+        if (res.status==="success") {
           toast.success(res.message);
-          setApplied(true);
+          setCouponId(res?.coupon._id)
+          const couponRate = res?.coupon.discount
+          setCouponDiscount(couponRate/100*total)
+          
         } else {
           toast.error(res.message);
         }
@@ -86,18 +95,33 @@ const Checkout = () => {
     }
   };
 
-  const handleRemoveCoupon = () => {
-    setCoupon("");
-    setApplied(false);
+  const handleRemoveCoupon = async() => {
+    try {
+      const res = await removeCoupon({ coupon_code: coupon }).unwrap();
+      if (res.success) {
+        toast.success(res.message);
+        setCoupon(""); 
+        setCouponDiscount(0); 
+        setCouponId("")
+        setApplied(false);
+      } else {
+        toast.error(res.message);
+      }
+    } catch (error) {
+      toast.error("Failed to remove coupon.");
+    }
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async (razorpay_order_id, status) => {
 
     setShowModal(false);
     if (!cartItems || cartItems.length === 0) {
       toast.error("Your cart is empty. Please add items before placing an order.");
       return;
     }
+    if (cart?.paymentMethod == "razorpay" && razorpay_order_id === "") {
+      return razorpay_payment();
+  }
     try {
       const res = await createOrder({
         userId: user?.user._id,
@@ -105,7 +129,9 @@ const Checkout = () => {
         shippingAddress: cart?.shippingAddress,
         paymentMethod: cart?.paymentMethod,
         shippingPrice: cart?.shippingPrice,
-        couponId: null,
+        couponId: couponId,
+        razorpay_order_id,
+        couponDiscount:couponDiscount,
         totalPrice: cart?.totalPrice,
       }).unwrap();
       console.log('res', res)
@@ -127,7 +153,7 @@ const Checkout = () => {
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount*item.qty, 0);
   const tax = subtotal * 0.05;
-  const total = subtotal - discount + tax;
+  const total = subtotal - (discount+couponDiscount) + tax;
   const id = selectedAddress
 
 
@@ -207,6 +233,10 @@ const Checkout = () => {
                           <div className="d-flex justify-content-between">
                             <p className="mb-2">Discount:</p>
                             <p className="mb-2 text-success">-₹{discount.toFixed(2)}</p>
+                          </div>
+                          <div className="d-flex justify-content-between">
+                            <p className="mb-2">Coupon Discount:</p>
+                            <p className="mb-2 text-success">-₹{couponDiscount.toFixed(2)}</p>
                           </div>
                           <div className="d-flex justify-content-between">
                             <p className="mb-2">TAX:</p>
@@ -370,19 +400,19 @@ const Checkout = () => {
                               {/* PayPal */}
                               <Col md={4}>
                                 <div
-                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "Paypal" ? "border-primary" : ""}`}
-                                  onClick={() => setSelectedPayment("Paypal")}
+                                  className={`rounded border p-3 d-flex align-items-center justify-content-between ${selectedPayment === "Razorpay" ? "border-primary" : ""}`}
+                                  onClick={() => setSelectedPayment("Razorpay")}
                                   style={{ cursor: "pointer" }}
                                 >
                                   <Form.Check
                                     type="radio"
                                     name="paymentMethod"
-                                    id="paypal"
-                                    checked={selectedPayment === "Paypal"}
-                                    onChange={() => handlePaymentMethod("Paypal")}
+                                    id="razorpay"
+                                    checked={selectedPayment === "Razorpay"}
+                                    onChange={() => handlePaymentMethod("Razorpay")}
                                   />
-                                  <FaCcPaypal size={32} className="text-body" />
-                                  <span>Paypal</span>
+                                  <SiRazorpay size={32} className="text-body" />
+                                  <span>Razorpay</span>
                                 </div>
                               </Col>
                             </Row>
@@ -411,7 +441,7 @@ const Checkout = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
-          <Button variant="success" onClick={handlePlaceOrder}>
+          <Button variant="success" onClick={()=>handlePlaceOrder(("", "pending"))}>
             Place Order at ₹{total.toFixed(2)}
           </Button>
         </Modal.Footer>

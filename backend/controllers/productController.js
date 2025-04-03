@@ -470,7 +470,14 @@ const fetchWishlist = async (req, res) => {
         message: USER_NOT_MSG
       })
     }
-    const wishlist = await Wishlist.find({ userId }).populate("productId");
+    const wishlist = await Wishlist.find({ userId })
+    .populate({
+      path: "productId",
+      populate: {
+        path: "category", // Assuming 'category' is a reference in the 'Product' model
+        model: "Category",
+      },
+    });
     console.log(wishlist);
     if (!wishlist) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -494,11 +501,18 @@ const fetchWishlist = async (req, res) => {
 
 //remove from wishlist
 const removeFromWishlist = async (req, res) => {
-  const { userId } = req.user._id;
+  const userId  = req.user._id;
   const { productId } = req.body;
+  console.log("removingggg")
   console.log("userIx", userId);
   console.log("productId", productId);
   try {
+    // if (!mongoose.Types.ObjectId.isValid(productId)) {
+    //   return res.status(400).json({
+    //     status: "error",
+    //     message: "Invalid productId",
+    //   });
+    // }
     const wishlist = await Wishlist.findOne({ userId });
 
     if (!wishlist) {
@@ -508,7 +522,7 @@ const removeFromWishlist = async (req, res) => {
       });
     }
 
-    wishlist.products = wishlist.productId.filter(
+    wishlist.products = wishlist?.productId?.filter(
       (id) => id.toString() != productId
     );
     console.log(wishlist.products);

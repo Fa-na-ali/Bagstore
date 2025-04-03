@@ -231,8 +231,6 @@ const applyCoupon = async (req, res) => {
 
     if (coupon.users.includes(user._id)) {
         if (coupon.type == 'single') {
-            delete user.coupon;
-            await user.save();
             return res.json({success: false, message: "Coupon already applied"});
         }
         coupon.limit -= 1;
@@ -245,7 +243,11 @@ const applyCoupon = async (req, res) => {
 
     await user.save();
     await coupon.save();
-    return res.json({success: true, message: "Coupon applied successfully"});
+    return res.status(STATUS_CODES.OK).json({
+        status:"success",
+        message: "Coupon applied successfully",
+        coupon
+    });
         
     } catch (error) {
         console.log(error)
@@ -257,6 +259,40 @@ const applyCoupon = async (req, res) => {
     
 };
 
+//Remoove coupon
+const removeCoupon = async (req, res) => {
+    console.log("coup req", req.body);
+    const { coupon_code } = req.body;
+
+    const coupon = await Coupon.findOne({ coupon_code: coupon_code });
+    if (!coupon) {
+        return res.json({ success: false, message: "Coupon not found" });
+    }
+
+    const user = await User.findOne({ _id: req.user._id });
+    if (!user) {
+        return res.json({ success: false, message: "User not found" });
+    }
+
+    // Check if the user has this coupon
+    if ( user.coupon && user.coupon.toString() === coupon._id.toString()) {
+        user.coupon = null; // Explicitly setting it to null
+        await user.save(); // Save the updated user object
+
+        // Remove user from coupon's users array
+        coupon.users = coupon.users.filter(id => id.toString() !== user._id.toString());
+
+        if (coupon.type === "single") {
+            coupon.limit += 1;
+        }
+
+        await coupon.save(); // Save the updated coupon object
+        return res.json({ success: true, message: "Coupon removed successfully" });
+    } else {
+        return res.json({ success: false, message: "Coupon not applied to user" });
+    }
+};
+
 
 module.exports = {
     addCoupon,
@@ -265,5 +301,6 @@ module.exports = {
     editCoupon,
     getCouponById,
     getAllCouponsUser,
-    applyCoupon
+    applyCoupon,
+    removeCoupon
 }

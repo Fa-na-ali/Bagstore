@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
-import { useUpdateWishlistMutation } from '../redux/api/productApiSlice';
+import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
 
 const Cards = ({ products }) => {
@@ -20,7 +20,19 @@ const Cards = ({ products }) => {
   const [likedProducts, setLikedProducts] = useState({});
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
+   const {data:wishlistData, refetch}=useGetWishlistQuery()
+   console.log(wishlistData)
   const [update] = useUpdateWishlistMutation()
+
+  useEffect(() => {
+    if (wishlistData && wishlistData.wishlist) {
+      const initialLikedProducts = {};
+      wishlistData?.wishlist.forEach(item => {
+        initialLikedProducts[item.productId._id] = true;
+      });
+      setLikedProducts(initialLikedProducts);
+    }
+  }, [wishlistData]);
 
   const cartHandler = (product) => {
     const finalPrice = salesPrices[product._id] || product.price;
@@ -43,14 +55,14 @@ const Cards = ({ products }) => {
       let productDiscount = 0;
       let categoryDiscount = 0;
 
-      // Find Product Offer Discount
+     
       offers.forEach((offer) => {
         if (offer.name === product.offer) {
           productDiscount = offer.discount;
         }
       });
 
-      // Find Category Offer Discount
+     
       if (product.category && product.category.offer) {
         offers.forEach((offer) => {
           if (offer.type === "category" && offer.name === product.category.offer) {
@@ -59,11 +71,11 @@ const Cards = ({ products }) => {
         });
       }
 
-      // Apply the highest discount
+      
       const finalDiscount = Math.max(productDiscount, categoryDiscount);
       newDiscounts[product._id] = finalDiscount;
 
-      // Calculate Sales Price
+      
       if (finalDiscount !== 0) {
         newSalesPrices[product._id] = product.price - (finalDiscount / 100) * product.price;
       } else {
