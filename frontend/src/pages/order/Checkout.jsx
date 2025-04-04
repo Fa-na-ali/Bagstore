@@ -4,7 +4,7 @@ import { FaTrash, } from "react-icons/fa";
 import { SiRazorpay } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { useApplyCouponMutation, useProfileQuery, useRemoveCouponMutation } from "../../redux/api/usersApiSlice";
+import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation } from "../../redux/api/usersApiSlice";
 import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
@@ -26,16 +26,18 @@ const Checkout = () => {
   const dispatch = useDispatch()
   const formattedItems = cart?.cartItems.map(item => ({
     product: item._id,
-    qty: item.qty
+    qty: item.qty,
+    discount:item.discount,
   }));
+  const [initiatePayment] = useInitiatePaymentMutation();
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
 
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [saveShipping, setSaveShipping] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [couponDiscount,setCouponDiscount] = useState(0)
-  const [couponId,setCouponId] = useState("")
+  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [couponId, setCouponId] = useState("")
   const [cModal, setCModal] = useState(false);
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState(false);
@@ -63,10 +65,12 @@ const Checkout = () => {
   };
 
   const handleContinue = () => {
-    if (selectedPayment === "Cash On Delivery") {
+    if (selectedPayment === "Razorpay") {
+      handlePayment();
+    } else if (selectedPayment === "Cash On Delivery") {
       setShowModal(true);
-
-
+    } else {
+      handlePlaceOrder("", "pending");
     }
   };
   const handlePaymentMethod = (method) => {
@@ -74,18 +78,18 @@ const Checkout = () => {
     dispatch(savePaymentMethod(method));
 
   }
-  const handleApplyCoupon = async() => {
+  const handleApplyCoupon = async () => {
     if (coupon.trim()) {
       setApplied(true);
       try {
         const res = await applyCoupon({ coupon_code: coupon, minAmount: total }).unwrap();
-        console.log("coupon res",res)
-        if (res.status==="success") {
+        console.log("coupon res", res)
+        if (res.status === "success") {
           toast.success(res.message);
           setCouponId(res?.coupon._id)
           const couponRate = res?.coupon.discount
-          setCouponDiscount(couponRate/100*total)
-          
+          setCouponDiscount(couponRate / 100 * total)
+
         } else {
           toast.error(res.message);
         }
@@ -95,13 +99,13 @@ const Checkout = () => {
     }
   };
 
-  const handleRemoveCoupon = async() => {
+  const handleRemoveCoupon = async () => {
     try {
       const res = await removeCoupon({ coupon_code: coupon }).unwrap();
       if (res.success) {
         toast.success(res.message);
-        setCoupon(""); 
-        setCouponDiscount(0); 
+        setCoupon("");
+        setCouponDiscount(0);
         setCouponId("")
         setApplied(false);
       } else {
@@ -112,6 +116,44 @@ const Checkout = () => {
     }
   };
 
+  const handlePayment = async () => {
+    try {
+      const { data: orderData } = await initiatePayment(total);
+      if (!orderData?.order) throw new Error('Invalid order response');
+
+      const options = {
+        key: orderData.order.key,
+        amount: orderData.order.amount,
+        currency: 'INR',
+        name: 'Bag Store',
+        description: 'Payment for your order',
+        order_id: orderData.order.id,
+        method: {
+          netbanking: true,
+          debit: true,
+          credit: true,
+          upi: true,
+          emi: true,
+          wallet: true,
+        },
+        handler: async function (response) {
+          console.log('Payment successful', response);
+          await handlePlaceOrder(orderData.order.id, "success");
+        },
+        theme: { color: '#3399cc' },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      rzp.on('payment.failed', async function () {
+        await handlePlaceOrder(orderData.order.id, "failed");
+      });
+    } catch (error) {
+      console.error('Error initializing Razorpay:', error);
+    }
+  };
+
+
   const handlePlaceOrder = async (razorpay_order_id, status) => {
 
     setShowModal(false);
@@ -119,19 +161,20 @@ const Checkout = () => {
       toast.error("Your cart is empty. Please add items before placing an order.");
       return;
     }
-    if (cart?.paymentMethod == "razorpay" && razorpay_order_id === "") {
-      return razorpay_payment();
-  }
+    if (selectedPayment == "razorpay" && razorpay_order_id === "") {
+      return handlePayment();
+    }
     try {
       const res = await createOrder({
         userId: user?.user._id,
         items: formattedItems,
         shippingAddress: cart?.shippingAddress,
         paymentMethod: cart?.paymentMethod,
-        shippingPrice: cart?.shippingPrice,
-        couponId: couponId,
+        shippingPrice: total >= 700 ? 50 : 0,
+        couponId: couponId || "",
         razorpay_order_id,
-        couponDiscount:couponDiscount,
+        paymentStatus: status,
+        couponDiscount: couponDiscount,
         totalPrice: cart?.totalPrice,
       }).unwrap();
       console.log('res', res)
@@ -151,9 +194,9 @@ const Checkout = () => {
   };
   console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const discount = cartItems.reduce((acc, item) => acc + item.discount*item.qty, 0);
+  const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
   const tax = subtotal * 0.05;
-  const total = subtotal - (discount+couponDiscount) + tax;
+  const total = subtotal - (discount + couponDiscount) + tax;
   const id = selectedAddress
 
 
@@ -200,16 +243,16 @@ const Checkout = () => {
                                   <h5 className="fw-normal mb-0">{item.qty}</h5>
                                 </div>
                                 <div style={{ width: "100px" }}>
-                                {item.originalPrice !== item.discountedPrice ? (
-                            <>
-                              <span className="text-decoration-line-through text-muted me-2">
-                                ₹{item.originalPrice}
-                              </span>
-                              <span className="text-success fw-bold">₹{item.discountedPrice}</span>
-                            </>
-                          ) : (
-                            <span>₹{item.price}</span>
-                          )}
+                                  {item.originalPrice !== item.discountedPrice ? (
+                                    <>
+                                      <span className="text-decoration-line-through text-muted me-2">
+                                        ₹{item.originalPrice}
+                                      </span>
+                                      <span className="text-success fw-bold">₹{item.discountedPrice}</span>
+                                    </>
+                                  ) : (
+                                    <span>₹{item.price}</span>
+                                  )}
                                 </div>
                                 <Button variant="link" className="text-danger p-5" onClick={() => dispatch(removeFromCart(item._id))}>
                                   <FaTrash size={18} />
@@ -325,7 +368,7 @@ const Checkout = () => {
                         placeholder="Enter Coupon Code"
                         value={coupon}
                         onChange={(e) => setCoupon(e.target.value)}
-                        disabled={applied} 
+                        disabled={applied}
                       />
                     </Col>
                     <Col md={2}>
@@ -441,7 +484,7 @@ const Checkout = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
-          <Button variant="success" onClick={()=>handlePlaceOrder(("", "pending"))}>
+          <Button variant="success" onClick={() => handlePlaceOrder(("", "pending"))}>
             Place Order at ₹{total.toFixed(2)}
           </Button>
         </Modal.Footer>

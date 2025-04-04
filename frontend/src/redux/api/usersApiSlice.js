@@ -272,6 +272,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    initiatePayment: builder.mutation({
+      query: (amount) => ({
+        url:`${USERS_URL}/payment/razorpay/order`,
+        method: 'POST',
+        body: { amount },
+      }),
+    }),
+
   })
 })
 
@@ -311,5 +319,6 @@ export const {
   useGetOfferByIdQuery,
   useGetAllOffersToAddQuery,
   useApplyCouponMutation,
-  useRemoveCouponMutation
+  useRemoveCouponMutation,
+  useInitiatePaymentMutation
 } = userApiSlice;

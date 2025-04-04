@@ -87,16 +87,6 @@ export const productApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
     }),
 
-    removeFromWishlist: builder.mutation({
-      query: (product) => ({
-        url: `${PRODUCT_URL}/remove/wishlist`,
-        method: "DELETE",
-        body: product ,
-      }),
-      invalidatesTags: ["Wishlist"],
-    }),
-
-
     createReview: builder.mutation({
       query: (data) => ({
         url: `${PRODUCT_URL}/${data.productId}/reviews`,

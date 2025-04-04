@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema(
   {
-    orderId: { type: String, unique: true  },
+    orderId: { type: String, unique: true },
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Payment',
@@ -25,7 +25,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["Cash On Delivery", "Wallet", "Paypal"],
+      enum: ["Cash On Delivery", "Wallet", "Razorpay"],
       required: true,
     },
     status: {
@@ -37,6 +37,7 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+   
     items: [
       {
         product: {
@@ -51,17 +52,22 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
           type: String,
-          enum: ['pending', 'delivered', 'cancelled','returned','shipped','return requested'],
+          enum: ['pending', 'delivered', 'cancelled', 'returned', 'shipped', 'return requested'],
           default: 'pending',
+        },
+        discount: {
+          type: Number,
+          required: false,
+          default: 0
         },
         cancel_reason: {
           type: String,
           required: false
-      },
-      returnReason: {
-        type: String,
-        required: false
-    }
+        },
+        returnReason: {
+          type: String,
+          required: false
+        }
       },
     ],
     couponId: {
@@ -71,7 +77,7 @@ const orderSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

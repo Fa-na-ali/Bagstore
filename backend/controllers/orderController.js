@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Payment = require('../models/paymentModel');
 const Return = require('../models/returnModel');
 const STATUS_CODES = require('../middlewares/statusCodes');
+const Wallet = require('../models/wallet');
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -15,7 +16,7 @@ const createOrder = async (req, res) => {
   try {
     console.log("Order request body:", req.body);
     const orderId = await generateOrderId();
-    const { userId, items, shippingAddress, paymentMethod, totalPrice, couponId } = req.body;
+    const { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in the order" });
@@ -37,14 +38,45 @@ const createOrder = async (req, res) => {
         console.log("Invalid quantity:", item.qty);
         return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
       }
-      validatedItems.push({ product: item.product, qty: item.qty, status: "pending" });
+      validatedItems.push({ product: item.product, qty: item.qty, status: "pending", discount: item.discount });
     }
     console.log("Validated Items:", validatedItems);
 
-   // if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
-    //  return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
-    //}
-    console.log("validated", validatedItems)
+    if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
+      return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
+    }
+    if (paymentMethod == "Wallet") {
+      const wallet = await Wallet.findOne({ userId: user._id });
+      if (!wallet || wallet.balance < totalPrice) {
+        return res.json({ success: false, message: "Insufficient balance in wallet" });
+      }
+      wallet.balance -= totalPrice;
+      wallet.transactions.push({
+        amount: totalPrice,
+        type: "debit",
+        description: "Order payment",
+      });
+      await wallet.save();
+    }
+
+    let payment = new Payment({
+      userId: user._id,
+      method: paymentMethod,
+      amount: totalPrice,
+      
+    });
+
+    if (paymentMethod == "Razorpay" && razorpay_order_id != "") {
+      payment.razorpay_order_id = razorpay_order_id;
+      payment.status = paymentStatus;
+    }
+    if (paymentMethod == "Wallet") {
+      payment.status = "success";
+    }
+    if (!isNaN(couponDiscount)) {
+      payment.couponDiscount = couponDiscount;
+    }
+    await payment.save()
 
     const order = new Order({
       orderId,
@@ -52,6 +84,8 @@ const createOrder = async (req, res) => {
       items: validatedItems,
       shippingAddress,
       paymentMethod,
+      paymentId: payment._id,
+      shippingPrice,
       status: "not completed",
       totalPrice,
       couponId,
@@ -60,23 +94,7 @@ const createOrder = async (req, res) => {
     const createdOrder = await order.save();
     console.log("Order created successfully", createdOrder);
 
-    const payment = new Payment({
-      userId: user._id,
-      method: paymentMethod,
-      amount: totalPrice,
-      orderId: createdOrder._id,
-    });
-
-    const createdPayment = await payment.save();
-    console.log("Payment recorded successfully");
-
-    createdOrder.paymentId = createdPayment._id;
-    await createdOrder.save();
-
-    console.log("Order updated with paymentId");
-
-
-    if (paymentMethod === "Cash On Delivery") {
+   
       await Promise.all(
         createdOrder.items.map(async (item) => {
           const product = await Product.findById(item.product);
@@ -91,8 +109,13 @@ const createOrder = async (req, res) => {
         })
       );
       console.log("Stock updated for COD order");
-    }
-
+    
+    await Payment.updateOne(
+      { _id: payment._id },
+      { $set: { orderId: createdOrder._id } }
+    )
+  
+    await user.save();
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error("Error creating order:", error);
@@ -111,11 +134,11 @@ const getMyOrders = async (req, res) => {
     const { searchTerm } = req.query;
 
     if (searchTerm) {
-      filters.orderId = searchTerm; 
+      filters.orderId = searchTerm;
     }
     const orders = await Order.find(filters)
-      .populate("items.product") 
-      .sort({ createdAt: -1 }); 
+      .populate("items.product")
+      .sort({ createdAt: -1 });
 
     console.log("Orders:", orders);
     res.status(200).json(orders);
@@ -198,10 +221,10 @@ const getAllOrders = async (req, res) => {
     const totalOrders = await Order.countDocuments(query);
 
     res.json({
-      status:"success",
-      message:"",
+      status: "success",
+      message: "",
       orders,
-       page,
+      page,
       pages: Math.ceil(totalOrders / limit),
     });
   } catch (error) {

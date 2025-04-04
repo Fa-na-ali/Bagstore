@@ -20,6 +20,7 @@
     "jspdf": "^3.0.1",
     "keep-react": "^1.6.1",
     "pdfmake": "^0.2.18",
+    "razorpay": "^2.9.6",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.9",
     "react-cropper": "^2.3.3",

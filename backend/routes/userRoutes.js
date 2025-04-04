@@ -28,6 +28,7 @@ const {verifyOtp, verifyOtpPass }= require('../middlewares/verifyOtp')
 const imageUpload=require("../imageUpload")
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser, applyCoupon, removeCoupon } = require('../controllers/couponController')
 const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
+const { createPayment } = require('../controllers/razorpayController')
 
 
 router.route('/register').post(userSignup)
@@ -68,5 +69,5 @@ router.route('/admin/offers/:id')
 .delete(authenticate,authorizeAdmin,blockDisabledUsers,deleteOffer)
 .get(authenticate,authorizeAdmin,blockDisabledUsers,getOfferById)
 router.route('/admin/alloffers').get(authenticate,authorizeAdmin,blockDisabledUsers,getAllOffers)
-
+router.route('/payment/razorpay/order').post(authenticate, blockDisabledUsers,createPayment)
 module.exports = router

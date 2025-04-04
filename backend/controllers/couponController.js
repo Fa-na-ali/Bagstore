@@ -1,5 +1,6 @@
 const STATUS_CODES = require("../middlewares/statusCodes");
 const Coupon = require("../models/couponModel");
+const Order = require('../models/orderModel');
 const User = require('../models/userModel');
 
 //create coupon
@@ -228,8 +229,10 @@ const applyCoupon = async (req, res) => {
         return res.json({success: false, message: "Coupon maximum amount requirement exceeded"});
     }
     const user = await User.findOne({_id: req.user._id});
+    const order = await Order.findOne({couponId:coupon._id})
 
-    if (coupon.users.includes(user._id)) {
+    if (order && coupon.users.includes(user._id)) {
+       
         if (coupon.type == 'single') {
             return res.json({success: false, message: "Coupon already applied"});
         }

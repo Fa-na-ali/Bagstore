@@ -10,7 +10,7 @@ const paymentSchema = new mongoose.Schema(
     },
     method: {
       type: String,
-      enum: ["Cash On Delivery", "Paypal", "Wallet",],
+      enum: ["Cash On Delivery", "Razorpay", "Wallet",],
       required: true,
     },
     amount: {
@@ -26,13 +26,18 @@ const paymentSchema = new mongoose.Schema(
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
-      required: true,
+      required: false,
     },
-    delivery_fee: {
+    shippingPrice: {
       type: Number,
       required: false,
       default: 0
     },
+    couponDiscount: {
+      type: Number,
+      required: false,
+      default: 0
+  },
     razorpay_order_id: {
       type: String,
       required: false

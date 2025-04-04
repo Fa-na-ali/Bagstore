@@ -1,8 +1,8 @@
-const razorpay = require("../../utils/razorpay");
+const razorpay = require('../utils/razorpay');
 const dotenv = require('dotenv');
 const crypto = require('crypto');
-const Payment = require('../../models/paymentModel');
-const { STATUS_CODES } = require("http");
+const Payment = require('../models/paymentModel');
+const STATUS_CODES  = require("../middlewares/statusCodes");
 
 dotenv.config();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
@@ -78,3 +78,10 @@ const retryPayment = async (req, res) => {
         message: "Payment status updated", order_id: id
     });
   };
+
+  module.exports = {
+    createPayment,
+    verifyPayment,
+    retryPayment,
+    setPaymentStatus,
+  }
