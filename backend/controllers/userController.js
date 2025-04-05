@@ -1,5 +1,6 @@
 const User = require("../models/userModel")
 const bcrypt = require("bcryptjs")
+const crypto = require('crypto');
 const { generateToken } = require('../middlewares/generateToken')
 const transporter = require('../middlewares/otpMiddleware')
 const nodemailer = require("nodemailer");
@@ -11,12 +12,18 @@ const Address = require('../models/addressModel')
 const responseHandler = require('./../middlewares/responseHandler');
 const { USER_VALIDATION_MSG, USER_EXT_MSG, USER_PASS_VALIDATION, USER_REG_MSG, USER_NOT_MSG, USER_LOGIN_MSG, USER_INVALID_MSG, USER_EMAIL_MSG, USER_OTP_MSG, USER_GOOGLE_MSG, USER_LOGOUT_MSG, USER_DELETE_MSG, USER_PASS_RESET_MSG, USER_ID_MSG, ADDRESS_EXIST_MSG, ADDRESS_ADD_MSG, ADDRESS_INVALID_MSG, ADDRESS_NOT_MSG, ADDRESS_UPDATE_MSG, ADDRESS_DELETE_MSG } = require("../messageConstants");
 const STATUS_CODES = require("../middlewares/statusCodes");
+const Referral = require("../models/referralModel");
 
 const otpStore = new Map();
+
+const generateReferralCode = () => {
+    return crypto.randomBytes(4).toString('hex'); 
+  };
+
 //user registration
 const userSignup = async (req, res) => {
     try {
-        const { name, email, phone, password, confirmPassword } = req.body
+        const { name, email, phone, password, confirmPassword,referCode} = req.body
         if (!email || !password || !name || !confirmPassword || !phone) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -51,6 +58,19 @@ const userSignup = async (req, res) => {
             password: hashedPassword,
 
         })
+        const referral = new Referral({
+            user: user._id,
+            referralCode:generateReferralCode(),
+        })
+        await referral.save();
+
+        if (req.body.referCode) {
+            const referrer = await Referral.findOne({referralCode: req.body.referCode});
+            if (referrer) {
+                referrer.referredUsers.push(user._id);
+                await referrer.save();
+            }
+        }
 
         const otp = Math.floor(100000 + Math.random() * 900000);
         otpStore.set(email, { otp, expires: Date.now() + 300000 });

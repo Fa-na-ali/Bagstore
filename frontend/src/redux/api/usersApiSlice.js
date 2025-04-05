@@ -280,6 +280,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    verifyPayment: builder.mutation({
+      query: (body) => ({
+        url: `${USERS_URL}/verify-payment`,
+        method: 'POST',
+        body,
+      }),
+    }),
+
   })
 })
 
@@ -320,5 +328,6 @@ export const {
   useGetAllOffersToAddQuery,
   useApplyCouponMutation,
   useRemoveCouponMutation,
-  useInitiatePaymentMutation
+  useInitiatePaymentMutation,
+  useVerifyPaymentMutation
 } = userApiSlice;

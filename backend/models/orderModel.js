@@ -28,6 +28,11 @@ const orderSchema = new mongoose.Schema(
       enum: ["Cash On Delivery", "Wallet", "Razorpay"],
       required: true,
     },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "success", "failed", 'refund'],
+      default: "pending",
+    },
     status: {
       type: String,
       enum: ['completed', 'not completed'],
@@ -74,6 +79,11 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Coupon',
       default: null,
+    },
+    couponDiscount: {
+      type: Number,
+      required: false,
+      default: 0
     },
   },
   {

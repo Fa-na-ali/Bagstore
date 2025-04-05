@@ -4,7 +4,7 @@ import { FaTrash, } from "react-icons/fa";
 import { SiRazorpay } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation } from "../../redux/api/usersApiSlice";
+import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation, useVerifyPaymentMutation } from "../../redux/api/usersApiSlice";
 import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
@@ -30,6 +30,7 @@ const Checkout = () => {
     discount:item.discount,
   }));
   const [initiatePayment] = useInitiatePaymentMutation();
+  const [verifyPayment, { data }] = useVerifyPaymentMutation();
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -138,7 +139,7 @@ const Checkout = () => {
         },
         handler: async function (response) {
           console.log('Payment successful', response);
-          await handlePlaceOrder(orderData.order.id, "success");
+          await handlePlaceOrder(orderData.order.id, response.razorpay_payment_id,response.razorpay_signature,"success");
         },
         theme: { color: '#3399cc' },
       };
@@ -146,7 +147,7 @@ const Checkout = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
       rzp.on('payment.failed', async function () {
-        await handlePlaceOrder(orderData.order.id, "failed");
+        await handlePlaceOrder(orderData.order.id,"","", "failed");
       });
     } catch (error) {
       console.error('Error initializing Razorpay:', error);
@@ -154,7 +155,7 @@ const Checkout = () => {
   };
 
 
-  const handlePlaceOrder = async (razorpay_order_id, status) => {
+  const handlePlaceOrder = async (razorpay_order_id,razorpay_payment_id, razorpay_signature, status) => {
 
     setShowModal(false);
     if (!cartItems || cartItems.length === 0) {
@@ -171,11 +172,13 @@ const Checkout = () => {
         shippingAddress: cart?.shippingAddress,
         paymentMethod: cart?.paymentMethod,
         shippingPrice: total >= 700 ? 50 : 0,
-        couponId: couponId || "",
+        couponId: couponId || null,
         razorpay_order_id,
         paymentStatus: status,
         couponDiscount: couponDiscount,
         totalPrice: cart?.totalPrice,
+        tax,
+        totalDiscount,
       }).unwrap();
       console.log('res', res)
       const id = res?._id
@@ -183,8 +186,16 @@ const Checkout = () => {
         toast.error(res?.message);
       }
       else {
+        const verifyData = await verifyPayment({
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        }).unwrap();
         dispatch(clearCartItems())
+        if(verifyData.status==="success")
         navigate(`/order-success?id=${id}`)
+      else
+      navigate(`/order-failure?id=${id}`)
       }
 
     } catch (error) {
@@ -195,6 +206,7 @@ const Checkout = () => {
   console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
+  const totalDiscount = discount+couponDiscount
   const tax = subtotal * 0.05;
   const total = subtotal - (discount + couponDiscount) + tax;
   const id = selectedAddress

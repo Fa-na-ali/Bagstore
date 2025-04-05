@@ -60,7 +60,8 @@ const Register = () => {
         email: data.email,
         phone: data.phone,
         password: data.password,
-        confirmPassword: data.confirmPassword
+        confirmPassword: data.confirmPassword,
+        referCode:data.referCode
       }).unwrap();
       toast.success("User successfully registered");
       navigate(`/verify-otp?email=${data.email}`);
@@ -124,6 +125,12 @@ const Register = () => {
                       <Form.Group controlId="confirmPassword">
                         <Form.Control type="password" placeholder="Confirm Password" {...register("confirmPassword")} />
                         {errors.confirmPassword && <p className="text-danger">{errors.confirmPassword.message}</p>}
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12}>
+                      <Form.Group controlId="referralCode">
+                        <Form.Control type="text" placeholder="Enter Referral Code" {...register("referCode")} />
                       </Form.Group>
                     </Col>
 

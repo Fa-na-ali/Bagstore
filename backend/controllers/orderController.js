@@ -84,6 +84,7 @@ const createOrder = async (req, res) => {
       items: validatedItems,
       shippingAddress,
       paymentMethod,
+      paymentStatus,
       paymentId: payment._id,
       shippingPrice,
       status: "not completed",
@@ -332,6 +333,47 @@ const returnOrder = async (req, res) => {
   orderItem.status = "return requested"
   await order.save()
   return res.status(200).json({ success: true, message: "Return request sent successfully" });
+};
+
+
+const loadPendingOrder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const page = parseInt(req.query.page) || 1; 
+    const limit = 5; 
+    const skip = (page - 1) * limit; 
+
+    const orders = await Order.find({
+      userId: userId,
+      paymentMethod: "Razorpay",
+      paymentStatus: "pending"
+    })
+      .populate('items.product') 
+      .skip(skip)
+      .limit(limit); 
+
+    const totalOrders = await Order.countDocuments({
+      userId: userId,
+       paymentMethod: "Razorpay",
+      paymentStatus: "pending"
+      
+    });
+
+    const totalPages = Math.ceil(totalOrders / limit); 
+
+    res.status(STATUS_CODES.OK).json({
+      status:"success",
+      orders, page, totalPages 
+    })
+     
+      
+  } catch (error) {
+    console.error(error);
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status:"error",
+      message:"Internal Server Error"
+    })
+  }
 };
 
 
