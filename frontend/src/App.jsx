@@ -48,6 +48,8 @@ import EditCoupon from './pages/admin/Coupons/EditCoupon';
 import CouponManagement from './pages/admin/Coupons/CouponManagement';
 import OfferManagement from './pages/admin/Offers/OfferManagement';
 import EditOffer from './pages/admin/Offers/EditOffer';
+import PendingOrders from './pages/order/PendingOrders';
+import PaymentFailure from './pages/order/PaymentFailure';
 
 
 
@@ -86,6 +88,8 @@ export const router = createBrowserRouter(
         <Route path="/checkout" element={<Checkout/>} />
         <Route path="/mine" element={<MyOrder/>} />
         <Route path="/order-success" element={<OrderSuccess/>} />
+        <Route path="/order-failure" element={<PaymentFailure/>} />
+         <Route path="/pending/order-details" element={<PendingOrders/>} />
         <Route path='/order-details/:id' element={<OrderDetail/>}/>
 
         

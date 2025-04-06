@@ -31,6 +31,7 @@ const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffe
 const { createPayment } = require('../controllers/razorpayController')
 
 
+
 router.route('/register').post(userSignup)
 router.route('/login').post(userLogin)
 router.route('/auth/refresh').post(generaterefreshToken)
@@ -70,4 +71,5 @@ router.route('/admin/offers/:id')
 .get(authenticate,authorizeAdmin,blockDisabledUsers,getOfferById)
 router.route('/admin/alloffers').get(authenticate,authorizeAdmin,blockDisabledUsers,getAllOffers)
 router.route('/payment/razorpay/order').post(authenticate, blockDisabledUsers,createPayment)
+
 module.exports = router

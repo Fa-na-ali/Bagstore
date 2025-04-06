@@ -288,6 +288,22 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    retryPayment: builder.mutation({
+      query: (orderId) => ({
+        url:`${USERS_URL}/retry-payment`,
+        method: 'POST',
+        body: { orderId },
+      }),
+    }),
+
+    verifyRetryPayment: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/verify-retry-payment`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
   })
 })
 
@@ -329,5 +345,6 @@ export const {
   useApplyCouponMutation,
   useRemoveCouponMutation,
   useInitiatePaymentMutation,
-  useVerifyPaymentMutation
+  useVerifyPaymentMutation,
+  useVerifyRetryPaymentMutation,
 } = userApiSlice;

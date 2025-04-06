@@ -42,7 +42,7 @@ const Schema  = mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['single', 'multiple']
+        enum: ['single',]
     },
     limit: {
         type: Number,

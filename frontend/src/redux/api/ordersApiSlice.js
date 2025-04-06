@@ -26,6 +26,13 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
     }),
 
+    getPendingOrderById: builder.query({
+      query: (id) => ({
+        url: `${ORDERS_URL}/pending/order/${id}`,
+      }),
+      keepUnusedDataFor: 5,
+    }),
+
     cancelOrder: builder.mutation({
       query: ({orderId,item,cancelReason}) => ({
         url: `${ORDERS_URL}/cancel`,
@@ -83,4 +90,5 @@ export const { useCreateOrderMutation,
   useSetItemStatusMutation,
   useCancelOrderMutation,
   useReturnOrderMutation,
-  useGetAllOrdersQuery } = ordersApiSlice;
+  useGetAllOrdersQuery,
+useGetPendingOrderByIdQuery } = ordersApiSlice;

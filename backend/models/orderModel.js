@@ -8,6 +8,7 @@ const orderSchema = new mongoose.Schema(
       ref: 'Payment',
 
     },
+    orderNumber: { type: String, unique: true, required: true },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -30,13 +31,13 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "success", "failed", 'refund'],
-      default: "pending",
+      enum: ["Pending", "Success", "Failed", 'Refund'],
+      default: "Pending",
     },
     status: {
       type: String,
-      enum: ['completed', 'not completed'],
-      default: 'not completed',
+      enum: ['Completed', 'Not completed'],
+      default: 'Not completed',
     },
     totalPrice: {
       type: Number,
@@ -57,8 +58,8 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
           type: String,
-          enum: ['pending', 'delivered', 'cancelled', 'returned', 'shipped', 'return requested'],
-          default: 'pending',
+          enum: ['Pending', 'Delivered', 'Cancelled', 'Returned', 'Shipped', 'Return requested'],
+          default: 'Pending',
         },
         discount: {
           type: Number,

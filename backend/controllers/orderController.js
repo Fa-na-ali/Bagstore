@@ -11,11 +11,14 @@ async function generateOrderId() {
   const { nanoid } = await import("nanoid");
   return `ORD-${nanoid(10)}`;
 }
+
+const generateOrderNumber = async() => Math.random().toString(36).substring(2, 12).toUpperCase();
 //create order
 const createOrder = async (req, res) => {
   try {
     console.log("Order request body:", req.body);
     const orderId = await generateOrderId();
+    const orderNumber = await generateOrderNumber()
     const { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount } = req.body;
 
     if (!items || items.length === 0) {
@@ -38,7 +41,7 @@ const createOrder = async (req, res) => {
         console.log("Invalid quantity:", item.qty);
         return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
       }
-      validatedItems.push({ product: item.product, qty: item.qty, status: "pending", discount: item.discount });
+      validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount });
     }
     console.log("Validated Items:", validatedItems);
 
@@ -53,8 +56,8 @@ const createOrder = async (req, res) => {
       wallet.balance -= totalPrice;
       wallet.transactions.push({
         amount: totalPrice,
-        type: "debit",
-        description: "Order payment",
+        type: "Debit",
+        description: `Order Payment - ${orderNumber}`,
       });
       await wallet.save();
     }
@@ -71,7 +74,7 @@ const createOrder = async (req, res) => {
       payment.status = paymentStatus;
     }
     if (paymentMethod == "Wallet") {
-      payment.status = "success";
+      payment.status = "Success";
     }
     if (!isNaN(couponDiscount)) {
       payment.couponDiscount = couponDiscount;
@@ -80,6 +83,7 @@ const createOrder = async (req, res) => {
 
     const order = new Order({
       orderId,
+     
       userId,
       items: validatedItems,
       shippingAddress,
@@ -87,7 +91,7 @@ const createOrder = async (req, res) => {
       paymentStatus,
       paymentId: payment._id,
       shippingPrice,
-      status: "not completed",
+      status: "Not completed",
       totalPrice,
       couponId,
     });
@@ -170,7 +174,7 @@ const cancelOrder = async (req, res) => {
       return res.status(404).json({ message: "Item not found in order" });
     }
 
-    if (orderItem.status !== "pending") {
+    if (orderItem.status !== "Pending") {
       return res.status(400).json({ message: "Order can only be cancelled in pending state" });
     }
 
@@ -180,7 +184,7 @@ const cancelOrder = async (req, res) => {
       await product.save();
     }
 
-    orderItem.status = "cancelled";
+    orderItem.status = "Cancelled";
     orderItem.cancel_reason = cancelReason || "Not specified";
 
     await order.save();
@@ -272,7 +276,7 @@ const setItemStatus = async (req, res) => {
         return res.status(400).json({ success: false, message: "Payment not found for this order" });
       }
 
-      if (payment.status == "pending") {
+      if (payment.status == "Pending") {
         await Payment.updateOne({ _id: payment._id }, { $set: { status: "success" } });
       }
     }
@@ -290,10 +294,10 @@ const setItemStatus = async (req, res) => {
     }
 
     orderItem.status = status
-    const allDelivered = order.items.every((i) => i.status === "delivered");
+    const allDelivered = order.items.every((i) => i.status === "Delivered");
 
     if (allDelivered) {
-      order.status = "completed";
+      order.status = "Completed";
     }
     await order.save();
     console.log("status saved", order)
@@ -321,7 +325,7 @@ const returnOrder = async (req, res) => {
   if (!orderItem) {
     return res.status(404).json({ message: "Item not found in order" });
   }
-  if (item.status !== "delivered") {
+  if (item.status !== "Delivered") {
     return res.json({ success: false, message: "Order can only be returned after delivery" });
   }
 
@@ -330,7 +334,7 @@ const returnOrder = async (req, res) => {
     return res.status(400).json({ success: false, message: "Payment record not found for this order" });
   }
   orderItem.returnReason = returnReason
-  orderItem.status = "return requested"
+  orderItem.status = "Return requested"
   await order.save()
   return res.status(200).json({ success: true, message: "Return request sent successfully" });
 };
@@ -346,7 +350,7 @@ const loadPendingOrder = async (req, res) => {
     const orders = await Order.find({
       userId: userId,
       paymentMethod: "Razorpay",
-      paymentStatus: "pending"
+      paymentStatus: "Pending"
     })
       .populate('items.product') 
       .skip(skip)
@@ -355,7 +359,7 @@ const loadPendingOrder = async (req, res) => {
     const totalOrders = await Order.countDocuments({
       userId: userId,
        paymentMethod: "Razorpay",
-      paymentStatus: "pending"
+      paymentStatus: "Pending"
       
     });
 
@@ -379,14 +383,6 @@ const loadPendingOrder = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
 module.exports = {
   createOrder,
   cancelOrder,
@@ -395,4 +391,5 @@ module.exports = {
   getAllOrders,
   findOrderById,
   setItemStatus,
+  loadPendingOrder,
 }
