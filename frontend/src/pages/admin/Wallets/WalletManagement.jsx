@@ -5,6 +5,7 @@ import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'reac
 import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
+import {useGetAllWalletsQuery} from '../../../redux/api/walletApiSlice'
 
 
 const WalletManagement = () => {

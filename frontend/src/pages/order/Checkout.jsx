@@ -28,6 +28,7 @@ const Checkout = () => {
     product: item._id,
     qty: item.qty,
     discount:item.discount,
+    discountedPrice:item.discountedPrice
   }));
   const [initiatePayment] = useInitiatePaymentMutation();
   const [verifyPayment, { data }] = useVerifyPaymentMutation();

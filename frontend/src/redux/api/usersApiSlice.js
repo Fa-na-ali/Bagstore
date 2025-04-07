@@ -167,6 +167,17 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    addReferralCoupon: builder.mutation({
+      query: (couponData) => ({
+        url: `${USERS_URL}/admin/refer-coupons/add`,
+        method: "POST",
+        body: couponData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+
     getAllCoupons: builder.query({
       query: ({ keyword, page }) => ({
         url: `${USERS_URL}/admin/coupons`,
@@ -347,4 +358,5 @@ export const {
   useInitiatePaymentMutation,
   useVerifyPaymentMutation,
   useVerifyRetryPaymentMutation,
+  useAddReferralCouponMutation,
 } = userApiSlice;

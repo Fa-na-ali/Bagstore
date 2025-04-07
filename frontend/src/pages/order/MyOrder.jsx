@@ -133,26 +133,37 @@ const MyOrder = () => {
                             <hr />
                             {order?.items?.length > 0 ? (
                               order.items.map((item) => (
-                                <Card key={item.product._id} className="mb-3">
+                                <Card key={item?.product?._id} className="mb-3">
                                   <Card.Body>
                                     <div className="d-flex justify-content-between align-items-center">
                                       <div className="d-flex align-items-center" style={{ flex: "2" }}>
                                         <Image
-                                          src={`${imageBaseUrl}${item.product.pdImage[0] || "placeholder.jpg"}`}
+                                          src={`${imageBaseUrl}${item?.product?.pdImage[0] || "placeholder.jpg"}`}
                                           className="img-fluid rounded-3"
                                           alt="Shopping item"
                                           style={{ width: "80px", height: "80px", objectFit: "cover" }}
                                         />
                                         <div className="ms-3">
-                                          <h5>{item.product.name}</h5>
-                                          <p className="small mb-0 text-muted">{item.product.color}</p>
+                                          <h5>{item?.product?.name}</h5>
+                                          <p className="small mb-0 text-muted">{item?.product?.color}</p>
                                         </div>
                                       </div>
 
                                       {/* Price & Delivery */}
                                       <div className="d-flex align-items-center justify-content-end" style={{ flex: "3" }}>
                                         <div className="me-4 text-center" style={{ width: "80px" }}>
-                                          <h5 className="mb-0">₹{item.product.price}</h5>
+                                          {item?.product?.discount !== 0 ? (
+                                            <>
+                                              <span className='text-decoration-line-through text-muted me-2'>
+                                                ₹{item?.product?.price}
+                                              </span>
+                                              <span className='text-success fw-bold'>
+                                              ₹{(Number(item?.product?.price || 0) - Number(item?.product?.discount || 0)).toFixed(2)}
+                                              </span>
+                                            </>
+                                          ) : (
+                                            <span>₹{item?.product?.price}</span>
+                                          )}
                                         </div>
 
                                         <div className="me-4 text-center" style={{ width: "200px" }}>
