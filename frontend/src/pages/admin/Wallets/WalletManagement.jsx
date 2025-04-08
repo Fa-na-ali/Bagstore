@@ -82,7 +82,7 @@ const WalletManagement = () => {
             </div>
             {(wallets) && (wallets.length > 0 ) ? (
               <Ttable
-              naming="wallet"
+              naming="wallets"
               data={wallets}
               columns={columns}
               onDelete={handleDelete}

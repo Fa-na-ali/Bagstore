@@ -137,6 +137,7 @@ const OrderDetails = () => {
                     <th className="h5">Product Details</th>
                     <th>Quantity</th>
                     <th>Price</th>
+                    <th>Discount</th>
                     <th>Total Price</th>
                     <th>Status</th>
                   </tr>
@@ -166,12 +167,15 @@ const OrderDetails = () => {
                         <p className="mb-0 fw-bold">{item.product.price}</p>
                       </td>
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item.product.price * item.qty}</p>
+                        <p className="mb-0 fw-bold">{item.discount}</p>
                       </td>
                       <td className="align-middle">
-                        {(item.status === "cancelled") || (item.status === "returned") || (item.status === "delivered") ? (
+                        <p className="mb-0 fw-bold">{(item.product.price-item.discount) * item.qty}</p>
+                      </td>
+                      <td className="align-middle">
+                        {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (
                           <p className="mb-0 fw-bold text-danger">{item.status}</p>
-                        ) : item.status === "return requested" ? (
+                        ) : item.status === "Return requested" ? (
                           <div>
                             <p className="mb-0 fw-bold text-warning">Return Request</p>
                             <p className="mb-0"><strong>Reason:</strong> {item.returnReason}</p>
@@ -179,7 +183,7 @@ const OrderDetails = () => {
                               className="me-2"
                               variant="success"
                               size="sm"
-                              onClick={() => handleSaveChanges("returned", item, order._id)}
+                              onClick={() => handleSaveChanges("Returned", item, order._id)}
                             >
                               Approve
                             </Button>
@@ -197,13 +201,13 @@ const OrderDetails = () => {
                             onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
                           >
                             <option value={item.status}>{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</option>
-                            {item.status === "pending" && <option value="shipped">Shipped</option>}
-                            {item.status === "shipped" && <option value="delivered">Delivered</option>}
+                            {item.status === "Pending" && <option value="Shipped">Shipped</option>}
+                            {item.status === "Shipped" && <option value="Delivered">Delivered</option>}
                           </Form.Select>
                         )}
                       </td>
                       <td className="align-middle">
-                        {item.status !== "cancelled" && item.status !== "returned" && item.status !== "delivered" && (
+                        {item.status !== "Cancelled" && item.status !== "Returned" && item.status !== "Delivered" && (
                           <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order._id)}>
                             Save Changes
                           </Button>
@@ -222,7 +226,7 @@ const OrderDetails = () => {
                     <Button
                       className='mt-1'
                       size="sm"
-                      variant={order.status === "completed" ? "success" : "danger"}
+                      variant={order.status === "Completed" ? "success" : "danger"}
                     >
                       {order.status}
                     </Button>

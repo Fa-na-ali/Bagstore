@@ -1,17 +1,23 @@
 import React from 'react';
-import { useGetTransactionQuery } from '@/features/transactions/transactionApiSlice';
 import { Card, Badge, Button } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useGetTransactionQuery } from '../../../redux/api/walletApiSlice';
 
 const TransactionDetail = () => {
   const { transactionId } = useParams();
-  const { data: transaction, isLoading } = useGetTransactionQuery(transactionId);
+  console.log(transactionId)
+  const { data: transactions, isLoading } = useGetTransactionQuery(transactionId);
+   console.log("trans",transactions)
+  
+   if (isLoading) return <p>Loading...</p>;
+if (!transactions || !transactions.transaction) return <p>Transaction not found</p>;
 
-  if (isLoading) return <p>Loading...</p>;
 
-  const { transaction: trx, transactionType, orderButton } = transaction;
-  const { user } = transaction;
+  const { transaction: trxs, transactionType, orderButton } = transactions;
+  console.log("createdAt raw:", trxs.transaction.createdAt);
+  const trx= trxs.transaction
+  const { user } = transactions;
 
   const getTypeBadge = (type) => {
     switch (type) {
@@ -34,7 +40,7 @@ const TransactionDetail = () => {
 
   return (
     <section className="container mt-4">
-      <h3 className="fw-bold text-primary border-bottom pb-2">Transaction Detail</h3>
+      <h3 className="fw-bold heading border-bottom pb-2 text-center">TRANSACTION DETAIL</h3>
       <Badge bg="secondary" className="text-white fs-6 mt-2">
         <i className="bi bi-hash"></i> Transaction ID: {trx.transactionId}
       </Badge>
@@ -42,7 +48,7 @@ const TransactionDetail = () => {
       <div className="row mt-4">
         <div className="col-md-6 mb-4">
           <Card className="shadow-sm">
-            <Card.Header className="bg-primary text-white">
+            <Card.Header className="background-two text-white">
               <i className="bi bi-person-circle me-2"></i>User Information
             </Card.Header>
             <Card.Body>
@@ -56,10 +62,10 @@ const TransactionDetail = () => {
                   <p>Description:</p>
                 </div>
                 <div className="col-7">
-                  <p>{user.firstName} {user.lastName}</p>
+                  <p>{user.name}</p>
                   <p>{user.email}</p>
                   <p><i className="bi bi-calendar me-1"></i>{format(new Date(trx.createdAt), 'dd MMM yyyy')}</p>
-                  <p><Badge bg="info" text="dark">{transactionType}</Badge></p>
+                  <p><Badge bg="info" text="dark">{trxs.transactionType}</Badge></p>
                   <p className={`${trx.amount > 0 ? 'text-success' : 'text-danger'} fw-bold`}>
                     <i className={`bi ${trx.amount > 0 ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle'} me-1`}></i>
                     Rs. {trx.amount}
@@ -73,7 +79,7 @@ const TransactionDetail = () => {
 
         <div className="col-md-6 mb-4">
           <Card className="shadow-sm h-100">
-            <Card.Header className="bg-primary text-white">
+            <Card.Header className="background-two text-white">
               <i className="bi bi-info-circle me-2"></i>Transaction Source
             </Card.Header>
             <Card.Body className="d-flex flex-column">
@@ -82,14 +88,14 @@ const TransactionDetail = () => {
                   <p>Source:</p>
                 </div>
                 <div className="col-7">
-                  {getTypeBadge(transactionType)}
+                  {getTypeBadge(trxs.transactionType)}
                 </div>
               </div>
-              {orderButton && (
+              {trxs.orderButton && (
                 <div className="text-center mt-3">
-                  <a href={orderButton} className="btn btn-outline-primary btn-sm w-100">
+                  <Link to={trxs.orderButton} className="btn btn-outline-primary btn-sm w-100">
                     <i className="bi bi-eye me-2"></i>View Order
-                  </a>
+                  </Link>
                 </div>
               )}
             </Card.Body>
@@ -97,27 +103,27 @@ const TransactionDetail = () => {
         </div>
       </div>
 
-      {orderButton && (
+      {trxs.orderButton && (
         <div className="row mb-4">
           <div className="col-12">
             <Card className="shadow-sm bg-light">
-              <Card.Header className="bg-dark text-white">
+              <Card.Header className="background-two text-white">
                 <i className="bi bi-box me-2"></i>Order Details
               </Card.Header>
               <Card.Body className="text-center p-4">
                 <div className="mb-4">
                   <span className="fw-bold text-dark d-block mb-2">Transaction Related To:</span>
                   <span className={`badge rounded-pill p-2 ${
-                    transactionType === 'Order Returned' ? 'bg-warning text-dark' :
-                    transactionType === 'Order Cancelled' ? 'bg-danger' :
-                    transactionType === 'Debited' ? 'bg-info text-dark' : 'bg-secondary'
+                    trxs.transactionType === 'Order Returned' ? 'bg-warning text-dark' :
+                    trxs.transactionType === 'Order Cancelled' ? 'bg-danger' :
+                    trxs.transactionType === 'Debited' ? 'bg-info text-dark' : 'bg-secondary'
                   }`}>
-                    {transactionType}
+                    {trxs.transactionType}
                   </span>
                 </div>
-                <a href={orderButton} className="btn btn-primary btn-lg">
+                <Link to={trxs.orderButton} className="btn button-custom btn-lg">
                   <i className="bi bi-box-arrow-up-right me-2"></i>Click Here to View Order
-                </a>
+                </Link>
               </Card.Body>
             </Card>
           </div>

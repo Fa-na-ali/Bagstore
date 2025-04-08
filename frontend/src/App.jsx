@@ -50,6 +50,10 @@ import OfferManagement from './pages/admin/Offers/OfferManagement';
 import EditOffer from './pages/admin/Offers/EditOffer';
 import PendingOrders from './pages/order/PendingOrders';
 import PaymentFailure from './pages/order/PaymentFailure';
+import Wallet from './pages/user/Wallet';
+import WalletManagement from './pages/admin/Wallets/WalletManagement';
+import TransactionDetail from './pages/admin/Wallets/TransactionDetail';
+
 
 
 
@@ -84,6 +88,8 @@ export const router = createBrowserRouter(
         <Route path="/verify-email" element={<EmailVerify />} />
 
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/wallet" element={<Wallet />} />
+
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout/>} />
         <Route path="/mine" element={<MyOrder/>} />
@@ -114,6 +120,9 @@ export const router = createBrowserRouter(
         <Route path="/admin/offers" element={<OfferManagement/>} />
         <Route path="/admin/offers/add" element={<CreateOffer/>} />
         <Route path="/admin/offers/edit/:id" element={<EditOffer/>} />
+
+        <Route path="/admin/wallets" element={<WalletManagement/>} />
+        <Route path="/admin/wallets/edit/:transactionId" element={<TransactionDetail/>} />
 
 
       </Route>

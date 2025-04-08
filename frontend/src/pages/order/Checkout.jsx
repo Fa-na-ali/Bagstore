@@ -27,8 +27,8 @@ const Checkout = () => {
   const formattedItems = cart?.cartItems.map(item => ({
     product: item._id,
     qty: item.qty,
-    discount:item.discount,
-    discountedPrice:item.discountedPrice
+    discount: item.discount,
+    discountedPrice: item.discountedPrice
   }));
   const [initiatePayment] = useInitiatePaymentMutation();
   const [verifyPayment, { data }] = useVerifyPaymentMutation();
@@ -72,7 +72,7 @@ const Checkout = () => {
     } else if (selectedPayment === "Cash On Delivery") {
       setShowModal(true);
     } else {
-      handlePlaceOrder("", "pending");
+      handlePlaceOrder("", "", "", "Pending");
     }
   };
   const handlePaymentMethod = (method) => {
@@ -140,7 +140,7 @@ const Checkout = () => {
         },
         handler: async function (response) {
           console.log('Payment successful', response);
-          await handlePlaceOrder(orderData.order.id, response.razorpay_payment_id,response.razorpay_signature,"success");
+          await handlePlaceOrder(orderData.order.id, response.razorpay_payment_id, response.razorpay_signature, "Success");
         },
         theme: { color: '#3399cc' },
       };
@@ -148,7 +148,7 @@ const Checkout = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
       rzp.on('payment.failed', async function () {
-        await handlePlaceOrder(orderData.order.id,"","", "failed");
+        await handlePlaceOrder(orderData.order.id, "", "", "Failed");
       });
     } catch (error) {
       console.error('Error initializing Razorpay:', error);
@@ -156,7 +156,7 @@ const Checkout = () => {
   };
 
 
-  const handlePlaceOrder = async (razorpay_order_id,razorpay_payment_id, razorpay_signature, status) => {
+  const handlePlaceOrder = async (razorpay_order_id, razorpay_payment_id, razorpay_signature, status) => {
 
     setShowModal(false);
     if (!cartItems || cartItems.length === 0) {
@@ -172,12 +172,12 @@ const Checkout = () => {
         items: formattedItems,
         shippingAddress: cart?.shippingAddress,
         paymentMethod: cart?.paymentMethod,
-        shippingPrice: total >= 700 ? 50 : 0,
+        shippingPrice: total >= 700 ? 0 : 50,
         couponId: couponId || null,
         razorpay_order_id,
         paymentStatus: status,
         couponDiscount: couponDiscount,
-        totalPrice: cart?.totalPrice,
+        totalPrice: total,
         tax,
         totalDiscount,
       }).unwrap();
@@ -186,17 +186,30 @@ const Checkout = () => {
       if (!id) {
         toast.error(res?.message);
       }
-      else {
+      if (cart?.paymentMethod === "Razorpay") {
         const verifyData = await verifyPayment({
           razorpay_order_id,
           razorpay_payment_id,
           razorpay_signature,
         }).unwrap();
-        dispatch(clearCartItems())
-        if(verifyData.status==="success")
-        navigate(`/order-success?id=${id}`)
-      else
-      navigate(`/order-failure?id=${id}`)
+
+        console.log("verify", verifyData);
+
+        if (verifyData.status === "success") {
+          dispatch(clearCartItems());
+          toast.success("Order Placed successfully");
+          navigate(`/order-success?id=${id}`);
+        } else {
+          toast.error("Payment verification failed");
+          dispatch(clearCartItems());
+          navigate(`/order-failure?id=${id}`);
+        }
+      }
+
+      else {
+        dispatch(clearCartItems());
+        toast.success("Order Placed successfully");
+        navigate(`/order-success?id=${id}`);
       }
 
     } catch (error) {
@@ -207,7 +220,7 @@ const Checkout = () => {
   console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
-  const totalDiscount = discount+couponDiscount
+  const totalDiscount = discount + couponDiscount
   const tax = subtotal * 0.05;
   const total = subtotal - (discount + couponDiscount) + tax;
   const id = selectedAddress

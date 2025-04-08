@@ -102,6 +102,7 @@ const Header = () => {
                                 </Nav.Link>
                                 <Nav.Link as={Link} to="/wishlist" className='caption'><FaHeart /></Nav.Link>
                                 <Nav.Link as={Link} to="/mine" className='caption'>My Orders</Nav.Link>
+                                <Nav.Link as={Link} to="/wallet" className='caption'>Wallet</Nav.Link>
                                 <Nav.Link onClick={logoutHandler} className="text-danger">
                                     <FaSignOutAlt /> Logout
                                 </Nav.Link>

@@ -53,12 +53,12 @@ const getWallets = async (req, res) => {
 
 const transactionDetail = async (req, res) => {
     try {
-        const { id } = req.params;
-
+        const id = req.params.transactionId;
+      console.log("id",id)
 
         const wallet = await Wallet.findOne({ 'transactions._id': id })
             .populate('userId', 'name email');
-
+        console.log("wallet",wallet)
         if (!wallet) {
             return res.status(404).json({
                 status: 'error',
@@ -95,7 +95,7 @@ const transactionDetail = async (req, res) => {
                 order = await Order.findOne({ 'orderNumber': orderNumber });
 
                 if (order) {
-                    orderButton = `/admin/orderdetails/${order._id}`;
+                    orderButton = `/admin/orders/edit/${order._id}`;
                 }
             }
         }
@@ -119,7 +119,7 @@ const transactionDetail = async (req, res) => {
                 order = await Order.findOne({ 'orderNumber': orderNumber });
 
                 if (order) {
-                    orderButton = `/admin/orderdetails/${order._id}`;
+                    orderButton = `/admin/orders/edit/${order._id}`;
                 }
             }
         }
@@ -135,26 +135,27 @@ const transactionDetail = async (req, res) => {
                 order = await Order.findOne({ 'orderNumber': orderNumber });
 
                 if (order) {
-                    orderButton = `/admin/orderdetails/${order._id}`;
+                    orderButton = `/admin/orders/edit/${order._id}`;
                 }
             }
         }
 
-        // else if (description.includes('refund') || description.includes('cancellation')) {
-        //     const orderNumber = transaction.description.split('#')[1];
+        else if (description.includes('refund') || description.includes('cancellation')) {
+            const orderNumber = transaction.description.split('#')[1];
 
-        //     if (orderNumber) {
-        //         order = await Order.findOne({ 'orderNumber': orderNumber });
+            if (orderNumber) {
+                order = await Order.findOne({ 'orderNumber': orderNumber });
 
-        //         if (order) {
-        //             orderButton = `/admin/orderdetails/${order._id}`;
-        //             transactionType = order.status === 'Cancelled' ? 'Order Cancelled' : 'Order Returned';
-        //         }
-        //     }
-        // }
+                if (order) {
+                    orderButton = `/admin/orders/edit/${order._id}`;
+                    transactionType = order.status === 'Cancelled' ? 'Order Cancelled' : 'Order Returned';
+                }
+            }
+        }
 
 
-        res.status(200).render('admin/transactionDetails', {
+        res.status(200).json({
+            status:"success",
             user: wallet.userId,
             transaction: {
                 transaction,
@@ -203,10 +204,10 @@ const showWallet = async (req, res) => {
 };
 
 //create order for razorpay
-const createOrder =  async (req, res) => {
+const createOrderWallet =  async (req, res) => {
     const { amount } = req.body; 
     
-   
+   console.log("req",req.body)
     const options = {
       amount: amount * 100, 
       currency: "INR",
@@ -218,6 +219,7 @@ const createOrder =  async (req, res) => {
       const order = await razorpay.orders.create(options);
       res.status(200).json(order);
     } catch (error) {
+        console.log(error)
       res.status(500).json({ error: error.message });
     }
   }
@@ -262,7 +264,7 @@ module.exports = {
     getWallets,
     transactionDetail,
     showWallet,
-    createOrder,
+    createOrderWallet,
     shareKey,
     updateWalletBalance
 }

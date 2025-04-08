@@ -111,13 +111,13 @@ const OrderDetail = () => {
                           <p className="lead fw-normal mb-0 caption">{item.product.name}</p>
                         </div>
                       </Col>
-                      <Col md={2} className="d-flex justify-content-center">
+                      <Col md={1} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Color</p>
                           <p className="lead fw-normal mb-0 caption">{item.product.color}</p>
                         </div>
                       </Col>
-                      <Col md={2} className="d-flex justify-content-center">
+                      <Col md={1} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Quantity</p>
                           <p className="lead fw-normal mb-0 caption">{item.qty}</p>
@@ -131,8 +131,14 @@ const OrderDetail = () => {
                       </Col>
                       <Col md={2} className="d-flex justify-content-center">
                         <div>
+                          <p className="small text-muted mb-4 pb-2">DiscountedPrice</p>
+                          <p className="lead fw-normal mb-0 caption">₹{(Number(item?.product?.price) - Number(item?.discount)).toFixed(2)}</p>
+                        </div>
+                      </Col>
+                      <Col md={2} className="d-flex justify-content-center">
+                        <div>
                           <p className="small text-muted mb-4 pb-2">Total</p>
-                          <p className="lead fw-normal mb-0 caption">₹{item.product.price * item.qty}</p>
+                          <p className="lead fw-normal mb-0 caption">₹{(Number(item?.product?.price) - Number(item?.discount)) * item.qty.toFixed(2)}</p>
                         </div>
                       </Col>
                       
@@ -153,6 +159,10 @@ const OrderDetail = () => {
           <Col md={2}>
             <h4 className="heading" >Payment Details</h4>
             <p className="caption">Method:{order.paymentMethod}</p>
+            <p className="caption">Payment Status:{order.paymentStatus}</p>
+            <p className="caption">Total Discount:{order.totalDiscount}</p>
+            <p className="caption">Tax:{order.tax}</p>
+            <p className="caption">Shpping Price:{order.shippingPrice}</p>
             <p className="caption">Total Price:{order.totalPrice}</p>
           </Col>
 

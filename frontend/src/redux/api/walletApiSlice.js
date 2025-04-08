@@ -4,7 +4,7 @@ import { WALLET_URL } from "../constants";
 export const walletApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getTransaction: builder.query({
-      query: (transactionId) => `${WALLET_URL}/admin/${transactionId}`,
+      query: (transactionId) => `${WALLET_URL}/admin/wallets/edit/${transactionId}`,
     }),
 
     getAllWallets: builder.query({
@@ -16,7 +16,7 @@ export const walletApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Wallet"],
     }),
 
-    createOrder: builder.mutation({
+    createOrderWallet: builder.mutation({
       query: (amount) => ({
         url: `${WALLET_URL}/create-order`,
         method: 'POST',
@@ -32,7 +32,7 @@ export const walletApiSlice = apiSlice.injectEndpoints({
       query: (amount) => ({
         url: `${WALLET_URL}/update`,
         method: 'POST',
-        body: { amount },
+        body: {amount},
       }),
       invalidatesTags: ['Wallet'],
     }),
@@ -47,7 +47,7 @@ export const walletApiSlice = apiSlice.injectEndpoints({
 export const{
   useGetTransactionQuery,
   useGetAllWalletsQuery,
-  useCreateOrderMutation,
+  useCreateOrderWalletMutation,
   useGetRazorpayKeyQuery,
   useUpdateWalletMutation,
   useGetMyWalletQuery

@@ -86,6 +86,16 @@ const orderSchema = new mongoose.Schema(
       required: false,
       default: 0
     },
+    totalDiscount: {
+      type: Number,
+      required: false,
+      default: 0
+    },
+    tax: {
+      type: Number,
+      required: false,
+      default: 0
+    },
   },
   {
     timestamps: true,

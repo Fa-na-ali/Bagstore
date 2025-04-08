@@ -28,7 +28,7 @@ const {verifyOtp, verifyOtpPass }= require('../middlewares/verifyOtp')
 const imageUpload=require("../imageUpload")
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser, applyCoupon, removeCoupon } = require('../controllers/couponController')
 const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
-const { createPayment } = require('../controllers/razorpayController')
+const { createPayment, verifyPayment, retryPayment, verifyRetryPayment } = require('../controllers/razorpayController')
 
 
 
@@ -69,7 +69,10 @@ router.route('/admin/offers/edit/:id').put(authenticate,authorizeAdmin,blockDisa
 router.route('/admin/offers/:id')
 .delete(authenticate,authorizeAdmin,blockDisabledUsers,deleteOffer)
 .get(authenticate,authorizeAdmin,blockDisabledUsers,getOfferById)
-router.route('/admin/alloffers').get(authenticate,authorizeAdmin,blockDisabledUsers,getAllOffers)
+router.route('/admin/alloffers').get(authenticate,blockDisabledUsers,getAllOffers)
 router.route('/payment/razorpay/order').post(authenticate, blockDisabledUsers,createPayment)
+router.route('/verify-payment').post(authenticate, blockDisabledUsers,verifyPayment)
+router.route('/retry-payment').post(authenticate,blockDisabledUsers,retryPayment)
+router.route('/verify-retry-payment').post(authenticate,blockDisabledUsers,verifyRetryPayment)
 
 module.exports = router

@@ -1,17 +1,18 @@
-// WalletPage.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import { useCreateOrderMutation, useFetchRazorpayKeyQuery, useUpdateWalletMutation } from '../slices/walletApiSlice';
 import { format } from 'date-fns';
-import { useGetMyWalletQuery } from '../../redux/api/walletApiSlice';
+import { useCreateOrderWalletMutation, useGetMyWalletQuery, useGetRazorpayKeyQuery, useUpdateWalletMutation } from '../../redux/api/walletApiSlice';
 
 const Wallet = () => {
   const { userInfo } = useSelector((state) => state.auth);
-  const { data: keyData } = useFetchRazorpayKeyQuery();
-  const {data:wallet} = useGetMyWalletQuery()
-  const [createOrder] = useCreateOrderMutation();
+  const { data: keyData } = useGetRazorpayKeyQuery();
+  const {data:myWallet} = useGetMyWalletQuery()
+  console.log("my wallet",myWallet)
+  const wallet= myWallet?.wallet
+  const [createOrderWallet] = useCreateOrderWalletMutation();
   const [updateWallet] = useUpdateWalletMutation();
   const [amount, setAmount] = useState('');
   const [showInput, setShowInput] = useState(false);
@@ -23,7 +24,8 @@ const Wallet = () => {
     }
 
     try {
-      const orderRes = await createOrder({ amount }).unwrap();
+      const orderRes = await createOrderWallet(amount).unwrap();
+      console.log(orderRes)
       const key = keyData.key;
 
       const options = {
@@ -35,7 +37,7 @@ const Wallet = () => {
         description: 'Transaction for wallet',
         image: 'https://your-logo-url.com/logo.png',
         handler: async () => {
-          const res = await updateWallet({ amount }).unwrap();
+          const res = await updateWallet(amount).unwrap();
           if (res.success) {
             Swal.fire('Payment Successful!', 'Your payment has been processed successfully.', 'success');
             setAmount('');
@@ -61,7 +63,7 @@ const Wallet = () => {
 
   return (
     <Container className="my-5">
-      <h1 className="text-center mb-4">Wallet</h1>
+      <h1 className="text-center mb-4 heading">MY WALLET</h1>
       <Row className="mb-4">
         <Col md={4}>
           <Card bg="warning" text="dark" className="p-4">
@@ -69,18 +71,19 @@ const Wallet = () => {
               <Card.Title className="d-flex justify-content-between align-items-center">
                 Gold Card <i className="fab fa-cc-mastercard fa-2x"></i>
               </Card.Title>
-              <Card.Text className="wallet-balance fs-4">Rs.{wallet?.balance.toFixed(2)}</Card.Text>
+              <Card.Text className="wallet-balance fs-4">Rs.{(wallet?.balance ?? 0).toFixed(2)}</Card.Text>
               <div className="d-flex justify-content-between">
                 <div>
-                  <div className="fw-bold">{userInfo?.firstName} {userInfo?.lastName}</div>
+                  <div className="fw-bold">{userInfo?.name}</div>
                 </div>
                 <img src="https://www.svgrepo.com/show/362035/visa-3.svg" alt="Chip" width="40" />
               </div>
             </Card.Body>
           </Card>
         </Col>
+        <Col md={6}></Col>
         <Col md={2} className="d-flex flex-column justify-content-center">
-          <Button variant="danger" onClick={() => setShowInput(true)}>Add Money</Button>
+          <Button className='button-custom' onClick={() => setShowInput(true)}>Add Money</Button>
           {showInput && (
             <div className="mt-2">
               <Form.Control
@@ -97,7 +100,7 @@ const Wallet = () => {
       </Row>
 
       <div>
-        <h5>Recent Transactions</h5>
+        <h5 className='caption mt-5'>Recent Transactions</h5>
         <hr />
         {wallet?.transactions?.map((txn, idx) => (
           <div key={idx} className="transaction-item d-flex justify-content-between align-items-center mb-2">

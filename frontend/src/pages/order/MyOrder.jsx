@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Container, Row, Col, Card, Button, Form, Image, Modal, InputGroup, FormControl } from "react-bootstrap";
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router';
 
 const MyOrder = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,7 +15,7 @@ const MyOrder = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
-
+  const navigate = useNavigate()
   console.log("API Response:", orders);
 
   if (isLoading) return <p>Loading...</p>;
@@ -151,7 +152,7 @@ const MyOrder = () => {
 
                                       {/* Price & Delivery */}
                                       <div className="d-flex align-items-center justify-content-end" style={{ flex: "3" }}>
-                                        <div className="me-4 text-center" style={{ width: "80px" }}>
+                                        <div className="me-4 text-center" style={{ width: "150px" }}>
                                           {item?.product?.discount !== 0 ? (
                                             <>
                                               <span className='text-decoration-line-through text-muted me-2'>
@@ -168,9 +169,9 @@ const MyOrder = () => {
 
                                         <div className="me-4 text-center" style={{ width: "200px" }}>
                                           <h6
-                                            className={`mb-0 ${item.status === "pending" ||
-                                              item.status === "shipped" ||
-                                              item.status === "delivered"
+                                            className={`mb-0 ${item.status === "Pending" ||
+                                              item.status === "Shipped" ||
+                                              item.status === "Delivered"
                                               ? "text-success"
                                               : "text-danger"
                                               }`}
@@ -178,7 +179,7 @@ const MyOrder = () => {
                                             {item.status}
                                           </h6>
                                         </div>
-                                        {item.status === "pending" || item.status === "shipped" ? (
+                                        {item.status === "Pending" || item.status === "Shipped" ? (
                                           <Button
                                             variant="danger"
                                             size="sm"
@@ -186,7 +187,7 @@ const MyOrder = () => {
                                           >
                                             Cancel
                                           </Button>
-                                        ) : item.status === "delivered" ? (
+                                        ) : item.status === "Delivered" ? (
                                           <Button
                                             variant="primary"
                                             size="sm"
@@ -195,6 +196,15 @@ const MyOrder = () => {
                                             Return
                                           </Button>
                                         ) : null}
+                                         <div className="me-4 text-center" style={{ width: "200px" }}>
+                                         <Button
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => navigate(`/order-details/${order._id}`)}
+                                          >
+                                            View
+                                          </Button>
+                                         </div>
                                       </div>
                                     </div>
 

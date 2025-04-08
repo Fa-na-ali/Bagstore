@@ -8,6 +8,7 @@ import { PiFlagBannerFill } from "react-icons/pi";
 import { IoLogoDropbox } from "react-icons/io5";
 import { RxDashboard } from "react-icons/rx";
 import { CiMoneyCheck1 } from "react-icons/ci";
+import { BsWallet2 } from "react-icons/bs";
 import { Link } from "react-router";
 
 const AdminSidebar=()=>{
@@ -38,6 +39,10 @@ const AdminSidebar=()=>{
           <Nav.Link as={Link} to='/admin/offers' className="py-2 ripple text-white">
           <BiSolidOffer  className="me-3"/>
            Offer
+          </Nav.Link>
+          <Nav.Link as={Link} to='/admin/wallets' className="py-2 ripple text-white">
+          <BsWallet2  className="me-3"/>
+           Wallets
           </Nav.Link>
           <Nav.Link href="#" className="py-2 ripple text-white">
             <PiFlagBannerFill className="me-3" />
