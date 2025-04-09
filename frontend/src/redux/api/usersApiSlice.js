@@ -356,6 +356,7 @@ export const {
   useApplyCouponMutation,
   useRemoveCouponMutation,
   useInitiatePaymentMutation,
+  useRetryPaymentMutation,
   useVerifyPaymentMutation,
   useVerifyRetryPaymentMutation,
   useAddReferralCouponMutation,

@@ -14,7 +14,7 @@ const createPayment = async (req, res) => {
         const { amount } = req.body;
         const user_id = req.user._id;
         const options = {
-            amount: amount * 100,
+            amount: Math.round(amount * 100),
             currency: "INR",
             receipt: `receipt_${user_id}_${Date.now().toString().slice(-5)}`,
         }

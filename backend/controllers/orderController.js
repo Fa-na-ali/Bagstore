@@ -6,6 +6,7 @@ const Payment = require('../models/paymentModel');
 const Return = require('../models/returnModel');
 const STATUS_CODES = require('../middlewares/statusCodes');
 const Wallet = require('../models/wallet');
+const Coupon = require('../models/couponModel');
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -20,7 +21,7 @@ const createOrder = async (req, res) => {
     const orderId = await generateOrderId();
     const orderNumber = await generateOrderNumber()
     let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
-
+console.log("coooo",couponDiscount)
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in the order" });
     }
@@ -41,7 +42,7 @@ const createOrder = async (req, res) => {
         console.log("Invalid quantity:", item.qty);
         return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
       }
-      validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount });
+      validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
     }
     console.log("Validated Items:", validatedItems);
 
@@ -50,7 +51,7 @@ const createOrder = async (req, res) => {
     }
     if (paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId: user._id });
-      console.log("wallet",wallet)
+      console.log("wallet", wallet)
       if (!wallet || wallet.balance < totalPrice) {
         return res.json({ success: false, message: "Insufficient balance in wallet" });
       }
@@ -96,6 +97,7 @@ const createOrder = async (req, res) => {
       status: "Not completed",
       totalPrice,
       couponId,
+      couponDiscount,
       totalDiscount,
       tax
     });
@@ -103,6 +105,17 @@ const createOrder = async (req, res) => {
     const createdOrder = await order.save();
     console.log("Order created successfully", createdOrder);
 
+    if (user.coupon) {
+      const coupon = await Coupon.findById(user.coupon);
+      if (coupon && !coupon.usedUsers.includes(user._id)) {
+        coupon.usedUsers.push(user._id);
+        coupon.limit -= 1;
+        await coupon.save();
+      }
+    
+      user.coupon = null; 
+      await user.save();
+    }
 
     await Promise.all(
       createdOrder.items.map(async (item) => {
@@ -203,7 +216,7 @@ const cancelOrder = async (req, res) => {
 
       if (!wallet) {
 
-       const wallet = new Wallet({
+        const wallet = new Wallet({
           userId: order.userId,
           balance: 0,
           transactions: []

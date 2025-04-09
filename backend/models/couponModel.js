@@ -56,7 +56,13 @@ const Schema  = mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
         default: []
-    }
+    },
+    usedUsers: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'User',
+        default: [],
+      }
+   
 },  {
     timestamps: true,
 }

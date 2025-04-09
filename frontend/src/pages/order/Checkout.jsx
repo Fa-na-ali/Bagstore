@@ -11,6 +11,7 @@ import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
 import CouponModal from "./CouponModal";
+import { useRef } from "react";
 
 const Checkout = () => {
 
@@ -24,12 +25,17 @@ const Checkout = () => {
   const imageBaseUrl = "http://localhost:5004/uploads/";
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const couponDiscountRef = useRef(0);
   const formattedItems = cart?.cartItems.map(item => ({
     product: item._id,
     qty: item.qty,
-    discount: item.discount,
-    discountedPrice: item.discountedPrice
+    discount:item.discount,
+    discountedPrice:item.discountedPrice,
+    name:item.name,
+    price:item.price,
+    category:item.category.name
   }));
+  
   const [initiatePayment] = useInitiatePaymentMutation();
   const [verifyPayment, { data }] = useVerifyPaymentMutation();
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
@@ -48,11 +54,11 @@ const Checkout = () => {
 
   useEffect(() => {
     refetch();
-
+    console.log("Updated couponDiscount:", couponDiscount);
     if (user?.user?.address && user?.user.address.length > 0) {
       setSelectedAddress(user?.user.address[0]._id);
     }
-  }, [user, refetch]);
+  }, [user, refetch,couponDiscount]);
 
   const handleAddressChange = (id) => {
     setSelectedAddress(id);
@@ -72,7 +78,7 @@ const Checkout = () => {
     } else if (selectedPayment === "Cash On Delivery") {
       setShowModal(true);
     } else {
-      handlePlaceOrder("", "", "", "Pending");
+      handlePlaceOrder("","","", "Pending");
     }
   };
   const handlePaymentMethod = (method) => {
@@ -89,8 +95,11 @@ const Checkout = () => {
         if (res.status === "success") {
           toast.success(res.message);
           setCouponId(res?.coupon._id)
-          const couponRate = res?.coupon.discount
-          setCouponDiscount(couponRate / 100 * total)
+          const calculatedDiscount = res?.coupon?.discount / 100 * total;
+          console.log("calc",calculatedDiscount)
+          couponDiscountRef.current = calculatedDiscount;
+          setCouponDiscount(calculatedDiscount)
+          console.log("c",couponDiscountRef.current )
 
         } else {
           toast.error(res.message);
@@ -139,33 +148,56 @@ const Checkout = () => {
           wallet: true,
         },
         handler: async function (response) {
-          console.log('Payment successful', response);
-          await handlePlaceOrder(orderData.order.id, response.razorpay_payment_id, response.razorpay_signature, "Success");
+          try {
+            console.log('Payment successful', response);
+            await handlePlaceOrder(
+              orderData.order.id, 
+              response.razorpay_payment_id, 
+              response.razorpay_signature, 
+              "Success"
+            );
+          } catch (error) {
+            console.error('Error in payment handler:', error);
+            // Close Razorpay window manually if needed
+            const rzp = document.querySelector('.razorpay-container');
+            if (rzp) rzp.remove();
+            navigate(`/order-failure`);
+          }
         },
         theme: { color: '#3399cc' },
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.open();
-      rzp.on('payment.failed', async function () {
-        await handlePlaceOrder(orderData.order.id, "", "", "Failed");
-      });
-    } catch (error) {
-      console.error('Error initializing Razorpay:', error);
-    }
-  };
+    rzp.open();
+    
+    rzp.on('payment.failed', async function(response) {
+      console.error('Payment failed:', response);
+      await handlePlaceOrder(
+        orderData.order.id,
+        "",
+        "",
+        "Failed"
+      );
+    });
+
+  } catch (error) {
+    console.error('Error initializing Razorpay:', error);
+    toast.error("Payment initialization failed");
+  }
+};
 
 
-  const handlePlaceOrder = async (razorpay_order_id, razorpay_payment_id, razorpay_signature, status) => {
+  const handlePlaceOrder = async (razorpay_order_id,razorpay_payment_id, razorpay_signature, status) => {
 
     setShowModal(false);
     if (!cartItems || cartItems.length === 0) {
       toast.error("Your cart is empty. Please add items before placing an order.");
       return;
     }
-    if (selectedPayment == "razorpay" && razorpay_order_id === "") {
+    if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
       return handlePayment();
     }
+    console.log("couoo",couponDiscountRef.current)
     try {
       const res = await createOrder({
         userId: user?.user._id,
@@ -176,8 +208,8 @@ const Checkout = () => {
         couponId: couponId || null,
         razorpay_order_id,
         paymentStatus: status,
-        couponDiscount: couponDiscount,
-        totalPrice: total,
+        couponDiscount: couponDiscountRef.current,
+        totalPrice:total,
         tax,
         totalDiscount,
       }).unwrap();
@@ -186,41 +218,45 @@ const Checkout = () => {
       if (!id) {
         toast.error(res?.message);
       }
-      if (cart?.paymentMethod === "Razorpay") {
-        const verifyData = await verifyPayment({
-          razorpay_order_id,
-          razorpay_payment_id,
-          razorpay_signature,
-        }).unwrap();
-
-        console.log("verify", verifyData);
-
-        if (verifyData.status === "success") {
-          dispatch(clearCartItems());
-          toast.success("Order Placed successfully");
-          navigate(`/order-success?id=${id}`);
-        } else {
-          toast.error("Payment verification failed");
+      if (status === "Success" && cart?.paymentMethod === "Razorpay") {
+        try {
+          const verifyData = await verifyPayment({
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+          }).unwrap();
+  
+          if (verifyData.status === "success") {
+            dispatch(clearCartItems());
+            toast.success("Order Placed successfully");
+            navigate(`/order-success?id=${id}`);
+          } else {
+            throw new Error("Payment verification failed");
+          }
+        } catch (verifyError) {
+          console.error("Verification error:", verifyError);
           dispatch(clearCartItems());
           navigate(`/order-failure?id=${id}`);
         }
-      }
-
-      else {
+      } else if (status === "Failed") {
+        dispatch(clearCartItems());
+        navigate(`/order-failure?id=${id}`);
+      } else {
+        // For Cash on Delivery or other methods
         dispatch(clearCartItems());
         toast.success("Order Placed successfully");
         navigate(`/order-success?id=${id}`);
       }
-
     } catch (error) {
-      toast.error(error);
+      console.error("Order creation error:", error);
+      toast.error(error.message || "Failed to place order");
     }
-
   };
+
   console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
-  const totalDiscount = discount + couponDiscount
+  const totalDiscount = discount+couponDiscount
   const tax = subtotal * 0.05;
   const total = subtotal - (discount + couponDiscount) + tax;
   const id = selectedAddress

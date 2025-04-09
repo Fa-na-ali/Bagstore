@@ -15,7 +15,6 @@ import OTPVerify from './pages/auth/OTPVerify';
 import AdminSidebar from './components/AdminSidebar';
 import UserManagement from './pages/admin/User/UserManagement';
 import AddProduct from './pages/admin/products/AddProduct';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import CategoryManagement from './pages/admin/Category/CategoryManagement';
 import ProductManagement from './pages/admin/products/ProductManagement';
 import EditProduct from './pages/admin/products/EditProduct';
@@ -53,6 +52,8 @@ import PaymentFailure from './pages/order/PaymentFailure';
 import Wallet from './pages/user/Wallet';
 import WalletManagement from './pages/admin/Wallets/WalletManagement';
 import TransactionDetail from './pages/admin/Wallets/TransactionDetail';
+import AdminDashboard from './pages/admin/Dashboard/AdminDashboard';
+import SalesReport from './pages/admin/Dashboard/SalesReport';
 
 
 
@@ -98,9 +99,6 @@ export const router = createBrowserRouter(
          <Route path="/pending/order-details" element={<PendingOrders/>} />
         <Route path='/order-details/:id' element={<OrderDetail/>}/>
 
-        
-
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/user" element={<UserManagement />} />
         <Route path="/admin/category" element={<CategoryManagement />} />
         <Route path="/admin/category/add" element={<AddCategory />} />
@@ -123,6 +121,9 @@ export const router = createBrowserRouter(
 
         <Route path="/admin/wallets" element={<WalletManagement/>} />
         <Route path="/admin/wallets/edit/:transactionId" element={<TransactionDetail/>} />
+
+        <Route path="/admin/dashboard" element={<AdminDashboard/>} />
+        <Route path="/admin/sales-report" element={<SalesReport/>} />
 
 
       </Route>

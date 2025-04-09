@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { useVerifyRetryPaymentMutation } from "../../redux/api/usersApiSlice";
+import { useRetryPaymentMutation, useVerifyRetryPaymentMutation } from "../../redux/api/usersApiSlice";
 
 
 const PaymentFailure = () => {
 
-    const [retryPayment] = useVerifyRetryPaymentMutation();
+    const [retryPayment] = useRetryPaymentMutation();
     const [verifyRetryPayment] = useVerifyRetryPaymentMutation();
     const navigate = useNavigate()
     const { search } = useLocation();

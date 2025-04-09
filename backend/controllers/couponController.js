@@ -228,24 +228,31 @@ const applyCoupon = async (req, res) => {
     if (minAmount && coupon.maxAmount < minAmount) {
         return res.json({success: false, message: "Coupon maximum amount requirement exceeded"});
     }
-    const user = await User.findOne({_id: req.user._id});
-    const order = await Order.findOne({couponId:coupon._id})
+    if(coupon.limit===0){
 
-    if (order && coupon.users.includes(user._id)) {
-       
-        if (coupon.type == 'single') {
-            return res.json({success: false, message: "Coupon already applied"});
-        }
-        coupon.limit -= 1;
-        user.coupon = coupon._id;
-    } else {
-        user.coupon = coupon._id;
-        coupon.users.push(user._id);
-        coupon.limit -= 1;
+        return res.status(404).json({status:"error", message: "No more coupons available"});
+    }
+    const userId = req.user._id;
+
+    const hasUsed = coupon.usedUsers.some(id => id.toString() === userId.toString());
+    if (hasUsed && coupon.type === "single") {
+      return res.json({ success: false, message: "Coupon already used" });
     }
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    if (!coupon.users.includes(user._id)) {
+        coupon.users.push(user._id);
+      }
+  
+      user.coupon = coupon._id;
+    
     await user.save();
     await coupon.save();
+
     return res.status(STATUS_CODES.OK).json({
         status:"success",
         message: "Coupon applied successfully",
@@ -277,12 +284,11 @@ const removeCoupon = async (req, res) => {
         return res.json({ success: false, message: "User not found" });
     }
 
-    // Check if the user has this coupon
+   
     if ( user.coupon && user.coupon.toString() === coupon._id.toString()) {
-        user.coupon = null; // Explicitly setting it to null
-        await user.save(); // Save the updated user object
+        user.coupon = null; 
+        await user.save(); 
 
-        // Remove user from coupon's users array
         coupon.users = coupon.users.filter(id => id.toString() !== user._id.toString());
 
         if (coupon.type === "single") {

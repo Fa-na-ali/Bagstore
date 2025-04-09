@@ -29,6 +29,7 @@ const imageUpload=require("../imageUpload")
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser, applyCoupon, removeCoupon } = require('../controllers/couponController')
 const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
 const { createPayment, verifyPayment, retryPayment, verifyRetryPayment } = require('../controllers/razorpayController')
+const { loadSalesReport, downloadSalesReport, getSalesReport } = require('../controllers/dashboardController')
 
 
 
@@ -74,5 +75,11 @@ router.route('/payment/razorpay/order').post(authenticate, blockDisabledUsers,cr
 router.route('/verify-payment').post(authenticate, blockDisabledUsers,verifyPayment)
 router.route('/retry-payment').post(authenticate,blockDisabledUsers,retryPayment)
 router.route('/verify-retry-payment').post(authenticate,blockDisabledUsers,verifyRetryPayment)
+
+router.route('/dashboard').get(authenticate,authorizeAdmin)
+router.route('/sales-report').get(authenticate,blockDisabledUsers,authorizeAdmin,loadSalesReport);
+router.route('/sales-report-download').post(authenticate,blockDisabledUsers,authorizeAdmin,downloadSalesReport)
+router.route('/sales-report-data').get(authenticate,blockDisabledUsers,authorizeAdmin,getSalesReport)
+
 
 module.exports = router
