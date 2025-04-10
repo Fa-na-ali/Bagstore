@@ -21,7 +21,7 @@ export const dashboardApiSlice = apiSlice.injectEndpoints({
 
       downloadPdfReport: builder.mutation({
         query: ({ filter, startDate, endDate }) => ({
-          url: `${USERS_URL}/download-sales-pdf`,
+          url: `${USERS_URL}/sales-report-download`,
           method: 'POST',
           body: { filter, startDate, endDate },
           responseHandler: (response) => response.blob()

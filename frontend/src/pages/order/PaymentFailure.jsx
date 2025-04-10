@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useRetryPaymentMutation, useVerifyRetryPaymentMutation } from "../../redux/api/usersApiSlice";
-
+import Swal from 'sweetalert2';
 
 const PaymentFailure = () => {
 
@@ -17,6 +17,7 @@ const PaymentFailure = () => {
     const handleRetryPayment = async (orderId) => {
         try {
           const { data } = await retryPayment(orderId);
+          console.log("data",data)
           if (data.status==="success") {
             initiateRazorpay(data,orderId);
           } else {

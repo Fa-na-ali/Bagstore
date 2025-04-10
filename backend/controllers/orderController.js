@@ -432,19 +432,24 @@ const returnOrder = async (req, res) => {
 
 const loadPendingOrder = async (req, res) => {
   try {
+    const id = req.params.id
+    console.log(id)
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid Order ID" });
+    }
     const userId = req.user._id;
+    console.log(userId)
     const page = parseInt(req.query.page) || 1;
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    const orders = await Order.find({
-      userId: userId,
-      paymentMethod: "Razorpay",
-      paymentStatus: "Pending"
-    })
-      .populate('items.product')
-      .skip(skip)
+    const orders = await Order.find({_id:id }).populate(
+      "userId")
+      .populate("shippingAddress")
+      .populate("items.product")
+       .skip(skip)
       .limit(limit);
+      console.log("ordersss",orders)
 
     const totalOrders = await Order.countDocuments({
       userId: userId,

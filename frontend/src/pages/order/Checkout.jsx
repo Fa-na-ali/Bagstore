@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation, useVerifyPaymentMutation } from "../../redux/api/usersApiSlice";
 import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
-import { GiReceiveMoney } from "react-icons/gi";
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
@@ -117,6 +116,7 @@ const Checkout = () => {
         toast.success(res.message);
         setCoupon("");
         setCouponDiscount(0);
+        couponDiscountRef.current=0;
         setCouponId("")
         setApplied(false);
       } else {
@@ -239,6 +239,7 @@ const Checkout = () => {
           navigate(`/order-failure?id=${id}`);
         }
       } else if (status === "Failed") {
+        console.log("resid",id)
         dispatch(clearCartItems());
         navigate(`/order-failure?id=${id}`);
       } else {

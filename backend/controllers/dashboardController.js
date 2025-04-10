@@ -61,6 +61,10 @@ const getSalesReportData = async (filter, startDate, endDate) => {
       matchConditions.createdAt = dateRange;
     }
     console.log('Final match conditions:', JSON.stringify(matchConditions, null, 2))
+    const orders = await Order.find({
+        "items.status": "Delivered"
+      });
+      console.log("orders",orders)
 
     try {
         // First check if any orders exist with these conditions
@@ -186,6 +190,8 @@ const getSalesReportData = async (filter, startDate, endDate) => {
         }
       }
     ]);
+
+    
   
     // Calculate totals
     const totalCouponDiscount = couponStats[0]?.totalCouponDiscount || 0;

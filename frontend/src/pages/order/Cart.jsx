@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { addToCart, removeFromCart, syncCartWithDatabase, updateCartItemQuantity, } from "../../redux/features/cart/cartSlice";
 import { useGetProductsByIdsQuery } from "../../redux/api/productApiSlice";
 
+
 const Cart = () => {
 
   const navigate = useNavigate();

@@ -28,7 +28,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
 
     getPendingOrderById: builder.query({
       query: (id) => ({
-        url: `${ORDERS_URL}/pending/order/${id}`,
+        url: `${ORDERS_URL}/pending/order-details/${id}`,
       }),
       keepUnusedDataFor: 5,
     }),

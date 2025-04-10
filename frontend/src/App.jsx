@@ -96,7 +96,7 @@ export const router = createBrowserRouter(
         <Route path="/mine" element={<MyOrder/>} />
         <Route path="/order-success" element={<OrderSuccess/>} />
         <Route path="/order-failure" element={<PaymentFailure/>} />
-         <Route path="/pending/order-details" element={<PendingOrders/>} />
+         <Route path="/pending/order-details/:id" element={<PendingOrders/>} />
         <Route path='/order-details/:id' element={<OrderDetail/>}/>
 
         <Route path="/admin/user" element={<UserManagement />} />

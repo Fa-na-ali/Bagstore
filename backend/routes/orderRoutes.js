@@ -6,12 +6,13 @@ const { createOrder, getMyOrders,getAllOrders, findOrderById, cancelOrder, setIt
 router.route('/').post(authenticate, blockDisabledUsers,createOrder)
 router.route('/admin/orders').get(authenticate, authorizeAdmin, getAllOrders);
 router.route('/mine').get(authenticate, blockDisabledUsers,getMyOrders)
+router.route('/pending/order-details/:id').get(authenticate,blockDisabledUsers,loadPendingOrder)
 router.route('/:id').get(findOrderById)
 router.route('/cancel').put(authenticate,blockDisabledUsers,cancelOrder)
 router.route('/save-item-status').put(authenticate,authorizeAdmin,setItemStatus)
 router.route('/return-request').post(authenticate,blockDisabledUsers,returnOrder)
 router.route('/admin/orders/edit/:id').get(findOrderById)
-router.route('/pending/order/:id').get(authenticate,blockDisabledUsers,loadPendingOrder)
+
    
 
 module.exports = router;

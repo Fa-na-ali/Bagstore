@@ -241,10 +241,10 @@ console.log("data",reportData)
                         ) : reportData?.orders?.length > 0 ? (
                             reportData.orders.map((order, index) => (
                                 <tr key={index}>
-                                    <td>{order.productName} {order.size}</td>
+                                    <td>{order.productName}</td>
                                     <td>{order.soldCount}</td>
                                     <td>{order.returnedCount}</td>
-                                    <td>₹{order.offerDiscounts}</td>
+                                    <td>₹{order.productDiscounts}</td>
                                     <td>₹{order.revenue}</td>
                                 </tr>
                             ))

@@ -162,7 +162,7 @@ const OrderDetail = () => {
             <p className="caption">Payment Status:{order.paymentStatus}</p>
             <p className="caption">Total Discount:{order.totalDiscount}</p>
             <p className="caption">Tax:{order.tax}</p>
-            <p className="caption">Shpping Price:{order.shippingPrice}</p>
+            <p className="caption">Shipping Price:{order.shippingPrice}</p>
             <p className="caption">Total Price:{order.totalPrice}</p>
           </Col>
 
