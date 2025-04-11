@@ -12,19 +12,12 @@ const Schema = mongoose.Schema({
         ref: 'User',
         default: [],
     },
-    referralCoupon: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Coupon',
-        default: null,
-
-    },
-    couponUsed:{
-        type:Boolean,
-        default:false
-    },
-
     referralCode: {
         type: String,
+    },
+    amountEarned: {
+        type: Number,
+        default: 0
     },
 })
 

@@ -29,7 +29,8 @@ const imageUpload = require("../imageUpload")
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser, applyCoupon, removeCoupon } = require('../controllers/couponController')
 const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
 const { createPayment, verifyPayment, retryPayment, verifyRetryPayment } = require('../controllers/razorpayController')
-const { loadSalesReport, downloadSalesReport, getSalesReport } = require('../controllers/dashboardController')
+const { loadSalesReport, getSalesReport } = require('../controllers/dashboardController')
+const { getReferrals, getReferralCode } = require('../controllers/referralController')
 
 
 
@@ -44,6 +45,8 @@ router.route('/account/edit').put(authenticate, blockDisabledUsers, updateUser)
 router.route('/account/add-address').post(authenticate, blockDisabledUsers, addAddress)
 router.route('/account/edit-address/:id').get(authenticate, blockDisabledUsers, getAddress).put(authenticate, blockDisabledUsers, updateAddress)
 router.route("/account/delete-address/:id").delete(authenticate, blockDisabledUsers, deleteAddress);
+router.route("/account/referrals").get(authenticate,blockDisabledUsers,getReferrals)
+router.route('/account/referrals/referral-code').get(authenticate,blockDisabledUsers,getReferralCode)
 router.route('/change-password').post(authenticate, blockDisabledUsers, changePassword)
 router.route('/forgot-password').post(forgotPassword)
 router.route('/upload/:id').post(authenticate, blockDisabledUsers, imageUpload.array("image"), uploadImage)
@@ -78,7 +81,6 @@ router.route('/verify-retry-payment').post(authenticate, blockDisabledUsers, ver
 
 router.route('/dashboard').get(authenticate, authorizeAdmin)
 router.route('/sales-report').get(authenticate, blockDisabledUsers, authorizeAdmin, loadSalesReport);
-router.route('/sales-report-download').post(authenticate, blockDisabledUsers, authorizeAdmin, downloadSalesReport)
 router.route('/sales-report-data').get(authenticate, blockDisabledUsers, authorizeAdmin, getSalesReport)
 
 

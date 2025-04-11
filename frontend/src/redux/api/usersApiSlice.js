@@ -315,6 +315,20 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    getReferralDetails: builder.query({
+      query: () => ({
+        url: `${USERS_URL}/account/referrals`,
+       
+      })
+    }),
+
+    getReferralCode: builder.mutation({
+      query: () => ({
+        url: `${USERS_URL}/account/referrals/referral-code`,
+        method: 'POST'
+      }),
+    }),
+
   })
 })
 
@@ -360,4 +374,6 @@ export const {
   useVerifyPaymentMutation,
   useVerifyRetryPaymentMutation,
   useAddReferralCouponMutation,
+  useGetReferralDetailsQuery,
+  useGetReferralCodeMutation,
 } = userApiSlice;

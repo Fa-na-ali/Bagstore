@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Container,
     Table,
@@ -10,20 +10,36 @@ import {
     Tooltip,
     OverlayTrigger
 } from 'react-bootstrap';
-import { useGetSalesReportQuery, useDownloadExcelReportMutation, useDownloadPdfReportMutation } from '../../../redux/api/dashboardApiSlice';
+import { useGetSalesReportQuery } from '../../../redux/api/dashboardApiSlice';
+import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import * as pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
 
+// Initialize pdfMake
+//pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+  } else {
+    pdfMake.vfs = {
+      Roboto: {
+        normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
+        bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
+        italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
+        bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+      }
+    };
+  }
 
 const SalesReport = () => {
     const [filter, setFilter] = useState('daily');
     const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
- 
+    const [endDate, setEndDate] = useState('');
     const [showDateInputs, setShowDateInputs] = useState(false);
+    const tableRef = useRef(null);
 
     const {
         data: reportData,
@@ -31,9 +47,6 @@ const SalesReport = () => {
         isFetching,
         refetch
     } = useGetSalesReportQuery({ filter, startDate, endDate });
-console.log("data",reportData)
-    const [downloadExcel, { isLoading: isExcelLoading }] = useDownloadExcelReportMutation();
-    const [downloadPdf, { isLoading: isPdfLoading }] = useDownloadPdfReportMutation();
 
     useEffect(() => {
         setShowDateInputs(filter === 'custom');
@@ -43,75 +56,98 @@ console.log("data",reportData)
         refetch();
     };
 
-    const handleDownloadExcel = async () => {
-        try {
-            const blob = await downloadExcel({ filter, startDate, endDate }).unwrap();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `sales_report_${new Date().toISOString().split('T')[0]}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error downloading Excel:', error);
-        }
+    const handleDownloadPdf = () => {
+        if (!reportData?.orders) return;
+
+        const body = [
+            ['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)'],
+            ...reportData.orders.map(order => [
+                order.productName,
+                order.soldCount,
+                order.returnedCount,
+                `₹${order.productDiscounts}`,
+                `₹${order.revenue}`
+            ])
+        ];
+
+        const docDefinition = {
+            content: [
+                { text: 'Sales Report', style: 'header' },
+                {
+                    text: `Generated on ${new Date().toLocaleString()}`,
+                    alignment: 'right',
+                    margin: [0, 0, 0, 10],
+                },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+                        body: body,
+                    },
+                },
+                {
+                    text: `Offer Discounts: ₹${reportData.offerDiscounts || 0}`,
+                    style: 'subheader',
+                    alignment: 'left',
+                    margin: [10, 10, 10, 10],
+                },
+                {
+                    text: `Coupon Discount: ₹${reportData.couponDiscounts || 0}`,
+                    alignment: 'left',
+                    style: 'subheader',
+                    margin: [10, 0, 0, 10],
+                },
+                {
+                    text: `Net Revenue: ₹${reportData.netRevenue || 0}`,
+                    alignment: 'left',
+                    style: 'subheader',
+                    margin: [10, 0, 0, 10],
+                }
+            ],
+            styles: {
+                header: {
+                    fontSize: 18,
+                    bold: true,
+                    margin: [0, 0, 0, 10],
+                },
+                subheader: {
+                    fontSize: 14,
+                    bold: true,
+                }
+            },
+            defaultStyle: {
+                fontSize: 12,
+                alignment: 'center'
+            },
+        };
+
+        pdfMake.createPdf(docDefinition).download('sales_report.pdf');
     };
 
-    const handleDownloadPdf = async () => {
-        try {
-            const blob = await downloadPdf({ filter, startDate, endDate }).unwrap();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `sales_report_${new Date().toISOString().split('T')[0]}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error downloading PDF:', error);
-            // Fallback to client-side PDF generation if API fails
-            generateClientPdf();
-        }
-    };
+    const handleDownloadExcel = () => {
+        if (!reportData?.orders) return;
 
-    const generateClientPdf = () => {
-        const doc = new jsPDF();
-        doc.text('Sales Report', 14, 16);
+        const headers = ['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)'];
+        
+        const data = [
+            headers,
+            ...reportData.orders.map(order => [
+                order.productName,
+                order.soldCount,
+                order.returnedCount,
+                order.productDiscounts,
+                order.revenue
+            ]),
+            [],
+            ['Offer Discounts', reportData.offerDiscounts],
+            ['Coupon Discount', reportData.couponDiscounts],
+            ['Net Revenue', reportData.netRevenue]
+        ];
 
-        const headers = [['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)']];
-        const data = reportData?.orders?.map(order => [
-            `${order.productName} ${order.size || ''}`,
-            order.soldCount,
-            order.returnedCount,
-            `₹${order.offerDiscounts}`,
-            `₹${order.revenue}`
-        ]) || [];
-
-        doc.autoTable({
-            head: headers,
-            body: data,
-            startY: 20,
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [22, 160, 133] }
-        });
-
-        // Add summary
-        let yPos = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(10);
-        doc.text(`Offer Discounts: ₹${reportData?.offerDiscounts || 0}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Coupon Discounts: ₹${reportData?.couponDiscounts || 0}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Overall Sales Count: ${reportData?.overallSalesCount || 0}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Order Count: ${reportData?.orderCount || 0}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Overall Discount: ₹${reportData?.overallDiscount || 0}`, 14, yPos);
-        yPos += 7;
-        doc.text(`Net Revenue: ₹${reportData?.netRevenue || 0}`, 14, yPos);
-
-        doc.save(`sales_report_${new Date().toISOString().split('T')[0]}.pdf`);
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
+        XLSX.writeFile(workbook, 'sales_report.xlsx');
     };
 
     const revenueTooltip = (
@@ -121,9 +157,6 @@ console.log("data",reportData)
     );
 
     return (
-
-
-
         <Container fluid className="mt-4 p-4">
             <Row className="g-0">
                 <Col lg={2} className="d-none d-lg-block">
@@ -170,7 +203,6 @@ console.log("data",reportData)
                 <Col xs={12} md={4} className="d-flex gap-2 justify-content-md-end">
                     <Button
                         variant="primary"
-                        id="generateReport"
                         onClick={handleGenerateReport}
                         disabled={isFetching}
                     >
@@ -185,39 +217,23 @@ console.log("data",reportData)
                     </Button>
                     <Button
                         variant="success"
-                        id="downloadExcel"
                         onClick={handleDownloadExcel}
-                        disabled={isExcelLoading}
+                        disabled={isLoading || !reportData?.orders?.length}
                     >
-                        {isExcelLoading ? (
-                            <>
-                                <Spinner as="span" size="sm" animation="border" role="status" />
-                                <span className="ms-2">Preparing...</span>
-                            </>
-                        ) : (
-                            'Download Excel'
-                        )}
+                        Download Excel
                     </Button>
                     <Button
                         variant="danger"
-                        id="downloadPDF"
                         onClick={handleDownloadPdf}
-                        disabled={isPdfLoading}
+                        disabled={isLoading || !reportData?.orders?.length}
                     >
-                        {isPdfLoading ? (
-                            <>
-                                <Spinner as="span" size="sm" animation="border" role="status" />
-                                <span className="ms-2">Preparing...</span>
-                            </>
-                        ) : (
-                            'Download PDF'
-                        )}
+                        Download PDF
                     </Button>
                 </Col>
             </Row>
 
             <div className="table-responsive mt-4">
-                <Table id="salesTable" bordered className="text-center">
+                <Table bordered className="text-center" ref={tableRef}>
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -259,17 +275,16 @@ console.log("data",reportData)
 
             {!isLoading && reportData && (
                 <div className="mt-4">
-                    <h5>Offer Discounts: ₹{reportData.offerDiscounts}</h5>
-                    <h5>Coupon Discounts: ₹{reportData.couponDiscounts}</h5>
-                    <h5>Overall Sales Count: {reportData.overallSalesCount}</h5>
-                    <h5>Order Count: {reportData.orderCount}</h5>
-                    <h5>Overall Discount: ₹{reportData.overallDiscount}</h5>
-                    <h5>Net Revenue: ₹{reportData.netRevenue}</h5>
+                    <h5 id="discounts">Offer Discounts: ₹{reportData.offerDiscounts}</h5>
+                    <h5 id="coupon-discounts">Coupon Discounts: ₹{reportData.couponDiscounts}</h5>
+                    <h5 id="overall-sales-count">Overall Sales Count: {reportData.overallSalesCount}</h5>
+                    <h5 id="order-count">Order Count: {reportData.orderCount}</h5>
+                    <h5 id="overall-discount">Overall Discount: ₹{reportData.overallDiscount}</h5>
+                    <h5 id="net-revenue">Net Revenue: ₹{reportData.netRevenue}</h5>
                 </div>
             )}
         </Container>
-   
-  );
+    );
 };
 
 export default SalesReport;

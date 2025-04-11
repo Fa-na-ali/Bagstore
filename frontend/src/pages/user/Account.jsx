@@ -224,6 +224,9 @@ const Account = () => {
                                                 <Col xs={6} className="mb-3">
                                                     <Button className="button-custom" onClick={() => { navigate(`/change-password`) }}>Change Password</Button>
                                                 </Col>
+                                                <Col xs={6} className="mb-3">
+                                                    <Button className="button-custom" onClick={() => { navigate(`/account/referrals/${user._id}`) }}>Referrals</Button>
+                                                </Col>
 
                                             </Row>
                                             <h6 className="caption">Address</h6>

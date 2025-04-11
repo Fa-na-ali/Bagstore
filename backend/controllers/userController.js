@@ -17,13 +17,13 @@ const Referral = require("../models/referralModel");
 const otpStore = new Map();
 
 const generateReferralCode = () => {
-    return crypto.randomBytes(4).toString('hex'); 
-  };
+    return crypto.randomBytes(4).toString('hex');
+};
 
 //user registration
 const userSignup = async (req, res) => {
     try {
-        const { name, email, phone, password, confirmPassword,referCode} = req.body
+        const { name, email, phone, password, confirmPassword, referCode } = req.body
         if (!email || !password || !name || !confirmPassword || !phone) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -60,14 +60,33 @@ const userSignup = async (req, res) => {
         })
         const referral = new Referral({
             user: user._id,
-            referralCode:generateReferralCode(),
+            referralCode: generateReferralCode(),
         })
         await referral.save();
 
         if (req.body.referCode) {
-            const referrer = await Referral.findOne({referralCode: req.body.referCode});
-            if (referrer) {
+            const referrer = await Referral.findOne({ referralCode: req.body.referCode });
+            if (!referrer) {
+                return res.status(STATUS_CODES.FORBIDDEN).json({
+                    status: "error",
+                    message: "Invalid Referral Code"
+                })
+            }
+
+            else {
                 referrer.referredUsers.push(user._id);
+                const refWallet = await Wallet.findOne({ userId: referrer.user });
+                if (refWallet) {
+
+                    refWallet.balance += 150;
+                    refWallet.transactions.push({
+                        amount: 150,
+                        type: 'Credit',
+                        description: 'Referral Bonus for referring ' + user.email,
+                    });
+
+                    await refWallet.save();
+                }
                 await referrer.save();
             }
         }
@@ -92,6 +111,7 @@ const userSignup = async (req, res) => {
         })
 
     } catch (error) {
+        console.log(error)
         res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: error.msg
@@ -695,7 +715,7 @@ const changePassword = async (req, res) => {
 const uploadImage = async (req, res) => {
     try {
         const id = req.params.id;
-        console.log("id",id)
+        console.log("id", id)
         console.log("req.files", req.body);
 
 
@@ -708,7 +728,7 @@ const uploadImage = async (req, res) => {
 
 
         const imageUrls = req.files.map((file) => file.filename);
-        
+
 
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -742,42 +762,43 @@ const uploadImage = async (req, res) => {
 };
 
 const deleteUserImage = async (req, res) => {
-  console.log("params", req.params)
-  try {
-    const { id, index } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message:  USER_ID_MSG
-      })
-    }
-    const user = await User.findById(id);
-    console.log("user", user)
-    if (!user) 
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        status: "error",
-        message: USER_NOT_MSG
-      });
-     
+    console.log("params", req.params)
+    try {
+        const { id, index } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_ID_MSG
+            })
+        }
+        const user = await User.findById(id);
+        console.log("user", user)
+        if (!user)
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: USER_NOT_MSG
+            });
 
-    if (index < 0 || index >= user.image.length) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ 
-        status:"error",
-        message: "Invalid image index" });
-    }
 
-    user.image.splice(index, 1);
-    await user.save();
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      message: "Image Deleted Successfully"
-    });
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-  }
+        if (index < 0 || index >= user.image.length) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: "Invalid image index"
+            });
+        }
+
+        user.image.splice(index, 1);
+        await user.save();
+        return res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: "Image Deleted Successfully"
+        });
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            status: "error",
+            message: error.message
+        });
+    }
 }
 
 
@@ -802,5 +823,6 @@ module.exports = {
     updateAddress,
     deleteAddress,
     uploadImage,
-    deleteUserImage
+    deleteUserImage,
+    generateReferralCode,
 }

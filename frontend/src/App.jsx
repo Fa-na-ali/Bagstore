@@ -54,6 +54,7 @@ import WalletManagement from './pages/admin/Wallets/WalletManagement';
 import TransactionDetail from './pages/admin/Wallets/TransactionDetail';
 import AdminDashboard from './pages/admin/Dashboard/AdminDashboard';
 import SalesReport from './pages/admin/Dashboard/SalesReport';
+import Referrals from './pages/user/Referrals';
 
 
 
@@ -87,6 +88,8 @@ export const router = createBrowserRouter(
         <Route path="/account/edit-address/:id" element={<EditAddress />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/verify-email" element={<EmailVerify />} />
+        <Route path="/account/referrals/:id" element={<Referrals />} />
+
 
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/wallet" element={<Wallet />} />

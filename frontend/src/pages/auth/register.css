@@ -39,3 +39,7 @@
   .zoom-image:hover {
     transform: scale(1.5); /* Zoom effect */
   }
+
+  .my-custom-min-height {
+    min-height: 80vh;
+  }
