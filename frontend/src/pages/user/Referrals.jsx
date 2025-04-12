@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   Container,
   Row,
@@ -17,8 +17,14 @@ import {
 } from '../../redux/api/usersApiSlice';
 
 const Referrals = () => {
-  const { data: referralData, isLoading, error, refetch } = useGetReferralDetailsQuery();
+  const { data: referralData,isLoading, error, refetch } = useGetReferralDetailsQuery();
   const [generateCode, { isLoading: isGenerating }] =useGetReferralCodeMutation();
+  console.log("ref",referralData)
+
+  useEffect(() => {
+  if(referralData)
+    refetch()
+  }, [refetch])
   
   
   const handleGetReferral = async () => {

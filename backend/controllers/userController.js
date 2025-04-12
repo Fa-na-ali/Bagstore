@@ -13,6 +13,7 @@ const responseHandler = require('./../middlewares/responseHandler');
 const { USER_VALIDATION_MSG, USER_EXT_MSG, USER_PASS_VALIDATION, USER_REG_MSG, USER_NOT_MSG, USER_LOGIN_MSG, USER_INVALID_MSG, USER_EMAIL_MSG, USER_OTP_MSG, USER_GOOGLE_MSG, USER_LOGOUT_MSG, USER_DELETE_MSG, USER_PASS_RESET_MSG, USER_ID_MSG, ADDRESS_EXIST_MSG, ADDRESS_ADD_MSG, ADDRESS_INVALID_MSG, ADDRESS_NOT_MSG, ADDRESS_UPDATE_MSG, ADDRESS_DELETE_MSG } = require("../messageConstants");
 const STATUS_CODES = require("../middlewares/statusCodes");
 const Referral = require("../models/referralModel");
+const Wallet = require('../models/wallet')
 
 const otpStore = new Map();
 
@@ -23,29 +24,28 @@ const generateReferralCode = () => {
 //user registration
 const userSignup = async (req, res) => {
     try {
-        const { name, email, phone, password, confirmPassword, referCode } = req.body
+        const { name, email, phone, password, confirmPassword, referCode } = req.body;
+
         if (!email || !password || !name || !confirmPassword || !phone) {
-            res.status(STATUS_CODES.NOT_FOUND).json({
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
                 message: USER_VALIDATION_MSG,
-
-            })
+            });
         }
 
-        const userExists = await User.findOne({ email })
+        const userExists = await User.findOne({ email });
         if (userExists) {
-            res.status(STATUS_CODES.BAD_REQUEST).json({
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
                 message: USER_EXT_MSG
-            })
-
+            });
         }
+
         if (password !== confirmPassword) {
-            res.status(STATUS_CODES.BAD_REQUEST).json({
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
                 message: USER_PASS_VALIDATION
-            })
-
+            });
         }
 
         const saltRounds = 10;
@@ -56,69 +56,87 @@ const userSignup = async (req, res) => {
             email,
             phone,
             password: hashedPassword,
+        });
 
-        })
         const referral = new Referral({
             user: user._id,
             referralCode: generateReferralCode(),
-        })
+        });
         await referral.save();
 
-        if (req.body.referCode) {
-            const referrer = await Referral.findOne({ referralCode: req.body.referCode });
-            if (!referrer) {
-                return res.status(STATUS_CODES.FORBIDDEN).json({
-                    status: "error",
-                    message: "Invalid Referral Code"
-                })
-            }
+        if (referCode) {
+            const referrer = await Referral.findOne({ referralCode: referCode });
 
-            else {
+            if (!referrer) {
+                console.log("Invalid referral code provided:", referCode);
+            } else {
+
                 referrer.referredUsers.push(user._id);
-                const refWallet = await Wallet.findOne({ userId: referrer.user });
-                if (refWallet) {
+                referrer.amountEarned += 150
+
+                let refWallet = await Wallet.findOne({ userId: referrer.user });
+
+                if (!refWallet) {
+
+                    refWallet = new Wallet({
+                        userId: referrer.user,
+                        balance: 150,
+                        transactions: [{
+                            amount: 150,
+                            type: 'Credit',
+                            description: `Referral Bonus for referring ${user.email}`,
+                            date: new Date()
+                        }]
+                    });
+                } else {
 
                     refWallet.balance += 150;
                     refWallet.transactions.push({
                         amount: 150,
                         type: 'Credit',
-                        description: 'Referral Bonus for referring ' + user.email,
+                        description: `Referral Bonus for referring ${user.email}`,
+                        date: new Date()
                     });
-
-                    await refWallet.save();
                 }
+
+                await refWallet.save();
                 await referrer.save();
+                console.log("Referral processed successfully for referrer:", referrer.user);
             }
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000);
         otpStore.set(email, { otp, expires: Date.now() + 300000 });
 
-        console.log("Generated OTP:", otp);
-
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Your OTP Code",
-            text: `Your OTP code is ${otp}. It is valid for 3 minutes.`,
+            text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+            html: `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`
         });
 
         console.log("OTP sent successfully to", email);
-        res.status(STATUS_CODES.CREATED).json({
+
+        return res.status(STATUS_CODES.CREATED).json({
             status: "success",
             message: USER_REG_MSG,
-            user
-        })
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone
+            }
+        });
 
     } catch (error) {
-        console.log(error)
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        console.error("Error in user signup:", error);
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
-            message: error.msg
-        })
-
+            message: "An error occurred during registration. Please try again."
+        });
     }
-}
+};
 
 //user Login
 const userLogin = async (req, res) => {
