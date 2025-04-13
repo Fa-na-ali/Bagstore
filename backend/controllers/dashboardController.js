@@ -296,6 +296,192 @@ const loadSalesReport = async (req, res) => {
     }
   };
 
+  const loadDashboard = async (req, res) => {
+    try {
+     
+      const topSellingProducts = await Order.aggregate([
+        { $unwind: '$items' },
+        { 
+          $match: { 
+            'items.status': 'Delivered',
+            'paymentStatus': 'Success'
+          } 
+        },
+        { 
+          $group: {
+            _id: '$items.product',
+            productName: { $first: '$items.name' },
+            category: { $first: '$items.category' },
+            totalSold: { $sum: '$items.qty' },
+            totalRevenue: { 
+              $sum: { 
+                $multiply: ['$items.price', '$items.qty'] 
+              } 
+            }
+          }
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 5 }
+      ]);
+  
+      const topSellingCategories = await Order.aggregate([
+        { $unwind: '$items' },
+        { 
+          $match: { 
+            'items.status': 'Delivered',
+            'paymentStatus': 'Success'
+          } 
+        },
+        { 
+          $group: {
+            _id: '$items.category',
+            totalSold: { $sum: '$items.qty' },
+            totalRevenue: {
+              $sum: {
+                $multiply: ['$items.price', '$items.qty']
+              }
+            }
+          }
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 5 }
+      ]);
+  
+      const monthlySales = await Order.aggregate([
+        { 
+          $match: { 
+            'items.status': 'Delivered',
+            'paymentStatus': 'Success'
+          } 
+        },
+        {
+          $group: {
+            _id: { 
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            },
+            totalRevenue: { $sum: "$totalPrice" },
+            totalDiscount: { $sum: "$totalDiscount" },
+            totalTax: { $sum: "$tax" },
+            couponDiscount: { $sum: "$couponDiscount" },
+            itemDiscounts: {
+              $sum: {
+                $reduce: {
+                  input: "$items",
+                  initialValue: 0,
+                  in: { $add: ["$$value", "$$this.discount"] }
+                }
+              }
+            },
+            orderCount: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            year: "$_id.year",
+            month: "$_id.month",
+            totalRevenue: 1,
+            totalDiscount: 1,
+            totalTax: 1,
+            couponDiscount: 1,
+            itemDiscounts: 1,
+            orderCount: 1,
+            netSales: {
+              $subtract: [
+                "$totalRevenue",
+                { $add: ["$totalDiscount", "$totalTax"] }
+              ]
+            }
+          }
+        },
+        { $sort: { "year": 1, "month": 1 } }
+      ]);
+  
+      // Prepare chart data
+      const monthlySalesLabels = monthlySales.map(sale => {
+        const date = new Date(sale.year, sale.month - 1);
+        return date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      });
+  
+      const monthlySalesData = monthlySales.map(sale => sale.netSales);
+      const lastMonthlySales = monthlySales.length ? monthlySales[monthlySales.length - 1].netSales : 0;
+  
+      // Monthly Customers
+      const monthlyCustomers = await User.aggregate([
+        { 
+          $match: { 
+            isAdmin: false,
+            isExist: true 
+          } 
+        },
+        { 
+          $group: { 
+            _id: { 
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            }, 
+            newCustomers: { $sum: 1 } 
+          } 
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]);
+  
+      const monthlyCustomersData = Array(12).fill(0);
+      monthlyCustomers.forEach(item => {
+        monthlyCustomersData[item._id.month - 1] = item.newCustomers;
+      });
+  
+      const lastMonthlyCustomers = monthlyCustomers.length ? 
+        monthlyCustomers[monthlyCustomers.length - 1].newCustomers : 0;
+  
+      // Monthly Orders
+      const monthlyOrders = await Order.aggregate([
+        { 
+          $match: { 
+            'items.status': 'Delivered',
+            'paymentStatus': 'Success'
+          } 
+        },
+        { 
+          $group: { 
+            _id: { 
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            }, 
+            totalOrders: { $sum: 1 } 
+          } 
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]);
+  
+      const lastMonthlyOrders = monthlyOrders.length ? 
+        monthlyOrders[monthlyOrders.length - 1].totalOrders : 0;
+  
+      // Render dashboard with all data
+      res.status(200).render('admin/dashboard', {
+        title: "Dashboard",
+        topSellingProducts,
+        topSellingCategories,
+        monthlySalesLabels: JSON.stringify(monthlySalesLabels),
+        monthlySalesData: JSON.stringify(monthlySalesData),
+        lastMonthlySales,
+        lastMonthlyCustomers,
+        lastMonthlyOrders,
+        categoryLabels: JSON.stringify(topSellingCategories.map(cat => cat._id)),
+        categorySales: JSON.stringify(topSellingCategories.map(cat => cat.totalSold)),
+        monthlyCustomersData: JSON.stringify(monthlyCustomersData),
+      });
+  
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+      res.status(500).render('error', { 
+        message: 'Failed to load dashboard data',
+        error
+      });
+    }
+  };
+
 
   
   
