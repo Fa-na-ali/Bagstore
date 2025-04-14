@@ -1,4 +1,5 @@
 const Order = require("../models/orderModel");
+const User = require("../models/userModel");
 
 const getSalesReportData = async (filter, startDate, endDate) => {
     let matchConditions = {
@@ -320,10 +321,30 @@ const loadSalesReport = async (req, res) => {
             }
           }
         },
+        { 
+          $lookup: {
+            from: 'products',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'productInfo'
+          }
+        },
+        { $unwind: '$productInfo' },
+        { 
+          $project: {
+            _id: 1,
+            productName: 1,
+            category: 1,
+            totalSold: 1,
+            totalRevenue: 1,
+            'productInfo.pdImage': 1,
+            'productInfo.brand': 1,
+            'productInfo.color': 1
+          }
+        },
         { $sort: { totalSold: -1 } },
         { $limit: 5 }
       ]);
-  
       const topSellingCategories = await Order.aggregate([
         { $unwind: '$items' },
         { 
@@ -459,8 +480,8 @@ const loadSalesReport = async (req, res) => {
         monthlyOrders[monthlyOrders.length - 1].totalOrders : 0;
   
       // Render dashboard with all data
-      res.status(200).render('admin/dashboard', {
-        title: "Dashboard",
+      res.status(200).json({
+       status:"success",
         topSellingProducts,
         topSellingCategories,
         monthlySalesLabels: JSON.stringify(monthlySalesLabels),
@@ -488,4 +509,5 @@ const loadSalesReport = async (req, res) => {
   module.exports = {
  loadSalesReport,
   getSalesReport,
+  loadDashboard,
   }

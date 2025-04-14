@@ -29,7 +29,7 @@ const imageUpload = require("../imageUpload")
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser, applyCoupon, removeCoupon } = require('../controllers/couponController')
 const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
 const { createPayment, verifyPayment, retryPayment, verifyRetryPayment } = require('../controllers/razorpayController')
-const { loadSalesReport, getSalesReport } = require('../controllers/dashboardController')
+const { loadSalesReport, getSalesReport, loadDashboard } = require('../controllers/dashboardController')
 const { getReferrals, getReferralCode } = require('../controllers/referralController')
 
 
@@ -79,9 +79,9 @@ router.route('/verify-payment').post(authenticate, blockDisabledUsers, verifyPay
 router.route('/retry-payment').post(authenticate, blockDisabledUsers, retryPayment)
 router.route('/verify-retry-payment').post(authenticate, blockDisabledUsers, verifyRetryPayment)
 
-router.route('/dashboard').get(authenticate, authorizeAdmin)
-router.route('/sales-report').get(authenticate, blockDisabledUsers, authorizeAdmin, loadSalesReport);
-router.route('/sales-report-data').get(authenticate, blockDisabledUsers, authorizeAdmin, getSalesReport)
+router.route('/admin/dashboard').get(authenticate, authorizeAdmin, loadDashboard)
+router.route('/admin/sales-report').get(authenticate, blockDisabledUsers, authorizeAdmin, loadSalesReport);
+router.route('/admin/sales-report-data').get(authenticate, blockDisabledUsers, authorizeAdmin, getSalesReport)
 
 
 module.exports = router
