@@ -15,65 +15,65 @@ const OrderDetail = () => {
   const { data: order, isLoading, isError } = useGetOrderByIdQuery(id);
   const imageBaseUrl = "http://localhost:5004/uploads/";
   console.log(order)
- 
+
   if (isLoading) return <p>Loading...</p>;
   if (isError || !order) return <p>Error fetching order details.</p>;
-  
+
   const handleCancel = () => {
 
   }
 
   const generate_invoice = () => {
-  
+
     const docDefinition = {
-        content: [
-            { text: 'Invoice', style: 'header' },
-            { text: `Order ID: ${order.orderId}`, margin: [0, 10, 0, 10] },
-            {
-                text: 'Customer Details',
-                style: 'subheader',
-            },
-            {
-                ul: [
-                    `Name: ${order.userId.name}`,
-                    `Phone Number: ${order.userId.phone || 'N/A'}`,
-                    `Address: ${order.shippingAddress.houseName}, ${order.shippingAddress.street}, ${order.shippingAddress.town}, ${order.shippingAddress.state}, ${order.shippingAddress.country}, ZIP CODE: ${order.shippingAddress.zipcode}`,
-                ],
-                margin: [0, 0, 0, 10],
-            },
-            { text: 'Products', style: 'subheader' },
-            {
-                table: {
-                    headerRows: 1,
-                    widths: ['*', 'auto', 'auto'],
-                    body: [
-                        ['Product', 'Quantity', 'Price (₹)'],
-                        ...order.items.map((item) => [item.product.name, item.qty, item.product.price.toFixed(2)]),
-                    ],
-                },
-                margin: [0, 0, 0, 10],
-            },
-            { text: 'Summary', style: 'subheader' },
-            {
-                table: {
-                    widths: ['*', 'auto'],
-                    body: [
-                        ['Subtotal :', `₹${(order.totalPrice).toFixed(2)}`],
-                        //['Shipping Fee:', payment.delivery_fee > 0 ? `₹${payment.delivery_fee.toFixed(2)}` : 'Free'],
-                        ['Tax:', '₹3.00'],
-                        ['Total:', `₹${order.totalPrice.toFixed(2)}`],
-                    ],
-                },
-                margin: [0, 0, 0, 10],
-            },
-        ],
-        styles: {
-            header: { fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 20] },
-            subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
+      content: [
+        { text: 'Invoice', style: 'header' },
+        { text: `Order ID: ${order.orderId}`, margin: [0, 10, 0, 10] },
+        {
+          text: 'Customer Details',
+          style: 'subheader',
         },
+        {
+          ul: [
+            `Name: ${order.userId.name}`,
+            `Phone Number: ${order.userId.phone || 'N/A'}`,
+            `Address: ${order.shippingAddress.houseName}, ${order.shippingAddress.street}, ${order.shippingAddress.town}, ${order.shippingAddress.state}, ${order.shippingAddress.country}, ZIP CODE: ${order.shippingAddress.zipcode}`,
+          ],
+          margin: [0, 0, 0, 10],
+        },
+        { text: 'Products', style: 'subheader' },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['*', 'auto', 'auto'],
+            body: [
+              ['Product', 'Quantity', 'Price (₹)'],
+              ...order.items.map((item) => [item.product.name, item.qty, item.product.price.toFixed(2)]),
+            ],
+          },
+          margin: [0, 0, 0, 10],
+        },
+        { text: 'Summary', style: 'subheader' },
+        {
+          table: {
+            widths: ['*', 'auto'],
+            body: [
+              ['Subtotal :', `₹${(order.totalPrice).toFixed(2)}`],
+              //['Shipping Fee:', payment.delivery_fee > 0 ? `₹${payment.delivery_fee.toFixed(2)}` : 'Free'],
+              ['Tax:', '₹3.00'],
+              ['Total:', `₹${order.totalPrice.toFixed(2)}`],
+            ],
+          },
+          margin: [0, 0, 0, 10],
+        },
+      ],
+      styles: {
+        header: { fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 20] },
+        subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
+      },
     };
     pdfMake.createPdf(docDefinition).download(`invoice_${order.orderId}.pdf`);
-};
+  };
 
 
   return (
@@ -100,21 +100,21 @@ const OrderDetail = () => {
                     <Row className="align-items-center">
                       <Col md={1}>
                         <Image
-                          src={`${imageBaseUrl}${item.product.pdImage[0]}`}
+                          src={`${imageBaseUrl}${item?.product?.pdImage[0]}`}
                           className="img-fluid"
-                          alt={item.product.name}
+                          alt={item?.product?.name}
                         />
                       </Col>
                       <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Name</p>
-                          <p className="lead fw-normal mb-0 caption">{item.product.name}</p>
+                          <p className="lead fw-normal mb-0 caption">{item?.product?.name}</p>
                         </div>
                       </Col>
                       <Col md={1} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Color</p>
-                          <p className="lead fw-normal mb-0 caption">{item.product.color}</p>
+                          <p className="lead fw-normal mb-0 caption">{item?.product?.color}</p>
                         </div>
                       </Col>
                       <Col md={1} className="d-flex justify-content-center">
@@ -126,7 +126,7 @@ const OrderDetail = () => {
                       <Col md={2} className="d-flex justify-content-center">
                         <div>
                           <p className="small text-muted mb-4 pb-2">Price</p>
-                          <p className="lead fw-normal mb-0 caption">₹{item.product.price}</p>
+                          <p className="lead fw-normal mb-0 caption">₹{item?.product?.price}</p>
                         </div>
                       </Col>
                       <Col md={2} className="d-flex justify-content-center">
@@ -141,7 +141,7 @@ const OrderDetail = () => {
                           <p className="lead fw-normal mb-0 caption">₹{(Number(item?.product?.price) - Number(item?.discount)) * item.qty.toFixed(2)}</p>
                         </div>
                       </Col>
-                      
+
                     </Row>
                   </Card.Body>
                 </Card>
@@ -150,22 +150,72 @@ const OrderDetail = () => {
           </Col>
 
         </Row>
-        <Row>
-          <Col md={10}>
-            <h4 className="heading">Shipping Address</h4>
-            <p className="caption">{order.shippingAddress.name}, {order.shippingAddress.houseName}, {order.shippingAddress.town},</p>
-            <p className="caption">{order.shippingAddress.street}, {order.shippingAddress.zipcode}, {order.shippingAddress.country}, {order.shippingAddress.phone}</p>
+        <Row className="mt-4">
+          <Col md={8} className="mb-4">
+            <Card className="h-100">
+              <Card.Header className="bg-light">
+                <h5 className="mb-0 heading">Shipping Address</h5>
+              </Card.Header>
+              <Card.Body>
+                <div className="mb-2 caption">
+                  <strong>Name:</strong> {order?.shippingAddress?.name}
+                </div>
+                <div className="mb-2 caption">
+                  <strong>Address:</strong> {order?.shippingAddress?.houseName}, {order?.shippingAddress?.street}
+                </div>
+                <div className="mb-2 caption">
+                  {order?.shippingAddress?.town}, {order?.shippingAddress?.state}
+                </div>
+                <div className="mb-2 caption">
+                  {order?.shippingAddress?.country}, {order?.shippingAddress?.zipcode}
+                </div>
+                <div className="caption">
+                  <strong>Phone:</strong> {order?.shippingAddress?.phone}
+                </div>
+              </Card.Body>
+            </Card>
           </Col>
-          <Col md={2}>
-            <h4 className="heading" >Payment Details</h4>
-            <p className="caption">Method:{order.paymentMethod}</p>
-            <p className="caption">Payment Status:{order.paymentStatus}</p>
-            <p className="caption">Total Discount:{order.totalDiscount}</p>
-            <p className="caption">Tax:{order.tax}</p>
-            <p className="caption">Shipping Price:{order.shippingPrice}</p>
-            <p className="caption">Total Price:{order.totalPrice}</p>
+          <Col md={4} className="mb-4">
+            <Card className="h-100">
+              <Card.Header className="bg-light">
+                <h5 className="mb-0 heading">Payment Details</h5>
+              </Card.Header>
+              <Card.Body>
+                <div className="d-flex justify-content-between mb-2 caption">
+                  <span><strong>Method:</strong></span>
+                  <span>{order.paymentMethod}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2 caption">
+                  <span><strong>Status:</strong></span>
+                  <span className={`badge ${order.paymentStatus === 'paid' ? 'bg-success' : 'bg-warning'}`}>
+                    {order.paymentStatus}
+                  </span>
+                </div>
+                <hr />
+                <div className="d-flex justify-content-between mb-2 caption">
+                  <span><strong>Subtotal:</strong></span>
+                  <span>₹{(order.totalPrice - order.shippingPrice - order.tax).toFixed(2)}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2 caption">
+                  <span><strong>Shipping:</strong></span>
+                  <span>₹{order.shippingPrice.toFixed(2)}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2 caption">
+                  <span><strong>Tax:</strong></span>
+                  <span>₹{order.tax.toFixed(2)}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2 caption">
+                  <span><strong>Discount:</strong></span>
+                  <span className="text-danger">-₹{order.totalDiscount.toFixed(2)}</span>
+                </div>
+                <hr />
+                <div className="d-flex justify-content-between fw-bold caption">
+                  <span>Total:</span>
+                  <span>₹{order.totalPrice.toFixed(2)}</span>
+                </div>
+              </Card.Body>
+            </Card>
           </Col>
-
         </Row>
       </Container>
     </section>

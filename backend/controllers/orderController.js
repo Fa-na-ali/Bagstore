@@ -91,7 +91,7 @@ console.log("coooo",couponDiscount)
       items: validatedItems,
       shippingAddress,
       paymentMethod,
-      paymentStatus,
+      paymentStatus:paymentMethod==="Cash On Delivery"?"Success":paymentStatus,
       paymentId: payment._id,
       shippingPrice,
       status: "Not completed",

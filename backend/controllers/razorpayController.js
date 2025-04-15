@@ -118,7 +118,7 @@ const setPaymentStatus = async (req, res) => {
 
 const verifyRetryPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, orderId, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
 
     if (!process.env.RAZORPAY_KEY_SECRET) {
       console.error("Razorpay Key Secret is missing!");

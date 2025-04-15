@@ -5,7 +5,7 @@ export const dashboardApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getSalesReport: builder.query({
       query: ({ filter, startDate, endDate }) => ({
-        url: `${USERS_URL}/sales-report-data`,
+        url: `${USERS_URL}/admin/sales-report-data`,
         params: { filter, startDate, endDate }
       }),
     }),
