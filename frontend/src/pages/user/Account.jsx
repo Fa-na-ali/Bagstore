@@ -149,7 +149,7 @@ const Account = () => {
 
     return (
         <>
-            <section className="vh-100 background" >
+            <section className="my-custom-min-height background" >
                 <Container className="py-5">
                     <Row className="d-flex justify-content-center align-items-center">
                         <Col lg={12} className="mb-4 mb-lg-0">

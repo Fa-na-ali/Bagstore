@@ -9,13 +9,17 @@ import { useCreateOrderWalletMutation, useGetMyWalletQuery, useGetRazorpayKeyQue
 const Wallet = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { data: keyData } = useGetRazorpayKeyQuery();
-  const {data:myWallet} = useGetMyWalletQuery()
+  const {data:myWallet,refetch} = useGetMyWalletQuery()
   console.log("my wallet",myWallet)
   const wallet= myWallet?.wallet
   const [createOrderWallet] = useCreateOrderWalletMutation();
   const [updateWallet] = useUpdateWalletMutation();
   const [amount, setAmount] = useState('');
   const [showInput, setShowInput] = useState(false);
+
+  useEffect(() => {
+    refetch(); 
+  }, [refetch]);
 
   const handleAddMoney = async () => {
     if (!amount || amount <= 0) {
@@ -62,7 +66,7 @@ const Wallet = () => {
   };
 
   return (
-    <Container className="my-5">
+    <Container className="my-5 my-custom-min-height">
       <h1 className="text-center mb-4 heading">MY WALLET</h1>
       <Row className="mb-4">
         <Col md={4}>

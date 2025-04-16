@@ -92,7 +92,7 @@ const Wishlist = () => {
   }
   return (
     <>
-      <section className='background'>
+      <section className='background my-custom-min-height'>
         <h2 className='text-center py-5 heading'>WISHLIST</h2>
         <Container>
           <Row>

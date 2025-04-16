@@ -216,29 +216,28 @@ const cancelOrder = async (req, res) => {
 
       if (!wallet) {
 
-        const wallet = new Wallet({
+         wallet = new Wallet({
           userId: order.userId,
           balance: 0,
           transactions: []
         });
+        // await wallet.save()
       }
-      await wallet.save()
+     
       let refundAmount = item.qty * product.price;
       if (item.discount) {
         refundAmount -= item.discount
       }
-      await Wallet.updateOne({ userId: order.userId }, {
-        $push: {
-          transactions: {
-            type: "Credit",
-            amount: refundAmount,//change to sales price on applying offer.
-            description: `Refund for cancelled product: ${product.name} ${order.orderNumber}`
-          }
-        },
-        $inc: {
-          balance: refundAmount,
-        }
-      })
+      wallet.balance += refundAmount;
+
+      
+      wallet.transactions.push({
+        amount: refundAmount,
+        type: "Credit",
+        description: `Refund for cancelled product: ${product.name} ${order.orderNumber}`
+      });
+
+      await wallet.save();
     }
 
     return res.status(200).json({
