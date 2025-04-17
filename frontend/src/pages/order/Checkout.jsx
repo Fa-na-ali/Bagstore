@@ -120,7 +120,15 @@ const Checkout = () => {
         setCouponId("")
         setApplied(false);
       } else {
-        toast.error(res.message);
+        if(res.message==="Coupon not applied to user"){
+          setCoupon("");
+          setCouponDiscount(0);
+          couponDiscountRef.current=0;
+          setCouponId("")
+          setApplied(false);
+        }
+        else
+        toast.error(res.message)
       }
     } catch (error) {
       toast.error("Failed to remove coupon.");
@@ -243,10 +251,12 @@ const Checkout = () => {
         dispatch(clearCartItems());
         navigate(`/order-failure?id=${id}`);
       } else {
-        // For Cash on Delivery or other methods
-        dispatch(clearCartItems());
-        toast.success("Order Placed successfully");
-        navigate(`/order-success?id=${id}`);
+        if(id){
+          dispatch(clearCartItems());
+          toast.success("Order Placed successfully");
+          navigate(`/order-success?id=${id}`);
+        }
+       
       }
     } catch (error) {
       console.error("Order creation error:", error);
@@ -264,8 +274,8 @@ const Checkout = () => {
 
 
   return (
-    <section className="h-100 h-custom" style={{ backgroundColor: "#eee" }}>
-      <Container className="py-5 h-100">
+    <section className="my-custom-min-height" style={{ backgroundColor: "#eee" }}>
+      <Container className="py-5">
         <Row className="d-flex justify-content-center align-items-center h-100">
           <Col>
             <Card>
@@ -547,7 +557,7 @@ const Checkout = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
-          <Button variant="success" onClick={() => handlePlaceOrder(("", "pending"))}>
+          <Button variant="success" onClick={() => handlePlaceOrder(("", "","","Pending"))}>
             Place Order at ₹{total.toFixed(2)}
           </Button>
         </Modal.Footer>

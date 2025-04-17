@@ -153,13 +153,13 @@ const MyOrder = () => {
                                       {/* Price & Delivery */}
                                       <div className="d-flex align-items-center justify-content-end" style={{ flex: "3" }}>
                                         <div className="me-4 text-center" style={{ width: "150px" }}>
-                                          {item?.product?.discount !== 0 ? (
+                                          {item?.discount !== 0 ? (
                                             <>
                                               <span className='text-decoration-line-through text-muted me-2'>
-                                                ₹{item?.product?.price}
+                                                ₹{item?.price}
                                               </span>
                                               <span className='text-success fw-bold'>
-                                              ₹{(Number(item?.product?.price || 0) - Number(item?.product?.discount || 0)).toFixed(2)}
+                                              ₹{(Number(item?.price || 0) - Number(item?.discount || 0)).toFixed(2)}
                                               </span>
                                             </>
                                           ) : (
