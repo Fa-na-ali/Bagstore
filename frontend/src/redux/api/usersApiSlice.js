@@ -190,7 +190,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     getAllCouponsUser: builder.query({
       query: () => ({
         url: `${USERS_URL}/coupons`,
-      
+
       }),
     }),
 
@@ -210,7 +210,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
 
     updateCoupon: builder.mutation({
-      query: ({ id,...formData }) => ({
+      query: ({ id, ...formData }) => ({
         url: `${USERS_URL}/admin/coupons/edit/${id}`,
         method: "PUT",
         body: formData,
@@ -269,7 +269,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
 
     updateOffer: builder.mutation({
-      query: ({ id,...formData }) => ({
+      query: ({ id, ...formData }) => ({
         url: `${USERS_URL}/admin/offers/edit/${id}`,
         method: "PUT",
         body: formData,
@@ -279,13 +279,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
     getAllOffersToAdd: builder.query({
       query: () => ({
         url: `${USERS_URL}/admin/alloffers/`,
-      
+
       }),
     }),
 
     initiatePayment: builder.mutation({
       query: (amount) => ({
-        url:`${USERS_URL}/payment/razorpay/order`,
+        url: `${USERS_URL}/payment/razorpay/order`,
         method: 'POST',
         body: { amount },
       }),
@@ -301,7 +301,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     retryPayment: builder.mutation({
       query: (orderId) => ({
-        url:`${USERS_URL}/retry-payment`,
+        url: `${USERS_URL}/retry-payment`,
         method: 'POST',
         body: { orderId },
       }),
@@ -318,7 +318,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     getReferralDetails: builder.query({
       query: () => ({
         url: `${USERS_URL}/account/referrals`,
-       
+
       })
     }),
 

@@ -28,13 +28,13 @@ const Checkout = () => {
   const formattedItems = cart?.cartItems.map(item => ({
     product: item._id,
     qty: item.qty,
-    discount:item.discount,
-    discountedPrice:item.discountedPrice,
-    name:item.name,
-    price:item.price,
-    category:item.category.name
+    discount: item.discount,
+    discountedPrice: item.discountedPrice,
+    name: item.name,
+    price: item.price,
+    category: item.category.name
   }));
-  
+
   const [initiatePayment] = useInitiatePaymentMutation();
   const [verifyPayment, { data }] = useVerifyPaymentMutation();
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
@@ -57,7 +57,7 @@ const Checkout = () => {
     if (user?.user?.address && user?.user.address.length > 0) {
       setSelectedAddress(user?.user.address[0]._id);
     }
-  }, [user, refetch,couponDiscount]);
+  }, [user, refetch, couponDiscount]);
 
   const handleAddressChange = (id) => {
     setSelectedAddress(id);
@@ -77,7 +77,7 @@ const Checkout = () => {
     } else if (selectedPayment === "Cash On Delivery") {
       setShowModal(true);
     } else {
-      handlePlaceOrder("","","", "Pending");
+      handlePlaceOrder("", "", "", "Pending");
     }
   };
   const handlePaymentMethod = (method) => {
@@ -95,10 +95,10 @@ const Checkout = () => {
           toast.success(res.message);
           setCouponId(res?.coupon._id)
           const calculatedDiscount = res?.coupon?.discount / 100 * total;
-          console.log("calc",calculatedDiscount)
+          console.log("calc", calculatedDiscount)
           couponDiscountRef.current = calculatedDiscount;
           setCouponDiscount(calculatedDiscount)
-          console.log("c",couponDiscountRef.current )
+          console.log("c", couponDiscountRef.current)
 
         } else {
           toast.error(res.message);
@@ -116,19 +116,19 @@ const Checkout = () => {
         toast.success(res.message);
         setCoupon("");
         setCouponDiscount(0);
-        couponDiscountRef.current=0;
+        couponDiscountRef.current = 0;
         setCouponId("")
         setApplied(false);
       } else {
-        if(res.message==="Coupon not applied to user"){
+        if (res.message === "Coupon not applied to user") {
           setCoupon("");
           setCouponDiscount(0);
-          couponDiscountRef.current=0;
+          couponDiscountRef.current = 0;
           setCouponId("")
           setApplied(false);
         }
         else
-        toast.error(res.message)
+          toast.error(res.message)
       }
     } catch (error) {
       toast.error("Failed to remove coupon.");
@@ -159,9 +159,9 @@ const Checkout = () => {
           try {
             console.log('Payment successful', response);
             await handlePlaceOrder(
-              orderData.order.id, 
-              response.razorpay_payment_id, 
-              response.razorpay_signature, 
+              orderData.order.id,
+              response.razorpay_payment_id,
+              response.razorpay_signature,
               "Success"
             );
           } catch (error) {
@@ -176,26 +176,26 @@ const Checkout = () => {
       };
 
       const rzp = new window.Razorpay(options);
-    rzp.open();
-    
-    rzp.on('payment.failed', async function(response) {
-      console.error('Payment failed:', response);
-      await handlePlaceOrder(
-        orderData.order.id,
-        "",
-        "",
-        "Failed"
-      );
-    });
+      rzp.open();
 
-  } catch (error) {
-    console.error('Error initializing Razorpay:', error);
-    toast.error("Payment initialization failed");
-  }
-};
+      rzp.on('payment.failed', async function (response) {
+        console.error('Payment failed:', response);
+        await handlePlaceOrder(
+          orderData.order.id,
+          "",
+          "",
+          "Failed"
+        );
+      });
+
+    } catch (error) {
+      console.error('Error initializing Razorpay:', error);
+      toast.error("Payment initialization failed");
+    }
+  };
 
 
-  const handlePlaceOrder = async (razorpay_order_id,razorpay_payment_id, razorpay_signature, status) => {
+  const handlePlaceOrder = async (razorpay_order_id, razorpay_payment_id, razorpay_signature, status) => {
 
     setShowModal(false);
     if (!cartItems || cartItems.length === 0) {
@@ -205,7 +205,7 @@ const Checkout = () => {
     if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
       return handlePayment();
     }
-    console.log("couoo",couponDiscountRef.current)
+    console.log("couoo", couponDiscountRef.current)
     try {
       const res = await createOrder({
         userId: user?.user._id,
@@ -217,7 +217,7 @@ const Checkout = () => {
         razorpay_order_id,
         paymentStatus: status,
         couponDiscount: couponDiscountRef.current,
-        totalPrice:total,
+        totalPrice: total,
         tax,
         totalDiscount,
       }).unwrap();
@@ -233,7 +233,7 @@ const Checkout = () => {
             razorpay_payment_id,
             razorpay_signature,
           }).unwrap();
-  
+
           if (verifyData.status === "success") {
             dispatch(clearCartItems());
             toast.success("Order Placed successfully");
@@ -247,16 +247,16 @@ const Checkout = () => {
           navigate(`/order-failure?id=${id}`);
         }
       } else if (status === "Failed") {
-        console.log("resid",id)
+        console.log("resid", id)
         dispatch(clearCartItems());
         navigate(`/order-failure?id=${id}`);
       } else {
-        if(id){
+        if (id) {
           dispatch(clearCartItems());
           toast.success("Order Placed successfully");
           navigate(`/order-success?id=${id}`);
         }
-       
+
       }
     } catch (error) {
       console.error("Order creation error:", error);
@@ -267,7 +267,7 @@ const Checkout = () => {
   console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
-  const totalDiscount = discount+couponDiscount
+  const totalDiscount = discount + couponDiscount
   const tax = subtotal * 0.05;
   const total = subtotal - (discount + couponDiscount) + tax;
   const id = selectedAddress
@@ -557,7 +557,7 @@ const Checkout = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
-          <Button variant="success" onClick={() => handlePlaceOrder(("", "","","Pending"))}>
+          <Button variant="success" onClick={() => handlePlaceOrder(("", "", "", "Pending"))}>
             Place Order at ₹{total.toFixed(2)}
           </Button>
         </Modal.Footer>

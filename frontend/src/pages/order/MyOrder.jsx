@@ -159,7 +159,7 @@ const MyOrder = () => {
                                                 ₹{item?.price}
                                               </span>
                                               <span className='text-success fw-bold'>
-                                              ₹{(Number(item?.price || 0) - Number(item?.discount || 0)).toFixed(2)}
+                                                ₹{(Number(item?.price || 0) - Number(item?.discount || 0)).toFixed(2)}
                                               </span>
                                             </>
                                           ) : (
@@ -196,15 +196,15 @@ const MyOrder = () => {
                                             Return
                                           </Button>
                                         ) : null}
-                                         <div className="me-4 text-center" style={{ width: "200px" }}>
-                                         <Button
+                                        <div className="me-4 text-center" style={{ width: "200px" }}>
+                                          <Button
                                             variant="primary"
                                             size="sm"
                                             onClick={() => navigate(`/order-details/${order._id}`)}
                                           >
                                             View
                                           </Button>
-                                         </div>
+                                        </div>
                                       </div>
                                     </div>
 

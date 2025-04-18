@@ -170,7 +170,7 @@ const OrderDetails = () => {
                         <p className="mb-0 fw-bold">{item.discount}</p>
                       </td>
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{(item.product.price-item.discount) * item.qty}</p>
+                        <p className="mb-0 fw-bold">{(item.product.price - item.discount) * item.qty}</p>
                       </td>
                       <td className="align-middle">
                         {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (

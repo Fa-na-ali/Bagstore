@@ -6,8 +6,9 @@ const mongoose = require('mongoose')
 
 
 const getReferralCode = async (req, res) => {
+    console.log("hhh")
     try {
-        
+
         let referral = await Referral.findOne({ user: req.user._id });
 
         if (referral?.referralCode) {
@@ -19,7 +20,7 @@ const getReferralCode = async (req, res) => {
         }
 
         if (!referral) {
-            referral = new Referral({ 
+            referral = new Referral({
                 user: req.user._id,
                 referralCode: generateReferralCode()
             });
@@ -34,7 +35,7 @@ const getReferralCode = async (req, res) => {
         res.status(200).json({
             status: "success",
             referralCode: referral.referralCode,
-        
+
         });
 
     } catch (error) {
@@ -46,23 +47,23 @@ const getReferralCode = async (req, res) => {
     }
 };
 const getReferrals = async (req, res) => {
-    const  id  = req.user._id.toString(); 
-    console.log("iiiiiiii",id)
-     if (!mongoose.Types.ObjectId.isValid(id)) {
-                res.status(STATUS_CODES.BAD_REQUEST).json({
-                    status: "error",
-                    message: USER_ID_MSG
-                })
-            }
-    const user = await User.findById({ _id: id});
+    const id = req.user._id.toString();
+    console.log("iiiiiiii", id)
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        res.status(STATUS_CODES.BAD_REQUEST).json({
+            status: "error",
+            message: USER_ID_MSG
+        })
+    }
+    const user = await User.findById({ _id: id });
     if (!user) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({ status:"error", message: "User not found" });
+        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
     }
     const referrals = await Referral.findOne({ user: user._id }).populate('referredUsers').populate('user');
-    return res.status(STATUS_CODES.OK).json({ status:"success",referrals});
+    return res.status(STATUS_CODES.OK).json({ status: "success", referrals });
 };
 
-module.exports={
+module.exports = {
 
     getReferralCode,
     getReferrals,

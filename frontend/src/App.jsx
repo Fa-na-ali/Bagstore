@@ -95,12 +95,12 @@ export const router = createBrowserRouter(
         <Route path="/wallet" element={<Wallet />} />
 
         <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout/>} />
-        <Route path="/mine" element={<MyOrder/>} />
-        <Route path="/order-success" element={<OrderSuccess/>} />
-        <Route path="/order-failure" element={<PaymentFailure/>} />
-         <Route path="/pending/order-details/:id" element={<PendingOrders/>} />
-        <Route path='/order-details/:id' element={<OrderDetail/>}/>
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/mine" element={<MyOrder />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
+        <Route path="/order-failure" element={<PaymentFailure />} />
+        <Route path="/pending/order-details/:id" element={<PendingOrders />} />
+        <Route path='/order-details/:id' element={<OrderDetail />} />
 
         <Route path="/admin/user" element={<UserManagement />} />
         <Route path="/admin/category" element={<CategoryManagement />} />
@@ -111,22 +111,22 @@ export const router = createBrowserRouter(
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route path="/admin/products/edit/:id" element={<EditProduct />} />
 
-        <Route path="/admin/orders" element={<OrderManagement/>} />
-        <Route path='/admin/orders/edit/:id' element={<OrderDetails/>}/>
+        <Route path="/admin/orders" element={<OrderManagement />} />
+        <Route path='/admin/orders/edit/:id' element={<OrderDetails />} />
 
-        <Route path="/admin/coupons" element={<CouponManagement/>} />
-        <Route path="/admin/coupons/add" element={<AddCoupon/>} />
-        <Route path="/admin/coupons/edit/:id" element={<EditCoupon/>} />
+        <Route path="/admin/coupons" element={<CouponManagement />} />
+        <Route path="/admin/coupons/add" element={<AddCoupon />} />
+        <Route path="/admin/coupons/edit/:id" element={<EditCoupon />} />
 
-        <Route path="/admin/offers" element={<OfferManagement/>} />
-        <Route path="/admin/offers/add" element={<CreateOffer/>} />
-        <Route path="/admin/offers/edit/:id" element={<EditOffer/>} />
+        <Route path="/admin/offers" element={<OfferManagement />} />
+        <Route path="/admin/offers/add" element={<CreateOffer />} />
+        <Route path="/admin/offers/edit/:id" element={<EditOffer />} />
 
-        <Route path="/admin/wallets" element={<WalletManagement/>} />
-        <Route path="/admin/wallets/edit/:transactionId" element={<TransactionDetail/>} />
+        <Route path="/admin/wallets" element={<WalletManagement />} />
+        <Route path="/admin/wallets/edit/:transactionId" element={<TransactionDetail />} />
 
-        <Route path="/admin/dashboard" element={<AdminDashboard/>} />
-        <Route path="/admin/sales-report" element={<SalesReport/>} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/sales-report" element={<SalesReport />} />
 
 
       </Route>

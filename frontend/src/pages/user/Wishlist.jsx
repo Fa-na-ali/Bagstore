@@ -22,8 +22,8 @@ const Wishlist = () => {
   const dispatch = useDispatch()
 
 
- useEffect(() => {
-  if (!products || !offers) return;
+  useEffect(() => {
+    if (!products || !offers) return;
 
     const newDiscounts = {};
     const newSalesPrices = {};
@@ -149,19 +149,19 @@ const Wishlist = () => {
                         <p className='caption'>{product.color}</p>
                       </div>
                       <div className='text-center mb-3'>
-                  {discounts[product.productId._id] !== 0 ? (
-                    <>
-                      <span className='text-decoration-line-through text-muted me-2'>
-                        ₹{product.productId.price}
-                      </span>
-                      <span className='text-success fw-bold'>
-                        ₹{salesPrices[product.productId._id]}
-                      </span>
-                    </>
-                  ) : (
-                    <span>₹{product.productId.price}</span>
-                  )}
-                  </div>
+                        {discounts[product.productId._id] !== 0 ? (
+                          <>
+                            <span className='text-decoration-line-through text-muted me-2'>
+                              ₹{product.productId.price}
+                            </span>
+                            <span className='text-success fw-bold'>
+                              ₹{salesPrices[product.productId._id]}
+                            </span>
+                          </>
+                        ) : (
+                          <span>₹{product.productId.price}</span>
+                        )}
+                      </div>
 
                       <div className='d-flex justify-content-center gap-3 mt-auto'>
                         {/* Add to Cart Button */}

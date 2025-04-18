@@ -26,26 +26,26 @@ const cartSlice = createSlice({
         } else {
 
           state.cartItems = state.cartItems.map((x) =>
-            x._id === existItem._id ? { ...x, qty: newQuantity,} : x
+            x._id === existItem._id ? { ...x, qty: newQuantity, } : x
           );
         }
       } else {
 
-        state.cartItems = [...state.cartItems,item];
+        state.cartItems = [...state.cartItems, item];
       }
 
       return updateCart(state);
     },
     syncCartWithDatabase: (state, action) => {
-      const latestProducts = action.payload; 
+      const latestProducts = action.payload;
       state.cartItems = state.cartItems.map((cartItem) => {
         const latestProduct = latestProducts.find((p) => p._id === cartItem._id);
         if (latestProduct) {
           return {
             ...cartItem,
-            quantity: latestProduct.quantity, 
+            quantity: latestProduct.quantity,
             qty: Math.min(cartItem.qty, latestProduct.quantity),
-           
+
           };
         }
         return cartItem;

@@ -17,8 +17,8 @@ const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: off } = useGetAllOffersToAddQuery()
-    console.log(off)
-    const offers = off?.offers
+  console.log(off)
+  const offers = off?.offers
 
   const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
   console.log("product", data)
@@ -32,7 +32,7 @@ const EditProduct = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("");
-  const [offer,setOffer] = useState("")
+  const [offer, setOffer] = useState("")
   const [quantity, setQuantity] = useState(0);
   const [brand, setBrand] = useState("");
   const [color, setColor] = useState("");
@@ -162,7 +162,7 @@ const EditProduct = () => {
 
 
     console.log("prooo", productData)
-    console.log("pp", { name, description, price, category, quantity,offer, color, brand, productId: product._id, images: convertedFiles, })
+    console.log("pp", { name, description, price, category, quantity, offer, color, brand, productId: product._id, images: convertedFiles, })
     try {
       const { data } = await update({ id: product?._id, formData: productData }).unwrap()
       toast.success('Product Edited successfully!');

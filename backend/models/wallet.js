@@ -15,9 +15,9 @@ const generateTransactionId = () => {
 const transactionSchema = mongoose.Schema({
     transactionId: {
         type: String,
-        unique: true, 
+        unique: true,
         default: generateTransactionId,
-        required:true,
+        required: true,
     },
     amount: {
         type: Number,
@@ -32,7 +32,7 @@ const transactionSchema = mongoose.Schema({
         type: String,
         required: true
     }
-}, {timestamps: {createdAt: "createdAt", updatedAt: "updatedAt"}});
+}, { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } });
 
 const walletSchema = mongoose.Schema({
     userId: {
@@ -48,12 +48,12 @@ const walletSchema = mongoose.Schema({
         type: [transactionSchema],
         default: []
     },
-}, {timestamps: {createdAt: "createdAt", updatedAt: "updatedAt"}});
+}, { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } });
 
 mongoose.model('Transaction', transactionSchema);
 
-walletSchema.pre('save', function(next) {
- 
+walletSchema.pre('save', function (next) {
+
     for (const transaction of this.transactions) {
         if (!transaction.transactionId) {
             transaction.transactionId = generateTransactionId();

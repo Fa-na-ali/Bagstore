@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const cron = require('node-cron');
 
-const Schema  = mongoose.Schema({
+const Schema = mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -38,7 +38,7 @@ const Schema  = mongoose.Schema({
     isExist: {
         type: Boolean,
         default: true,
-      },
+    },
     type: {
         type: String,
         required: true,
@@ -61,14 +61,14 @@ const Schema  = mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
         default: [],
-      }
-   
-},  {
+    }
+
+}, {
     timestamps: true,
 }
 )
 
-Schema.pre("save", async function(next) {
+Schema.pre("save", async function (next) {
     if (this.isNew) {
         this.coupon_code = `COUP${crypto.randomBytes(4).toString('hex').toUpperCase()}${String(Date.now()).slice(10)}`;
     }

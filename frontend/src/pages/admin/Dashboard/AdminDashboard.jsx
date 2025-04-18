@@ -22,7 +22,7 @@ const AdminDashboard = () => {
   const { data: dashboardData, isLoading, isError } = useGetDashboardDataQuery();
   console.log("dash", dashboardData)
   const imageBaseUrl = IMG_URL;
-  
+
   useEffect(() => {
     if (!dashboardData) return;
 
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
                             {dashboardData.topSellingProducts.map((product, index) => (
                               <ListGroup.Item key={index} className="d-flex align-items-center">
                                 <img
-                                  src={`${imageBaseUrl}${product.productInfo?.pdImage[0]}`}  
+                                  src={`${imageBaseUrl}${product.productInfo?.pdImage[0]}`}
                                   alt={product.productInfo?.name}
                                   width={50}
                                   height={50}

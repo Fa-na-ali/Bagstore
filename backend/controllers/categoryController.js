@@ -106,8 +106,10 @@ const deleteCategory = async (req, res) => {
 
 //All categories
 const listCategory = async (req, res) => {
+  console.log("hiiii")
   try {
     const all = await Category.find({}).sort({ createdAt: -1 });
+    console.log("categories",all)
     return res.status(STATUS_CODES.OK).json({ 
       status:"success",
       all

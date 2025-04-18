@@ -21,7 +21,7 @@ const createOrder = async (req, res) => {
     const orderId = await generateOrderId();
     const orderNumber = await generateOrderNumber()
     let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
-console.log("coooo",couponDiscount)
+    console.log("coooo", couponDiscount)
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in the order" });
     }
@@ -91,7 +91,7 @@ console.log("coooo",couponDiscount)
       items: validatedItems,
       shippingAddress,
       paymentMethod,
-      paymentStatus:paymentMethod==="Cash On Delivery"?"Success":paymentStatus,
+      paymentStatus: paymentMethod === "Cash On Delivery" ? "Success" : paymentStatus,
       paymentId: payment._id,
       shippingPrice,
       status: "Not completed",
@@ -112,8 +112,8 @@ console.log("coooo",couponDiscount)
         coupon.limit -= 1;
         await coupon.save();
       }
-    
-      user.coupon = null; 
+
+      user.coupon = null;
       await user.save();
     }
 
@@ -156,7 +156,7 @@ const getMyOrders = async (req, res) => {
     const { searchTerm } = req.query;
 
     if (searchTerm) {
-      filters.orderId = searchTerm;`  `
+      filters.orderId = searchTerm; `  `
     }
     const orders = await Order.find(filters)
       .populate("items.product")
@@ -216,21 +216,21 @@ const cancelOrder = async (req, res) => {
 
       if (!wallet) {
 
-         wallet = new Wallet({
+        wallet = new Wallet({
           userId: order.userId,
           balance: 0,
           transactions: []
         });
         // await wallet.save()
       }
-     
+
       let refundAmount = item.qty * product.price;
       if (item.discount) {
         refundAmount -= item.discount
       }
       wallet.balance += refundAmount;
 
-      
+
       wallet.transactions.push({
         amount: refundAmount,
         type: "Credit",
@@ -442,13 +442,13 @@ const loadPendingOrder = async (req, res) => {
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    const orders = await Order.find({_id:id }).populate(
+    const orders = await Order.find({ _id: id }).populate(
       "userId")
       .populate("shippingAddress")
       .populate("items.product")
-       .skip(skip)
+      .skip(skip)
       .limit(limit);
-      console.log("ordersss",orders)
+    console.log("ordersss", orders)
 
     const totalOrders = await Order.countDocuments({
       userId: userId,

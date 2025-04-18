@@ -54,11 +54,11 @@ const getWallets = async (req, res) => {
 const transactionDetail = async (req, res) => {
     try {
         const id = req.params.transactionId;
-      console.log("id",id)
+        console.log("id", id)
 
         const wallet = await Wallet.findOne({ 'transactions._id': id })
             .populate('userId', 'name email');
-        console.log("wallet",wallet)
+        console.log("wallet", wallet)
         if (!wallet) {
             return res.status(404).json({
                 status: 'error',
@@ -155,7 +155,7 @@ const transactionDetail = async (req, res) => {
 
 
         res.status(200).json({
-            status:"success",
+            status: "success",
             user: wallet.userId,
             transaction: {
                 transaction,
@@ -188,15 +188,15 @@ const showWallet = async (req, res) => {
             await wallet.save();
         }
 
-        
+
         wallet.transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
         res.status(200).json({
-            message:"",
+            message: "",
             user,
-             wallet,
-        }) 
-            
+            wallet,
+        })
+
     } catch (error) {
         console.error(error);
         res.status(500).send('Server Error');
@@ -204,34 +204,34 @@ const showWallet = async (req, res) => {
 };
 
 //create order for razorpay
-const createOrderWallet =  async (req, res) => {
-    const { amount } = req.body; 
-    
-   console.log("req",req.body)
+const createOrderWallet = async (req, res) => {
+    const { amount } = req.body;
+
+    console.log("req", req.body)
     const options = {
-      amount: amount * 100, 
-      currency: "INR",
-      receipt: `receipt_order_${Math.random()}`,
-      payment_capture: 1,
+        amount: amount * 100,
+        currency: "INR",
+        receipt: `receipt_order_${Math.random()}`,
+        payment_capture: 1,
     };
-  
+
     try {
-      const order = await razorpay.orders.create(options);
-      res.status(200).json(order);
+        const order = await razorpay.orders.create(options);
+        res.status(200).json(order);
     } catch (error) {
         console.log(error)
-      res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
-  }
+}
 
-const shareKey = ( req, res) => {
-    res.status(200).json({ key: process.env.RAZORPAY_KEY_ID }); 
-  }
+const shareKey = (req, res) => {
+    res.status(200).json({ key: process.env.RAZORPAY_KEY_ID });
+}
 
 //update wallet balance
-  const updateWalletBalance = async (req, res) => {
+const updateWalletBalance = async (req, res) => {
     try {
-        const { amount } = req.body;  
+        const { amount } = req.body;
         const userId = req.user._id;
         let wallet = await Wallet.findOne({ userId: userId });
 
@@ -239,10 +239,10 @@ const shareKey = ( req, res) => {
             wallet = new Wallet({ user_id: userId, balance: 0, transactions: [] });
         }
 
-        
+
         wallet.balance += parseFloat(amount);
 
-      
+
         wallet.transactions.push({
             type: 'Credit',
             amount: parseFloat(amount),
@@ -252,7 +252,7 @@ const shareKey = ( req, res) => {
 
         await wallet.save();
 
-        
+
         res.status(200).json({ success: true, balance: wallet.balance });
     } catch (error) {
         console.error(error);
