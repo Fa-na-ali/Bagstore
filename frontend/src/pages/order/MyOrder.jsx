@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Form, Image, Modal, InputGroup, Form
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router';
+import { IMG_URL } from '../../redux/constants';
 
 const MyOrder = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +21,7 @@ const MyOrder = () => {
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading orders</p>;
-  const imageBaseUrl = "http://localhost:5004/uploads/";
+  
 
   const handleCancelClick = (orderId, item) => {
     setSelectedOrder(orderId);
@@ -84,7 +85,7 @@ const MyOrder = () => {
   return (
     <>
 
-      <section className="h-100 h-custom" style={{ backgroundColor: "#eee" }}>
+      <section className="full-height background">
         <Row className='py-5'>
           <Col lg={6}></Col>
           <Col lg={3}></Col>
@@ -139,7 +140,7 @@ const MyOrder = () => {
                                     <div className="d-flex justify-content-between align-items-center">
                                       <div className="d-flex align-items-center" style={{ flex: "2" }}>
                                         <Image
-                                          src={`${imageBaseUrl}${item?.product?.pdImage[0] || "placeholder.jpg"}`}
+                                          src={`${IMG_URL}${item?.product?.pdImage[0] || "placeholder.jpg"}`}
                                           className="img-fluid rounded-3"
                                           alt="Shopping item"
                                           style={{ width: "80px", height: "80px", objectFit: "cover" }}

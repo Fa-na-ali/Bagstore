@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/features/cart/cartSlice';
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice';
+import { IMG_URL } from '../../redux/constants';
 
 
 const ProductDetails = () => {
@@ -16,7 +17,6 @@ const ProductDetails = () => {
   const dispatch = useDispatch()
   const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
   const product = data?.product
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const [quantity, setQuantity] = useState(1);
   const [discounts, setDiscounts] = useState(0);
   const [salesPrices, setSalesPrices] = useState(0)
@@ -94,7 +94,7 @@ const ProductDetails = () => {
 
               <Image
                 id="mainImage"
-                src={`${imageBaseUrl}${product.pdImage[0]}`}
+                src={`${IMG_URL}${product.pdImage[0]}`}
                 alt="Product"
                 fluid
                 rounded
@@ -107,11 +107,11 @@ const ProductDetails = () => {
                 {product.pdImage.slice(0, 5).map((image, index) => (
                   <Image
                     key={index}
-                    src={`${imageBaseUrl}${image}`}
+                    src={`${IMG_URL}${image}`}
                     alt={`Thumbnail ${index + 1}`}
                     rounded
                     className="thumbnail active"
-                    onClick={() => document.getElementById('mainImage').src = `${imageBaseUrl}${image}`}
+                    onClick={() => document.getElementById('mainImage').src = `${IMG_URL}${image}`}
                     style={{ width: "80px", height: "80px", objectFit: "cover", cursor: "pointer" }}
                   />
                 ))}

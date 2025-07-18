@@ -53,12 +53,12 @@ const getCoupons = async (req, res) => {
                     $regex: req.query.keyword,
                     $options: "i",
                 },
-                
+
             }
             : {};
-            const count = await Coupon.countDocuments({ ...keyword });
+        const count = await Coupon.countDocuments({ ...keyword });
         const coupons = await Coupon.find({ ...keyword }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
-        
+
         return res.status(200).json({
             status: "success",
             message: "",
@@ -104,7 +104,7 @@ const editCoupon = async (req, res) => {
                 message: "Coupon doesn't exists"
             });
         }
-       const editedCoupon =  await Coupon.updateOne({ _id: coupon._id }, { $set: { name, description, activation, discount, expiry, minAmount, maxAmount, type, status, limit } });
+        const editedCoupon = await Coupon.updateOne({ _id: coupon._id }, { $set: { name, description, activation, discount, expiry, minAmount, maxAmount, type, status, limit } });
         return res.status(STATUS_CODES.OK).json({
             status: "success",
             message: "Coupon updated successfully",
@@ -124,30 +124,30 @@ const editCoupon = async (req, res) => {
 const deleteCoupon = async (req, res) => {
     try {
         const { id } = req.params;
-    const coupon = await Coupon.findById({ _id: id });
-    if(coupon){
-        coupon.isExist = false
-        coupon.status=false
-        await coupon.save()
-        return res.status(STATUS_CODES.OK).json({
-            status: "success",
-            message: "Coupon deleted successfully"
-        });
+        const coupon = await Coupon.findById({ _id: id });
+        if (coupon) {
+            coupon.isExist = false
+            coupon.status = false
+            await coupon.save()
+            return res.status(STATUS_CODES.OK).json({
+                status: "success",
+                message: "Coupon deleted successfully"
+            });
 
-    }
-    else{
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            status: "error",
-            message: "Coupon not found",
-        });
-    }
-        
+        }
+        else {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: "Coupon not found",
+            });
+        }
+
     } catch (error) {
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "An error occurred while retrieving the coupon",
         });
-    }  
+    }
 };
 
 //get coupon by id
@@ -164,7 +164,7 @@ const getCouponById = async (req, res) => {
             });
         }
 
-       return  res.status(STATUS_CODES.OK).json({
+        return res.status(STATUS_CODES.OK).json({
             status: "success",
             coupon,
         });
@@ -179,94 +179,94 @@ const getCouponById = async (req, res) => {
 
 
 //get all coupons in user side
- const getAllCouponsUser = async (req, res) => {
+const getAllCouponsUser = async (req, res) => {
     try {
-        const coupons = await Coupon.find({status:true});  
+        const coupons = await Coupon.find({ status: true });
 
         if (!coupons.length) {
-           return  res.status(STATUS_CODES.NOT_FOUND).json({
-                status:"error",
-                message:"Coupons not found"
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                status: "error",
+                message: "Coupons not found"
             })
-            
+
         }
-    
-        return res.status(STATUS_CODES.OK).json({ 
-            status:"success",
-            message:"",
+
+        return res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: "",
             coupons
         });
-        
+
     } catch (error) {
         console.log(error)
-       return  res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "Server Error",
         });
     }
-   
+
 }
 
 //applyCoupon
 const applyCoupon = async (req, res) => {
     try {
         const { coupon_code, minAmount } = req.body;
-    const coupon = await Coupon.findOne({coupon_code: coupon_code});
-    if (!coupon || coupon.limit <= 0) {
-        return res.json({success: false, message: "Invalid coupon code"});
-    }
-    if (coupon.expiry < new Date()) {
-        return res.json({success: false, message: "Coupon has expired"});
-    }
-    if (coupon.status == false) {
-        return res.json({success: false, message: "Coupon is inactive"});
-    }
-    if (minAmount && coupon.minAmount > minAmount) {
-        return res.json({success: false, message: "Coupon minimum amount requirement not met"});
-    }
+        const coupon = await Coupon.findOne({ coupon_code: coupon_code });
+        if (!coupon || coupon.limit <= 0) {
+            return res.json({ success: false, message: "Invalid coupon code" });
+        }
+        if (coupon.expiry < new Date()) {
+            return res.json({ success: false, message: "Coupon has expired" });
+        }
+        if (coupon.status == false) {
+            return res.json({ success: false, message: "Coupon is inactive" });
+        }
+        if (minAmount && coupon.minAmount > minAmount) {
+            return res.json({ success: false, message: "Coupon minimum amount requirement not met" });
+        }
 
-    if (minAmount && coupon.maxAmount < minAmount) {
-        return res.json({success: false, message: "Coupon maximum amount requirement exceeded"});
-    }
-    if(coupon.limit===0){
+        // if (minAmount && coupon.maxAmount < minAmount) {
+        //     return res.json({ success: false, message: "Coupon maximum amount requirement exceeded" });
+        // }
+        if (coupon.limit === 0) {
 
-        return res.status(404).json({status:"error", message: "No more coupons available"});
-    }
-    const userId = req.user._id;
+            return res.status(404).json({ status: "error", message: "No more coupons available" });
+        }
+        const userId = req.user._id;
 
-    const hasUsed = coupon.usedUsers.some(id => id.toString() === userId.toString());
-    if (hasUsed && coupon.type === "single") {
-      return res.json({ success: false, message: "Coupon already used" });
-    }
+        const hasUsed = coupon.usedUsers.some(id => id.toString() === userId.toString());
+        if (hasUsed && coupon.type === "single") {
+            return res.json({ success: false, message: "Coupon already used" });
+        }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.json({ success: false, message: "User not found" });
-    }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
 
-    if (!coupon.users.includes(user._id)) {
-        coupon.users.push(user._id);
-      }
-  
-      user.coupon = coupon._id;
-    
-    await user.save();
-    await coupon.save();
+        if (!coupon.users.includes(user._id)) {
+            coupon.users.push(user._id);
+        }
 
-    return res.status(STATUS_CODES.OK).json({
-        status:"success",
-        message: "Coupon applied successfully",
-        coupon
-    });
-        
+        user.coupon = coupon._id;
+
+        await user.save();
+        await coupon.save();
+
+        return res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: "Coupon applied successfully",
+            coupon
+        });
+
     } catch (error) {
         console.log(error)
-       return  res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "Server Error",
         });
     }
-    
+
 };
 
 //Remoove coupon
@@ -284,10 +284,10 @@ const removeCoupon = async (req, res) => {
         return res.json({ success: false, message: "User not found" });
     }
 
-   
-    if ( user.coupon && user.coupon.toString() === coupon._id.toString()) {
-        user.coupon = null; 
-        await user.save(); 
+
+    if (user.coupon && user.coupon.toString() === coupon._id.toString()) {
+        user.coupon = null;
+        await user.save();
 
         coupon.users = coupon.users.filter(id => id.toString() !== user._id.toString());
 

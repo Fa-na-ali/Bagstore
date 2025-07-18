@@ -7,11 +7,11 @@ import { useDispatch } from 'react-redux'
 import { addToCart } from '../../redux/features/cart/cartSlice'
 import { toast } from 'react-toastify'
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice'
+import { IMG_URL } from '../../redux/constants'
 
 const Wishlist = () => {
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
-  const imageBaseUrl = 'http://localhost:5004/uploads/';
   const { data, refetch } = useGetWishlistQuery()
   console.log("wishlist", data)
   const { data: off } = useGetAllOffersToAddQuery()
@@ -23,6 +23,7 @@ const Wishlist = () => {
 
 
   useEffect(() => {
+    refetch()
     if (!products || !offers) return;
 
     const newDiscounts = {};
@@ -98,7 +99,7 @@ const Wishlist = () => {
           <Row>
             {products?.map((product) => {
               const productImages = product?.productId?.pdImage?.length
-                ? product?.productId?.pdImage.map((img) => `${imageBaseUrl}${img}`)
+                ? product?.productId?.pdImage.map((img) => `${IMG_URL}${img}`)
                 : ['https://via.placeholder.com/300'];
               return (
                 <Col key={product?.productId?._id} lg={4} md={4} className='mb-4'>

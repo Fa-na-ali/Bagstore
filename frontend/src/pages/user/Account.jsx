@@ -7,6 +7,7 @@ import { useDeleteAddressMutation, useDeleteUserImageMutation, useProfileQuery, 
 import { toast } from "react-toastify";
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
+import { IMG_URL } from "../../redux/constants";
 
 
 const Account = () => {
@@ -26,13 +27,10 @@ const Account = () => {
     const [croppingIndex, setCroppingIndex] = useState(null);
     const [deleteImage] = useDeleteUserImageMutation();
 
-    const imageBaseUrl = "http://localhost:5004/uploads/";
-
-
 
     useEffect(() => {
         if (user?.image) {
-            setFiles(user.image.map((img) => `${imageBaseUrl}${img}`));
+            setFiles(user.image.map((img) => `${IMG_URL}${img}`));
         }
         refetch();
     }, [refetch, user]);

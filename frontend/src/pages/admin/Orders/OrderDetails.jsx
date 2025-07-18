@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Button, Table, Image, Form } from "react-boo
 import { useGetOrderDetailsQuery, useSetItemStatusMutation } from '../../../redux/api/ordersApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar'
 import { toast } from 'react-toastify'
+import { IMG_URL } from '../../../redux/constants';
 
 
 const OrderDetails = () => {
@@ -13,7 +14,6 @@ const OrderDetails = () => {
   console.log("id", id)
 
   const { data: order, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const [itemStatuses, setItemStatuses] = useState({});
 
   const [orderStatus, setOrderStatus] = useState(order?.status);
@@ -148,7 +148,7 @@ const OrderDetails = () => {
                       <td>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={`${imageBaseUrl}${item.product.pdImage[0]}`}
+                            src={`${IMG_URL}${item.product.pdImage[0]}`}
                             className="img-fluid rounded-3"
                             style={{ width: "120px" }}
                             alt="Book"

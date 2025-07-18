@@ -1,27 +1,83 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useGetOrderByIdQuery } from "../../redux/api/ordersApiSlice";
-import { Container, Row, Col, Card, Button, Image } from "react-bootstrap";
+import { useCancelOrderMutation, useGetOrderByIdQuery, useReturnOrderMutation } from "../../redux/api/ordersApiSlice";
+import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { toast } from "react-toastify";
+import { IMG_URL } from "../../redux/constants";
 
 pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
 
 
 const OrderDetail = () => {
   const { id } = useParams();
-  const { data: order, isLoading, isError } = useGetOrderByIdQuery(id);
-  const imageBaseUrl = "http://localhost:5004/uploads/";
+  const { data: order, refetch, isLoading, isError } = useGetOrderByIdQuery(id);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cancelOrder] = useCancelOrderMutation();
+  const [returnOrder] = useReturnOrderMutation();
   console.log(order)
 
   if (isLoading) return <p>Loading...</p>;
   if (isError || !order) return <p>Error fetching order details.</p>;
+  
+  const handleCancelClick = (orderId, item) => {
+    setSelectedOrder(orderId);
+    setSelectedProduct(item);
+    setShowConfirmModal(true);
+  };
+  const handleCancelOrder = async (orderId, item) => {
+    try {
+      setShowReasonModal(false);
 
-  const handleCancel = () => {
+      const response = await cancelOrder({
+        orderId: selectedOrder,
+        item: selectedProduct,
+        cancelReason: selectedReason,
+      }).unwrap();
 
-  }
+      console.log("Order cancellation successful:", response);
+      refetch();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      alert(error?.data?.message || "Failed to cancel order. Please try again.");
+    }
+
+  };
+  const handleReturnClick = (orderId, item) => {
+    setSelectedOrder(orderId);
+    setSelectedProduct(item);
+    setShowReturnModal(true);
+  };
+  const handleReturnOrder = async () => {
+    try {
+      setShowReturnModal(false);
+      const response = await returnOrder({
+        orderId: selectedOrder,
+        item: selectedProduct,
+        returnReason: selectedReason,
+      }).unwrap();
+      if (response)
+        toast.success("Return request sent")
+      console.log("Return request successful:", response);
+      refetch();
+    } catch (error) {
+      console.error("Error requesting return:", error);
+
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmModal(false);
+    setShowReasonModal(true);
+  };
 
   const generate_invoice = () => {
 
@@ -77,148 +133,249 @@ const OrderDetail = () => {
 
 
   return (
-    <section className="full-height background">
-      <div className="d-flex justify-content-end align-items-center mb-4">
-        <Button
-          onClick={generate_invoice}
-          className="mt-3 button-custom"
-        >
-          Download Invoice
-        </Button>
-      </div>
-      <h2 className="text-center pt-5 heading">ORDER DETAILS</h2>
-      <p className="text-center caption">Order Id : {order.orderId}</p>
-      <Container id="order-details" className="">
-        <Row className="d-flex justify-content-center  h-100">
-          <Col>
-            {order.items.length === 0 ? (
-              <h5 className="text-center text-muted">No items in cart</h5>
-            ) : (
-              order.items.map((item) => (
-                <Card key={item._id} className="mb-4">
-                  <Card.Body className="p-4">
-                    <Row className="align-items-center">
-                      <Col md={1}>
-                        <Image
-                          src={`${imageBaseUrl}${item?.product?.pdImage[0]}`}
-                          className="img-fluid"
-                          alt={item?.product?.name}
-                        />
-                      </Col>
-                      <Col md={2} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">Name</p>
-                          <p className="lead fw-normal mb-0 caption">{item?.product?.name}</p>
-                        </div>
-                      </Col>
-                      <Col md={1} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">Color</p>
-                          <p className="lead fw-normal mb-0 caption">{item?.product?.color}</p>
-                        </div>
-                      </Col>
-                      <Col md={1} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">Quantity</p>
-                          <p className="lead fw-normal mb-0 caption">{item.qty}</p>
-                        </div>
-                      </Col>
-                      <Col md={2} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">Price</p>
-                          <p className="lead fw-normal mb-0 caption">₹{item?.product?.price}</p>
-                        </div>
-                      </Col>
-                      <Col md={2} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">DiscountedPrice</p>
-                          <p className="lead fw-normal mb-0 caption">₹{(Number(item?.product?.price) - Number(item?.discount)).toFixed(2)}</p>
-                        </div>
-                      </Col>
-                      <Col md={2} className="d-flex justify-content-center">
-                        <div>
-                          <p className="small text-muted mb-4 pb-2">Total</p>
-                          <p className="lead fw-normal mb-0 caption">₹{(Number(item?.product?.price) - Number(item?.discount)) * item.qty.toFixed(2)}</p>
-                        </div>
-                      </Col>
+    <>
+      <section className="full-height background">
+        <div className="d-flex justify-content-end align-items-center mb-4">
+          <Button
+            onClick={generate_invoice}
+            className="mt-3 button-custom"
+          >
+            Download Invoice
+          </Button>
+        </div>
+        <h2 className="text-center pt-5 heading">ORDER DETAILS</h2>
+        <p className="text-center caption">Order Id : {order.orderId}</p>
+        <Container id="order-details" className="">
+          <Row className="d-flex justify-content-center  h-100">
+            <Col>
+              {order.items.length === 0 ? (
+                <h5 className="text-center text-muted">No items in cart</h5>
+              ) : (
+                order.items.map((item) => (
+                  <Card key={item._id} className="mb-4">
+                    <Card.Body className="p-4">
+                      <Row className="align-items-center">
+                        <Col md={1}>
+                          <Image
+                            src={`${IMG_URL}${item?.product?.pdImage[0]}`}
+                            className="img-fluid"
+                            alt={item?.product?.name}
+                          />
+                        </Col>
+                        <Col md={2} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">Name</p>
+                            <p className="lead fw-normal mb-0 caption">{item?.product?.name}</p>
+                          </div>
+                        </Col>
+                        <Col md={1} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">Color</p>
+                            <p className="lead fw-normal mb-0 caption">{item?.product?.color}</p>
+                          </div>
+                        </Col>
+                        <Col md={1} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">Quantity</p>
+                            <p className="lead fw-normal mb-0 caption">{item.qty}</p>
+                          </div>
+                        </Col>
+                        <Col md={2} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">Price</p>
+                            <p className="lead fw-normal mb-0 caption">₹{item?.product?.price}</p>
+                          </div>
+                        </Col>
+                        <Col md={2} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">DiscountedPrice</p>
+                            <p className="lead fw-normal mb-0 caption">₹{(Number(item?.product?.price) - Number(item?.discount)).toFixed(2)}</p>
+                          </div>
+                        </Col>
+                        <Col md={2} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">Total</p>
+                            <p className="lead fw-normal mb-0 caption">₹{((item?.product?.price - item?.discount) * item?.qty).toFixed(2)}</p>
+                          </div>
+                        </Col>
+                        <Col md={1} className="d-flex justify-content-center">
+                          <div>
+                            <p className="small text-muted mb-4 pb-2">Action</p>
 
-                    </Row>
-                  </Card.Body>
-                </Card>
-              ))
-            )}
-          </Col>
 
-        </Row>
-        <Row className="mt-4">
-          <Col md={8} className="mb-4">
-            <Card className="h-100">
-              <Card.Header className="bg-light">
-                <h5 className="mb-0 heading">Shipping Address</h5>
-              </Card.Header>
-              <Card.Body>
-                <div className="mb-2 caption">
-                  <strong>Name:</strong> {order?.shippingAddress?.name}
-                </div>
-                <div className="mb-2 caption">
-                  <strong>Address:</strong> {order?.shippingAddress?.houseName}, {order?.shippingAddress?.street}
-                </div>
-                <div className="mb-2 caption">
-                  {order?.shippingAddress?.town}, {order?.shippingAddress?.state}
-                </div>
-                <div className="mb-2 caption">
-                  {order?.shippingAddress?.country}, {order?.shippingAddress?.zipcode}
-                </div>
-                <div className="caption">
-                  <strong>Phone:</strong> {order?.shippingAddress?.phone}
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4} className="mb-4">
-            <Card className="h-100">
-              <Card.Header className="bg-light">
-                <h5 className="mb-0 heading">Payment Details</h5>
-              </Card.Header>
-              <Card.Body>
-                <div className="d-flex justify-content-between mb-2 caption">
-                  <span><strong>Method:</strong></span>
-                  <span>{order.paymentMethod}</span>
-                </div>
-                <div className="d-flex justify-content-between mb-2 caption">
-                  <span><strong>Status:</strong></span>
-                  <span className={`badge ${order.paymentStatus === 'paid' ? 'bg-success' : 'bg-warning'}`}>
-                    {order.paymentStatus}
-                  </span>
-                </div>
-                <hr />
-                <div className="d-flex justify-content-between mb-2 caption">
-                  <span><strong>Subtotal:</strong></span>
-                  <span>₹{(order.totalPrice - order.shippingPrice - order.tax).toFixed(2)}</span>
-                </div>
-                <div className="d-flex justify-content-between mb-2 caption">
-                  <span><strong>Shipping:</strong></span>
-                  <span>₹{order.shippingPrice.toFixed(2)}</span>
-                </div>
-                <div className="d-flex justify-content-between mb-2 caption">
-                  <span><strong>Tax:</strong></span>
-                  <span>₹{order.tax.toFixed(2)}</span>
-                </div>
-                <div className="d-flex justify-content-between mb-2 caption">
-                  <span><strong>Discount:</strong></span>
-                  <span className="text-danger">-₹{order.totalDiscount.toFixed(2)}</span>
-                </div>
-                <hr />
-                <div className="d-flex justify-content-between fw-bold caption">
-                  <span>Total:</span>
-                  <span>₹{order.totalPrice.toFixed(2)}</span>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </section>
+                            {item.status === "Pending" || item.status === "Shipped" ? (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleCancelClick(order._id, item)}
+                              >
+                                Cancel
+                              </Button>
+                            ) : item.status === "Delivered" ? (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleReturnClick(order._id, item)}
+                              >
+                                Return
+                              </Button>
+                            ) : (
+                              <h6
+                                className={`mb-0 ${item.status === "Cancelled" || item.status === "Returned"
+                                    ? "text-danger"
+                                    : "text-success"
+                                  }`}
+                              >
+                                {item.status}
+                              </h6>
+                            )}
+                          </div>
+
+                        </Col>
+
+                      </Row>
+                    </Card.Body>
+                  </Card>
+                ))
+              )}
+            </Col>
+
+          </Row>
+          <Row className="mt-4">
+            <Col md={8} className="mb-4">
+              <Card className="h-100">
+                <Card.Header className="bg-light">
+                  <h5 className="mb-0 heading">Shipping Address</h5>
+                </Card.Header>
+                <Card.Body>
+                  <div className="mb-2 caption">
+                    <strong>Name:</strong> {order?.shippingAddress?.name}
+                  </div>
+                  <div className="mb-2 caption">
+                    <strong>Address:</strong> {order?.shippingAddress?.houseName}, {order?.shippingAddress?.street}
+                  </div>
+                  <div className="mb-2 caption">
+                    {order?.shippingAddress?.town}, {order?.shippingAddress?.state}
+                  </div>
+                  <div className="mb-2 caption">
+                    {order?.shippingAddress?.country}, {order?.shippingAddress?.zipcode}
+                  </div>
+                  <div className="caption">
+                    <strong>Phone:</strong> {order?.shippingAddress?.phone}
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4} className="mb-4">
+              <Card className="h-100">
+                <Card.Header className="bg-light">
+                  <h5 className="mb-0 heading">Payment Details</h5>
+                </Card.Header>
+                <Card.Body>
+                  <div className="d-flex justify-content-between mb-2 caption">
+                    <span><strong>Method:</strong></span>
+                    <span>{order.paymentMethod}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2 caption">
+                    <span><strong>Status:</strong></span>
+                    <span className={`badge ${order.paymentStatus === 'paid' ? 'bg-success' : 'bg-warning'}`}>
+                      {order.paymentStatus}
+                    </span>
+                  </div>
+                  <hr />
+                  <div className="d-flex justify-content-between mb-2 caption">
+                    <span><strong>Subtotal:</strong></span>
+                    <span>₹{(order.totalPrice - order.shippingPrice - order.tax).toFixed(2)}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2 caption">
+                    <span><strong>Shipping:</strong></span>
+                    <span>₹{order.shippingPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2 caption">
+                    <span><strong>Tax:</strong></span>
+                    <span>₹{order.tax.toFixed(2)}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2 caption">
+                    <span><strong>Discount:</strong></span>
+                    <span className="text-danger">-₹{order.totalDiscount.toFixed(2)}</span>
+                  </div>
+                  <hr />
+                  <div className="d-flex justify-content-between fw-bold caption">
+                    <span>Total:</span>
+                    <span>₹{order.totalPrice.toFixed(2)}</span>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      {/* Confirmation Modal */}
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Cancellation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to cancel this order?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>No</Button>
+          <Button variant="danger" onClick={handleConfirmCancel}>Yes, Cancel</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Cancellation Reason Modal */}
+      <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Choose a Reason</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Select a cancellation reason:</Form.Label>
+              <Form.Control as="select" value={selectedReason} onChange={(e) => setSelectedReason(e.target.value)}>
+                <option value="">-- Select Reason --</option>
+                <option value="Ordered by mistake">Ordered by mistake</option>
+                <option value="Found a better price">Found a better price</option>
+                <option value="Changed my mind">Changed my mind</option>
+                <option value="Shipping took too long">Shipping took too long</option>
+                <option value="Product details incorrect">Product details incorrect</option>
+                <option value="Other">Other</option>
+              </Form.Control>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReasonModal(false)}>Cancel</Button>
+          <Button variant="danger" onClick={handleCancelOrder} disabled={!selectedReason}>Submit</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Return Reason Modal */}
+      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Return Request</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Select a return reason:</Form.Label>
+              <Form.Control as="select" value={selectedReason} onChange={(e) => setSelectedReason(e.target.value)}>
+                <option value="">-- Select Reason --</option>
+                <option value="Defective or damaged product">Defective or damaged product</option>
+                <option value="Wrong item delivered">Wrong item delivered</option>
+                <option value="Item not as described">Item not as described</option>
+                <option value="Changed my mind">Changed my mind</option>
+                <option value="Other">Other</option>
+              </Form.Control>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReturnModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleReturnOrder} disabled={!selectedReason}>Submit Return</Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

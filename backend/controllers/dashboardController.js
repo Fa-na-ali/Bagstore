@@ -191,6 +191,49 @@ const getSalesReportData = async (filter, startDate, endDate) => {
       }
     ]);
 
+    const detailedOrders = await Order.aggregate([
+      { $match: matchConditions },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $lookup: {
+          from: 'addresses',
+          localField: 'shippingAddress',
+          foreignField: '_id',
+          as: 'address'
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $unwind: "$address"
+      },
+      {
+        $project: {
+          orderDate: "$createdAt",
+          orderNumber: 1,
+          userName: "$user.name",
+          userEmail: "$user.email",
+          shippingAddress: "$address",
+          paymentMethod: 1,
+          couponDiscount: 1,
+          shippingPrice: 1,
+          tax: 1,
+          totalDiscount: 1,
+          totalPrice: 1,
+          items: 1
+        }
+      }
+    ]);
+
+
     const totalCouponDiscount = couponStats[0]?.totalCouponDiscount || 0;
     const totalProductDiscounts = result.reduce((sum, item) => sum + item.productDiscounts, 0);
     const totalRevenue = result.reduce((sum, item) => sum + item.revenue, 0);
@@ -212,14 +255,15 @@ const getSalesReportData = async (filter, startDate, endDate) => {
 
     return {
       orders: result,
-      offerDiscounts: totalProductDiscounts,
+      offerDiscounts: totalProductDiscounts.toFixed(2),
       couponDiscounts: totalCouponDiscount,
       overallSalesCount: totalSold,
       orderCount: couponStats[0]?.totalOrders || 0,
       returnedOrderCount: couponStats[0]?.returnedOrders || 0,
       overallDiscount: totalProductDiscounts + totalCouponDiscount,
       netRevenue: totalRevenue,
-      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount
+      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount,
+      detailedOrders
     };
   } catch (error) {
     console.error('Error in getSalesReportData:', error);

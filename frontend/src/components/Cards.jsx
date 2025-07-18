@@ -7,9 +7,9 @@ import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
 import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
+import { IMG_URL } from '../redux/constants';
 
 const Cards = ({ products }) => {
-  const imageBaseUrl = 'http://localhost:5004/uploads/';
   const { data: off } = useGetAllOffersToAddQuery()
   console.log(off)
   const offers = off?.offers
@@ -119,7 +119,7 @@ const Cards = ({ products }) => {
       <Row>
         {products?.map((product) => {
           const productImages = product.pdImage?.length
-            ? product.pdImage.map((img) => `${imageBaseUrl}${img}`)
+            ? product.pdImage.map((img) => `${IMG_URL}${img}`)
             : ['https://via.placeholder.com/300'];
 
           return (
@@ -174,14 +174,14 @@ const Cards = ({ products }) => {
                   {discounts[product._id] !== 0 ? (
                     <>
                       <span className='text-decoration-line-through text-muted me-2'>
-                        ₹{product.price}
+                        ₹{product.price.toFixed(2)}
                       </span>
                       <span className='text-success fw-bold'>
-                        ₹{salesPrices[product._id]}
+                       ₹{(salesPrices[product._id] || 0).toFixed(2)}
                       </span>
                     </>
                   ) : (
-                    <span>₹{product.price}</span>
+                    <span>₹{product.price.toFixed(2)}</span>
                   )}
                   </div>
 

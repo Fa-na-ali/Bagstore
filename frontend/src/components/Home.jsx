@@ -9,6 +9,7 @@ import { useGetNewProductsQuery } from '../redux/api/productApiSlice';
 
 import Cards from './Cards';
 import { useSelector } from 'react-redux';
+import { IMG_URL } from '../redux/constants';
 
 const Home = () => {
   const [show, setShow] = useState(null);
@@ -23,7 +24,7 @@ const Home = () => {
     { src: wallet, modalId: 3 },
   ];
   
-  const productImages = products?.pdImage?.map((img) => `${imageBaseUrl}${img}`);
+  const productImages = products?.pdImage?.map((img) => `${IMG_URL}${img}`);
   console.log("images", productImages)
   const {refreshToken} = useSelector(state=>state.auth)
   console.log("refresf",refreshToken)

@@ -11,6 +11,7 @@ import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
 import CouponModal from "./CouponModal";
 import { useRef } from "react";
+import { IMG_URL } from "../../redux/constants";
 
 const Checkout = () => {
 
@@ -21,7 +22,6 @@ const Checkout = () => {
   console.log(cart.cartItems)
   const address = user?.user?.address || [];
   console.log("add", address)
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const couponDiscountRef = useRef(0);
@@ -61,15 +61,9 @@ const Checkout = () => {
 
   const handleAddressChange = (id) => {
     setSelectedAddress(id);
+    dispatch(saveShippingAddress(id));
   };
 
-  const handleSaveAddress = () => {
-    setSaveShipping(!saveShipping);
-
-    if (!saveShipping && selectedAddress) {
-      dispatch(saveShippingAddress(selectedAddress));
-    }
-  };
 
   const handleContinue = () => {
     if (selectedPayment === "Razorpay") {
@@ -94,11 +88,17 @@ const Checkout = () => {
         if (res.status === "success") {
           toast.success(res.message);
           setCouponId(res?.coupon._id)
-          const calculatedDiscount = res?.coupon?.discount / 100 * total;
-          console.log("calc", calculatedDiscount)
-          couponDiscountRef.current = calculatedDiscount;
-          setCouponDiscount(calculatedDiscount)
-          console.log("c", couponDiscountRef.current)
+          let calculatedDiscount = res?.coupon?.discount / 100 * total;
+          if (calculatedDiscount < res?.coupon?.maxAmount) {
+            couponDiscountRef.current = calculatedDiscount;
+            setCouponDiscount(calculatedDiscount)
+
+          }
+          else {
+            couponDiscountRef.current = res?.coupon?.maxAmount
+            setCouponDiscount(res?.coupon?.maxAmount)
+
+          }
 
         } else {
           toast.error(res.message);
@@ -210,7 +210,7 @@ const Checkout = () => {
       const res = await createOrder({
         userId: user?.user._id,
         items: formattedItems,
-        shippingAddress: cart?.shippingAddress,
+        shippingAddress: selectedAddress,
         paymentMethod: cart?.paymentMethod,
         shippingPrice: total >= 700 ? 0 : 50,
         couponId: couponId || null,
@@ -300,7 +300,7 @@ const Checkout = () => {
                               <div className="d-flex flex-row align-items-center">
                                 <div>
                                   <Image
-                                    src={`${imageBaseUrl}${item.pdImage[0]}`}
+                                    src={`${IMG_URL}${item.pdImage[0]}`}
                                     className="img-fluid rounded-3"
                                     alt="Shopping item"
                                     style={{ width: "65px" }}
@@ -315,13 +315,13 @@ const Checkout = () => {
                                 <div style={{ width: "50px" }}>
                                   <h5 className="fw-normal mb-0">{item.qty}</h5>
                                 </div>
-                                <div style={{ width: "100px" }}>
+                                <div style={{ width: "150px" }}>
                                   {item.originalPrice !== item.discountedPrice ? (
                                     <>
                                       <span className="text-decoration-line-through text-muted me-2">
                                         ₹{item.originalPrice}
                                       </span>
-                                      <span className="text-success fw-bold">₹{item.discountedPrice}</span>
+                                      <span className="text-success fw-bold">₹{item.discountedPrice.toFixed(2)}</span>
                                     </>
                                   ) : (
                                     <span>₹{item.price}</span>
@@ -412,15 +412,6 @@ const Checkout = () => {
                               <p className="text-muted">No saved addresses found. Please add one.</p>
                             )}
                           </Row>
-
-                          <Form.Check
-                            type="checkbox"
-                            id="saveAddress"
-                            label="Save this address"
-                            className="mb-3"
-                            checked={saveShipping}
-                            onChange={handleSaveAddress}
-                          />
 
                           <div className="float-end">
                             <Button variant="" className="border me-2 button-custom" onClick={() => { navigate(`/account/edit-address/${id}`) }}>

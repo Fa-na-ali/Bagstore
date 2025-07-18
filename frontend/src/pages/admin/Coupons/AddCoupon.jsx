@@ -238,14 +238,14 @@ const AddCoupon = () => {
                             </Col>
                             <Col>
                                 <Form.Group>
-                                    <Form.Label>Max Amount</Form.Label>
+                                    <Form.Label>Max Discount Amount</Form.Label>
                                     <div className="currency-input">
                                         <span className="currency-symbol">&#8377;</span>
                                         <Form.Control
                                             type="number"
                                             id="max_amount"
                                             name="maxAmount"
-                                            placeholder="Maximum purchase amount"
+                                            placeholder="Maximum Discount amount"
                                             value={formData.maxAmount}
                                             onChange={handleChange}
                                             isInvalid={!!errors.maxAmount}

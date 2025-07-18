@@ -14,7 +14,7 @@ const { authenticate, authorizeAdmin } = require("../middlewares/authMiddleware.
 
 
 router.route("/").get(authenticate, authorizeAdmin,fetchCategories)
-router.route('/all').get(authenticate,authorizeAdmin,listCategory)
+router.route('/all').get(authenticate,listCategory)
 router.route("/").post( authenticate, authorizeAdmin, addCategory);
 router.route("/:id").get(authenticate, authorizeAdmin,readCategory)
 .put(authenticate, authorizeAdmin, updateCategory)

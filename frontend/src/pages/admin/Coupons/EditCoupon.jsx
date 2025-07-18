@@ -62,30 +62,54 @@ const EditCoupon = () => {
         }
     };
 
-    // Initialize flatpickr for date pickers
-    React.useEffect(() => {
-        const activationPicker = flatpickr("#activation", {
-            dateFormat: "d-M-Y",
-            minDate: "today",
-            onChange: function (selectedDates) {
-                const activationDate = selectedDates[0];
-                if (activationDate) {
-                    expiryPicker.set("minDate", new Date(activationDate.getTime() + 24 * 60 * 60 * 1000));
-                    expiryPicker.setDate(null);
-                }
-            },
-        });
-
-        const expiryPicker = flatpickr("#expiry", {
-            dateFormat: "d-M-Y",
-            minDate: "today",
-        });
-
-        return () => {
-            activationPicker.destroy();
-            expiryPicker.destroy();
+    
+        const handleDateChange = (name, date) => {
+            if (date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0"); 
+                const formattedDate = `${year}-${month}-${day}`;
+                
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: formattedDate, 
+                }));
+           }
         };
-    }, []);
+        
+        
+     React.useEffect(() => {
+            const activationPicker = flatpickr("#activation", {
+                dateFormat: "d-M-Y",
+                minDate: "today",
+                onChange: function (selectedDates) {
+                    const activationDate = selectedDates[0];
+                    if (activationDate) {
+                        expiryPicker.set("minDate", new Date(activationDate.getTime() + 24 * 60 * 60 * 1000));
+                        expiryPicker.setDate(null);
+                        handleDateChange("activation", activationDate);
+                    }
+                },
+            });
+    
+            const expiryPicker = flatpickr("#expiry", {
+                dateFormat: "d-M-Y",
+                minDate: "today",
+                onChange: function (selectedDates) {
+                    const expiryDate = selectedDates[0];
+                    if (expiryDate) {
+                        handleDateChange("expiry", expiryDate);
+                    }
+                },
+            });
+    
+            return () => {
+                activationPicker.destroy();
+                expiryPicker.destroy();
+            };
+        }, []);
+    
+   
 
     return (
         <Container fluid>
@@ -203,7 +227,7 @@ const EditCoupon = () => {
                             </Col>
                             <Col>
                                 <Form.Group>
-                                    <Form.Label>Max Amount</Form.Label>
+                                    <Form.Label>Max Discount Amount</Form.Label>
                                     <div className="currency-input">
                                         <span className="currency-symbol">&#8377;</span>
                                         <Form.Control

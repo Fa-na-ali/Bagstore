@@ -12,6 +12,7 @@ import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
+import { IMG_URL } from '../../../redux/constants';
 const EditProduct = () => {
 
   const { id } = useParams();
@@ -45,8 +46,7 @@ const EditProduct = () => {
   const cropperRef = useRef(null);
   const [croppingIndex, setCroppingIndex] = useState(null);
 
-  const imageBaseUrl = "http://localhost:5004/uploads/";
-  const productImages = product?.pdImage.map((img) => `${imageBaseUrl}${img}`);
+  const productImages = product?.pdImage.map((img) => `${IMG_URL}${img}`);
 
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const EditProduct = () => {
       setSize(product.size || "");
 
       if (product?.pdImage) {
-        setFiles(product.pdImage.map((img) => `${imageBaseUrl}${img}`));
+        setFiles(product.pdImage.map((img) => `${IMG_URL}${img}`));
       }
 
     }

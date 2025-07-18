@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { addToCart, removeFromCart, syncCartWithDatabase, updateCartItemQuantity, } from "../../redux/features/cart/cartSlice";
 import { useGetProductsByIdsQuery } from "../../redux/api/productApiSlice";
+import { IMG_URL } from "../../redux/constants";
 
 
 const Cart = () => {
@@ -15,7 +16,6 @@ const Cart = () => {
   const cart = useSelector((state) => state.cart);
   const { cartItems } = cart;
   console.log(cartItems)
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const maximum = 5
 
   const productIds = cartItems.map((item) => item._id);
@@ -67,7 +67,7 @@ const Cart = () => {
                       <Col lg={5}>
                         <div className="d-flex">
                           <Image
-                            src={`${imageBaseUrl}${item.pdImage[0]}`}
+                            src={`${IMG_URL}${item.pdImage[0]}`}
                             className="border rounded me-3"
                             style={{ width: "96px", height: "96px" }}
                           />

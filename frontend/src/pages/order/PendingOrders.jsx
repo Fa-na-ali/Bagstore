@@ -2,11 +2,11 @@ import React, { useEffect } from "react";
 import { useParams } from "react-router";
 import { useGetOrderByIdQuery, useGetPendingOrderByIdQuery } from "../../redux/api/ordersApiSlice";
 import { Container, Row, Col, Card, Button, Image } from "react-bootstrap";
+import { IMG_URL } from "../../redux/constants";
 
 const PendingOrders = () => {
   const { id } = useParams();
   const { data, isLoading, isError } = useGetPendingOrderByIdQuery(id);
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const order = data?.orders
   console.log(order)
 
@@ -37,7 +37,7 @@ const PendingOrders = () => {
                     <Row className="align-items-center">
                       <Col md={1}>
                         <Image
-                          src={`${imageBaseUrl}${item?.product?.pdImage[0]}`}
+                          src={`${IMG_URL}${item?.product?.pdImage[0]}`}
                           className="img-fluid"
                           alt={item?.product?.name}
                         />
