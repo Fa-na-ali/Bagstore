@@ -39,9 +39,6 @@ const AddCoupon = () => {
         if (!formData.discount || formData.discount <= 0) newErrors.discount = "Enter a valid discount";
         if (!formData.minAmount || formData.minAmount <= 0) newErrors.minAmount = "Enter a valid minimum amount";
         if (!formData.maxAmount || formData.maxAmount <= 0) newErrors.maxAmount = "Enter a valid maximum amount";
-        if (formData.minAmount && formData.maxAmount && Number(formData.minAmount) >= Number(formData.maxAmount)) {
-            newErrors.maxAmount = "Max amount must be greater than min amount";
-        }
         if (!formData.limit || formData.limit <= 0) newErrors.limit = "Enter a valid usage limit";
 
         setErrors(newErrors);

@@ -9,7 +9,7 @@ import Cards from '../../components/Cards';
 const ProductsList = () => {
 
   const { data: categories } = useFetchCategoriesQuery();
-  console.log("categories",categories)
+  console.log("categories", categories)
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
@@ -122,6 +122,11 @@ const ProductsList = () => {
                         { name: "Black", },
                         { name: "Green", },
                         { name: "Red", },
+                        { name: "Blue", },
+                        { name: "Yellow", },
+                        { name: "Pink", },
+                        { name: "Violet", },
+                        { name: "Orange", },
                       ].map((color, index) => (
                         <Form.Check key={index} label={`${color.name}`}
                           type="checkbox"

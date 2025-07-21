@@ -258,6 +258,7 @@ const googleLogin = async (req, res) => {
             })
         }
     } catch (err) {
+        console.log(err.message)
         res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: err.msg
