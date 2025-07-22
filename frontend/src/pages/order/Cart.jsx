@@ -111,7 +111,7 @@ const Cart = () => {
                               <span className="text-decoration-line-through text-muted me-2">
                                 ₹{item.originalPrice}
                               </span>
-                              <span className="text-success fw-bold">₹{item.discountedPrice}</span>
+                              <span className="text-success fw-bold">₹{item.discountedPrice.toFixed(2)}</span>
                             </>
                           ) : (
                             <span>₹{item.price}</span>

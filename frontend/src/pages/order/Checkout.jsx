@@ -156,21 +156,13 @@ const Checkout = () => {
           wallet: true,
         },
         handler: async function (response) {
-          try {
-            console.log('Payment successful', response);
-            await handlePlaceOrder(
-              orderData.order.id,
-              response.razorpay_payment_id,
-              response.razorpay_signature,
-              "Success"
-            );
-          } catch (error) {
-            console.error('Error in payment handler:', error);
-            // Close Razorpay window manually if needed
-            const rzp = document.querySelector('.razorpay-container');
-            if (rzp) rzp.remove();
-            navigate(`/order-failure`);
-          }
+          console.log('Payment successful', response);
+          await handlePlaceOrder(
+            orderData.order.id,
+            response.razorpay_payment_id,
+            response.razorpay_signature,
+            "Success"
+          );
         },
         theme: { color: '#3399cc' },
       };
@@ -179,7 +171,6 @@ const Checkout = () => {
       rzp.open();
 
       rzp.on('payment.failed', async function (response) {
-        console.error('Payment failed:', response);
         await handlePlaceOrder(
           orderData.order.id,
           "",
@@ -202,16 +193,16 @@ const Checkout = () => {
       toast.error("Your cart is empty. Please add items before placing an order.");
       return;
     }
-    if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
-      return handlePayment();
-    }
+    // if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
+    //   return handlePayment();
+    // }
     console.log("couoo", couponDiscountRef.current)
     try {
       const res = await createOrder({
         userId: user?.user._id,
         items: formattedItems,
         shippingAddress: selectedAddress,
-        paymentMethod: cart?.paymentMethod,
+        paymentMethod: selectedPayment,
         shippingPrice: total >= 700 ? 0 : 50,
         couponId: couponId || null,
         razorpay_order_id,
@@ -223,36 +214,31 @@ const Checkout = () => {
       }).unwrap();
       console.log('res', res)
       const id = res?._id
-      if (!id) {
+      if (id) dispatch(clearCartItems());
+      else {
         toast.error(res?.message);
       }
       if (status === "Success" && cart?.paymentMethod === "Razorpay") {
-        try {
-          const verifyData = await verifyPayment({
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature,
-          }).unwrap();
 
-          if (verifyData.status === "success") {
-            dispatch(clearCartItems());
-            toast.success("Order Placed successfully");
-            navigate(`/order-success?id=${id}`);
-          } else {
-            throw new Error("Payment verification failed");
-          }
-        } catch (verifyError) {
-          console.error("Verification error:", verifyError);
-          dispatch(clearCartItems());
-          navigate(`/order-failure?id=${id}`);
+        const verifyData = await verifyPayment({
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        }).unwrap();
+
+        if (verifyData.status === "success") {
+
+          toast.success("Order Placed successfully");
+          navigate(`/order-success?id=${id}`);
         }
+
       } else if (status === "Failed") {
-        console.log("resid", id)
-        dispatch(clearCartItems());
-        navigate(`/order-failure?id=${id}`);
+
+        toast.success("Order Placed successfully");
+        navigate(`/mine`);
+
       } else {
         if (id) {
-          dispatch(clearCartItems());
           toast.success("Order Placed successfully");
           navigate(`/order-success?id=${id}`);
         }

@@ -8,6 +8,7 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { toast } from "react-toastify";
 import { IMG_URL } from "../../redux/constants";
+import RetryButton from "../../components/RetryButton";
 
 pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
 
@@ -27,6 +28,7 @@ const OrderDetail = () => {
 
   if (isLoading) return <p>Loading...</p>;
   if (isError || !order) return <p>Error fetching order details.</p>;
+
   
   const handleCancelClick = (orderId, item) => {
     setSelectedOrder(orderId);
@@ -145,6 +147,11 @@ const OrderDetail = () => {
         </div>
         <h2 className="text-center pt-5 heading">ORDER DETAILS</h2>
         <p className="text-center caption">Order Id : {order.orderId}</p>
+        {order.paymentStatus==="Failed"?( <div className="d-flex justify-content-center mb-4">
+          <RetryButton orderId={id} />
+        </div>):""
+        }
+       
         <Container id="order-details" className="">
           <Row className="d-flex justify-content-center  h-100">
             <Col>

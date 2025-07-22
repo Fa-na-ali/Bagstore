@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useRetryPaymentMutation, useVerifyRetryPaymentMutation } from "../../redux/api/usersApiSlice";
 import Swal from 'sweetalert2';
+import RetryButton from "../../components/RetryButton";
 
 const PaymentFailure = () => {
 
@@ -103,9 +104,10 @@ const PaymentFailure = () => {
                       <Button variant="" className="border me-2 button-custom" onClick={() => { navigate(`/pending/order-details/${id}`) }}>
                         Order Details
                       </Button>
-                      <Button variant="success" className="shadow-0 border button-custom" onClick={() => { handleRetryPayment(id) }}>
+                      {/* <Button variant="success" className="shadow-0 border button-custom" onClick={() => { handleRetryPayment(id) }}>
                         Retry Payment
-                      </Button>
+                      </Button> */}
+                      <RetryButton orderId = {id} />
                     </div>
 
 

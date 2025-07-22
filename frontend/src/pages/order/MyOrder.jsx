@@ -4,6 +4,8 @@ import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } f
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router';
 import { IMG_URL } from '../../redux/constants';
+import RetryButton from '../../components/RetryButton';
+import { useDispatch } from 'react-redux';
 
 const MyOrder = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -132,6 +134,10 @@ const MyOrder = () => {
                           <div key={order._id}>
                             <h5>Order ID: {order.orderId}</h5>
                             <p>Total Price: ₹{order.totalPrice}</p>
+                             {order.paymentStatus==="Failed"?( <div className="d-flex justify-content-center mb-4">
+          <RetryButton orderId={order._id} />
+        </div>):""
+        }
                             <hr />
                             {order?.items?.length > 0 ? (
                               order.items.map((item) => (
