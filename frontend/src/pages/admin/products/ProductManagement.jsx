@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
-import {Link } from 'react-router';
+import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { useDeleteProductMutation, useGetProductsQuery, } from '../../../redux/api/productApiSlice';
@@ -13,7 +13,7 @@ const ProductManagement = () => {
   let { data, refetch: load, error, isLoading } = useGetProductsQuery({ keyword: searchTerm, page: currentPage });
   const [deleteProduct] = useDeleteProductMutation();
   const products = data?.products || [];
-console.log(data)
+  console.log(data)
 
   //  columns for the category table
   const columns = [
@@ -55,7 +55,6 @@ console.log(data)
     }
   };
 
-
   return (
     <>
       <Container fluid>
@@ -95,7 +94,7 @@ console.log(data)
                 </Col>
               </Row>
             </div>
-            {(products ) && (products.length > 0) ? (
+            {(products) && (products.length > 0) ? (
               <Ttable
                 naming="products"
                 data={products}

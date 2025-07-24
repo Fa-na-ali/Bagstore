@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { useGetAllOrdersQuery } from '../../../redux/api/ordersApiSlice';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
@@ -22,14 +22,14 @@ const OrderManagement = () => {
 
   const orders = data?.orders || [];
   console.log("orders", orders)
-  
-  
+
+
 
   useEffect(() => {
-      if (data)
-        refetch()
-  
-    }, [refetch]);
+    if (data)
+      refetch()
+
+  }, [refetch]);
 
   const columns = [
     { key: "orderId", label: "OrderID" },
@@ -37,13 +37,13 @@ const OrderManagement = () => {
     {
       key: "userId",
       label: "User",
-       
+
     },
     { key: "createdAt", label: "Date" },
-   
+
   ];
 
-  
+
 
   const searchHandler = (e) => {
     e.preventDefault();
@@ -83,8 +83,8 @@ const OrderManagement = () => {
                       }}
                     >
                       <option value="">Sort by</option>
-                      <option value="completed">Completed</option>
-                      <option value="not completed">Not completed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Not completed">Not completed</option>
                       {/* <option value="delivered">Delivered</option>
                       <option value="cancelled">Cancelled</option>
                       <option value="returned">Returned</option> */}

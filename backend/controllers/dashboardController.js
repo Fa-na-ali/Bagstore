@@ -1,4 +1,5 @@
 const Order = require("../models/orderModel");
+const Payment = require("../models/paymentModel");
 const User = require("../models/userModel");
 
 const getSalesReportData = async (filter, startDate, endDate) => {
@@ -275,24 +276,6 @@ const getSalesReportData = async (filter, startDate, endDate) => {
 };
 
 
-const getDateRangeText = (filter, startDate, endDate) => {
-  switch (filter) {
-    case 'daily':
-      return `Date: ${new Date().toLocaleDateString()}`;
-    case 'weekly':
-      return `Week: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
-    case 'monthly':
-      return `Month: ${new Date(startDate).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
-    case 'yearly':
-      return `Year: ${new Date().getFullYear()}`;
-    case 'custom':
-      return `Custom Range: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
-    default:
-      return 'Sales Report';
-  }
-};
-
-
 
 const getSalesReport = async (req, res) => {
   try {
@@ -336,9 +319,170 @@ const loadSalesReport = async (req, res) => {
     });
   }
 };
+///////////////////////////////////////////////////////////////////////
 
 const loadDashboard = async (req, res) => {
   try {
+    // let { startDate, endDate } = req.body;
+    // console.log("date",startDate,endDate)
+    // startDate = new Date(startDate);
+    // endDate = new Date(endDate);
+    // startDate.setUTCHours(0, 0, 0);
+    // endDate.setUTCHours(23, 59, 59);
+    const { filter, startDate, endDate } = req.query;
+    console.log("query", req.query)
+    let dateRange = {};
+    const now = new Date();
+
+    switch (filter) {
+      case 'daily':
+        dateRange = {
+          $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          $lte: new Date(new Date().setHours(23, 59, 59, 999)),
+        };
+        break;
+      case 'weekly':
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(now);
+        endOfWeek.setDate(now.getDate() + (6 - now.getDay()));
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        dateRange = {
+          $gte: startOfWeek,
+          $lte: endOfWeek
+        };
+        break;
+      case 'monthly':
+        dateRange = {
+          $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+          $lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+        };
+        break;
+      case 'yearly':
+        dateRange = {
+          $gte: new Date(now.getFullYear(), 0, 1),
+          $lte: new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999)
+        };
+        break;
+      case 'custom':
+        if (startDate && endDate) {
+          const endDateTime = new Date(endDate);
+          endDateTime.setHours(23, 59, 59, 999);
+          dateRange = {
+            $gte: new Date(startDate),
+            $lte: endDateTime
+          };
+        }
+        break;
+    }
+
+    const userData = await User.aggregate([
+      {
+        $match: {
+          createdAt:
+            dateRange
+
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" }
+          },
+          userCount: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id.year",
+          month: "$_id.month",
+          date: {
+            $concat: [
+              { $toString: "$_id.year" }, "-",
+              { $toString: "$_id.month" }, "-",
+              { $toString: "$_id.day" }
+            ]
+          },
+          userCount: 1
+        }
+      },
+      {
+        $sort: { year: 1, month: 1, date: 1 }
+      }
+    ]);
+
+    const salesData = await Payment.aggregate([
+      {
+        $match: {
+          status: "Success",
+          createdAt:
+            dateRange
+
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" }
+          },
+          total_amount: { $sum: "$amount" }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
+      },
+      {
+        $project: {
+          _id: 0,
+          date: {
+            $concat: [
+              { $toString: "$_id.year" }, "-",
+              { $toString: "$_id.month" }, "-",
+              { $toString: "$_id.day" }
+            ]
+          },
+          total_amount: 1
+        }
+      }
+    ]);
+
+    const orderData = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Success",
+          createdAt:
+            dateRange
+
+        }
+      },
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.status": "Delivered"
+        }
+      },
+      {
+        $group: {
+          _id: "$items.status",
+          order_count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          status: "$_id",
+          order_count: 1
+        }
+      }
+    ])
 
     const topSellingProducts = await Order.aggregate([
       { $unwind: '$items' },
@@ -379,12 +523,13 @@ const loadDashboard = async (req, res) => {
           totalRevenue: 1,
           'productInfo.pdImage': 1,
           'productInfo.brand': 1,
-          'productInfo.color': 1
+          'productInfo.color': 1,
         }
       },
       { $sort: { totalSold: -1 } },
       { $limit: 5 }
     ]);
+
     const topSellingCategories = await Order.aggregate([
       { $unwind: '$items' },
       {
@@ -408,129 +553,13 @@ const loadDashboard = async (req, res) => {
       { $limit: 5 }
     ]);
 
-    const monthlySales = await Order.aggregate([
-      {
-        $match: {
-          'items.status': 'Delivered',
-          'paymentStatus': 'Success'
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
-          },
-          totalRevenue: { $sum: "$totalPrice" },
-          totalDiscount: { $sum: "$totalDiscount" },
-          totalTax: { $sum: "$tax" },
-          couponDiscount: { $sum: "$couponDiscount" },
-          itemDiscounts: {
-            $sum: {
-              $reduce: {
-                input: "$items",
-                initialValue: 0,
-                in: { $add: ["$$value", "$$this.discount"] }
-              }
-            }
-          },
-          orderCount: { $sum: 1 }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          year: "$_id.year",
-          month: "$_id.month",
-          totalRevenue: 1,
-          totalDiscount: 1,
-          totalTax: 1,
-          couponDiscount: 1,
-          itemDiscounts: 1,
-          orderCount: 1,
-          netSales: {
-            $subtract: [
-              "$totalRevenue",
-              { $add: ["$totalDiscount", "$totalTax"] }
-            ]
-          }
-        }
-      },
-      { $sort: { "year": 1, "month": 1 } }
-    ]);
-
-
-    const monthlySalesLabels = monthlySales.map(sale => {
-      const date = new Date(sale.year, sale.month - 1);
-      return date.toLocaleString('default', { month: 'short', year: 'numeric' });
-    });
-
-    const monthlySalesData = monthlySales.map(sale => sale.netSales);
-    const lastMonthlySales = monthlySales.length ? monthlySales[monthlySales.length - 1].netSales : 0;
-
-
-    const monthlyCustomers = await User.aggregate([
-      {
-        $match: {
-          isAdmin: false,
-          isExist: true
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
-          },
-          newCustomers: { $sum: 1 }
-        }
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
-    ]);
-
-    const monthlyCustomersData = Array(12).fill(0);
-    monthlyCustomers.forEach(item => {
-      monthlyCustomersData[item._id.month - 1] = item.newCustomers;
-    });
-
-    const lastMonthlyCustomers = monthlyCustomers.length ?
-      monthlyCustomers[monthlyCustomers.length - 1].newCustomers : 0;
-
-
-    const monthlyOrders = await Order.aggregate([
-      {
-        $match: {
-          'items.status': 'Delivered',
-          'paymentStatus': 'Success'
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
-          },
-          totalOrders: { $sum: 1 }
-        }
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
-    ]);
-
-    const lastMonthlyOrders = monthlyOrders.length ?
-      monthlyOrders[monthlyOrders.length - 1].totalOrders : 0;
-
     res.status(200).json({
       status: "success",
       topSellingProducts,
       topSellingCategories,
-      monthlySalesLabels: JSON.stringify(monthlySalesLabels),
-      monthlySalesData: JSON.stringify(monthlySalesData),
-      lastMonthlySales,
-      lastMonthlyCustomers,
-      lastMonthlyOrders,
-      categoryLabels: JSON.stringify(topSellingCategories.map(cat => cat._id)),
-      categorySales: JSON.stringify(topSellingCategories.map(cat => cat.totalSold)),
-      monthlyCustomersData: JSON.stringify(monthlyCustomersData),
+      salesData,
+      orderData,
+      userData
     });
 
   } catch (error) {
@@ -541,7 +570,6 @@ const loadDashboard = async (req, res) => {
     });
   }
 };
-
 
 
 

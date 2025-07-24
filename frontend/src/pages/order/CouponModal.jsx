@@ -5,7 +5,7 @@ import { useGetAllCouponsQuery, useGetAllCouponsUserQuery } from "../../redux/ap
 
 const CouponModal = ({ show, handleClose }) => {
   const { data, error, isLoading } = useGetAllCouponsUserQuery();
-  console.log("couponssssssssss",data)
+  console.log("couponssssssssss", data)
   const [copySuccess, setCopySuccess] = useState("");
 
   const copyCoupon = (code) => {

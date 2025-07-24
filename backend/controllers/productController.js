@@ -27,9 +27,9 @@ const addProduct = async (req, res) => {
     if (!color) return res.status(400).json({ error: "Color is required" });
     if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
 
-   
+
     const imageUrls = files.map((file) => file.filename);
-    
+
     const product = await Product.create({
       name,
       description,
@@ -37,7 +37,7 @@ const addProduct = async (req, res) => {
       category,
       quantity,
       size,
-      offer:offer||"",
+      offer: offer || "",
       price,
       color,
       pdImage: imageUrls,
@@ -471,13 +471,13 @@ const fetchWishlist = async (req, res) => {
       })
     }
     const wishlist = await Wishlist.find({ userId })
-    .populate({
-      path: "productId",
-      populate: {
-        path: "category", // Assuming 'category' is a reference in the 'Product' model
-        model: "Category",
-      },
-    });
+      .populate({
+        path: "productId",
+        populate: {
+          path: "category", // Assuming 'category' is a reference in the 'Product' model
+          model: "Category",
+        },
+      });
     console.log(wishlist);
     if (!wishlist) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -501,7 +501,7 @@ const fetchWishlist = async (req, res) => {
 
 //remove from wishlist
 const removeFromWishlist = async (req, res) => {
-  const userId  = req.user._id;
+  const userId = req.user._id;
   const { productId } = req.body;
   console.log("removingggg")
   console.log("userIx", userId);

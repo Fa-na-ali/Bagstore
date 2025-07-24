@@ -11,12 +11,15 @@ export const dashboardApiSlice = apiSlice.injectEndpoints({
     }),
 
     getDashboardData: builder.query({
-      query: () =>`${USERS_URL}/admin/dashboard`,
-    }),
+      query: ({filter,startDate,endDate}) => ({
+        url: `${USERS_URL}/admin/dashboard`,
+        params: { filter,startDate,endDate }
+      }),
+      providesTags: ['Dashboard']
+    })
   })
 })
-
 export const {
-  useGetSalesReportQuery,
-  useGetDashboardDataQuery,
-} = dashboardApiSlice;
+      useGetSalesReportQuery,
+      useGetDashboardDataQuery,
+    } = dashboardApiSlice;

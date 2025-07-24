@@ -14,12 +14,12 @@ const Header = () => {
 
     // Get user info from Redux state
     const { userInfo } = useSelector((state) => state.auth);
-    console.log("userinfo",userInfo);
+    console.log("userinfo", userInfo);
     const id = (userInfo?._id) ? userInfo?._id : userInfo?.user._id
     console.log(id)
     const cart = useSelector((state) => state.cart);
     const { cartItems } = cart;
-    console.log("cart",cartItems)
+    console.log("cart", cartItems)
     const [logoutApiCall] = useLogoutMutation();
 
     const logoutHandler = async () => {

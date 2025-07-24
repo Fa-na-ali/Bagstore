@@ -316,7 +316,7 @@ const SalesReport = () => {
                       <td>{order.soldCount}</td>
                       <td>{order.returnedCount}</td>
                       <td>₹{order.productDiscounts.toFixed(2)}</td>
-                      <td>₹{order.revenue}</td>
+                      <td>₹{order.revenue.toFixed(2)}</td>
                     </tr>
                   ))
                 ) : (
@@ -363,17 +363,17 @@ const SalesReport = () => {
                           {order.shippingAddress.state}
                         </td>
                         <td>{order.paymentMethod}</td>
-                        <td>₹{order.couponDiscount}</td>
+                        <td>₹{order.couponDiscount.toFixed(2)}</td>
                         <td>₹{order.shippingPrice}</td>
                         <td>₹{order.tax.toFixed(2)}</td>
-                        <td>₹{order.totalDiscount}</td>
+                        <td>₹{order.totalDiscount.toFixed(2)}</td>
                         <td>₹{order.totalPrice.toFixed(2)}</td>
                         {/* <td>₹{order.totalPrice + order.tax + order.shippingPrice - order.totalDiscount - order.couponDiscount}</td> */}
                         <td>
                           <ul className="text-start">
                             {order.items.map((item, i) => (
                               <li key={i}>
-                                {item.name} ({item.category}), Qty: {item.qty}, Price: ₹{item.price}
+                                {item.name} ({item.category}), Qty: {item.qty}, Price: ₹{item.price.toFixed(2)}
                               </li>
                             ))}
                           </ul>
@@ -401,11 +401,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Coupon Discounts:</span>
-                      <span className="fw-medium">₹{reportData.couponDiscounts}</span>
+                      <span className="fw-medium">₹{reportData.couponDiscounts.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Sales Count:</span>
-                      <span className="fw-medium">{reportData.overallSalesCount}</span>
+                      <span className="fw-medium">{reportData.overallSalesCount.toFixed(2)}</span>
                     </div>
                   </Col>
                   <Col md={6}>
@@ -419,7 +419,7 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Net Revenue:</span>
-                      <span className="fw-bold text-success">₹{reportData.netRevenue}</span>
+                      <span className="fw-bold text-success">₹{reportData.netRevenue.toFixed(2)}</span>
                     </div>
                   </Col>
                 </Row>
