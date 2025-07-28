@@ -14,3 +14,4 @@ export const BOLDITALICS_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfm
 export const GOOGLE_API_URL = "http://localhost:5004/api/user"
 export const LOGO_URL = 'https://your-logo-url.com/logo.png'
 export const WALLET_IMG_URL = "https://www.svgrepo.com/show/362035/visa-3.svg"
+export const CONTACT_URL = 'https://formbold.com/s/9gXn4'

@@ -41,6 +41,7 @@ import Wallet from './pages/user/Wallet';
 import TransactionDetail from './pages/admin/Wallets/TransactionDetail';
 import Referrals from './pages/user/Referrals';
 import About from './pages/user/About';
+import Contact from './pages/user/Contact';
 
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard/AdminDashboard'))
 const SalesReport = lazy(() => import('./pages/admin/Dashboard/SalesReport'));
@@ -89,6 +90,7 @@ export const router = createBrowserRouter(
       {/* protected routes */}
       <Route element={<RequireAuth />}>
         <Route path="/about" element={<About />} />
+        <Route path="contact" element={<Contact />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account/edit" element={<EditProfile />} />
         <Route path="/account/add-address" element={<AddAddress />} />

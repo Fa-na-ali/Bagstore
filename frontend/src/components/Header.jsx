@@ -54,7 +54,7 @@ const Header = () => {
                                 <Nav.Link as={Link} to="/shop-products" className='caption'>Shop</Nav.Link>
                                 <Nav.Link as={Link} to="/" className='caption'>Categories</Nav.Link>
                                 <Nav.Link as={Link} to="/about" className='caption'>About</Nav.Link>
-                                {/* <Nav.Link as={Link} to="/" className='caption'>Contact</Nav.Link> */}
+                                <Nav.Link as={Link} to="/contact" className='caption'>Contact</Nav.Link>
                             </Nav>
 
                             {/* <Form className="mx-auto" style={{ maxWidth: "20rem", flex: 1 }}>
