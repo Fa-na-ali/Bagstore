@@ -32,8 +32,7 @@ const { createPayment, verifyPayment, retryPayment, verifyRetryPayment } = requi
 const { loadSalesReport, getSalesReport, loadDashboard } = require('../controllers/dashboardController')
 const { getReferrals, getReferralCode } = require('../controllers/referralController')
 
-
-
+//user routes
 router.route('/register').post(userSignup)
 router.route('/login').post(userLogin)
 router.route('/auth/refresh').post(generaterefreshToken)

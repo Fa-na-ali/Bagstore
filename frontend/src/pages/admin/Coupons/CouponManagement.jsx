@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
@@ -13,13 +13,13 @@ const CouponManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   let { data, refetch: load, error, isLoading } = useGetAllCouponsQuery({ keyword: searchTerm, page: currentPage });
   const coupons = data?.coupons || [];
-  console.log(coupons)
   const [deleteCoupon] = useDeleteCouponMutation();
 
+  //columns for table
   const columns = [
     { key: "coupon_code", label: "Coupon Code" },
     { key: "name", label: "Coupon Name" },
-    { key: "discount", label: "Discount" }, 
+    { key: "discount", label: "Discount" },
     { key: "minAmount", label: "Min" },
     { key: "maxAmount", label: "Max" },
     { key: "expiry", label: "Expiry" },
@@ -99,15 +99,15 @@ const CouponManagement = () => {
                 </Col>
               </Row>
             </div>
-            {(coupons) && (coupons.length > 0 ) ? (
+            {(coupons) && (coupons.length > 0) ? (
               <Ttable
-              naming="coupons"
-              data={coupons}
-              columns={columns}
-              onDelete={handleDelete}
-              onPage={handlePageChange}
-              pageData={data}
-              currentPage={currentPage}
+                naming="coupons"
+                data={coupons}
+                columns={columns}
+                onDelete={handleDelete}
+                onPage={handlePageChange}
+                pageData={data}
+                currentPage={currentPage}
 
 
               />

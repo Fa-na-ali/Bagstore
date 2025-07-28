@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useRegisterMutation } from "../../redux/api/usersApiSlice";
 import { GoogleWrapper } from "../../App";
@@ -27,7 +27,7 @@ const validationSchema = yup.object().shape({
 });
 
 const Register = () => {
- 
+
   const navigate = useNavigate();
   const { search } = useLocation();
   const sp = new URLSearchParams(search);
@@ -45,8 +45,7 @@ const Register = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    console.log("UserInfo:", userInfo);
-    console.log("Redirect Path:", redirect);
+
     if (userInfo) {
       navigate(redirect);
     }
@@ -61,14 +60,13 @@ const Register = () => {
         phone: data.phone,
         password: data.password,
         confirmPassword: data.confirmPassword,
-        referCode:data.referCode
+        referCode: data.referCode
       }).unwrap();
       toast.success("User successfully registered");
       navigate(`/verify-otp?email=${data.email}`);
       toast.success("OTP has been sent to your email.");
-      
+
     } catch (err) {
-      console.log(err);
       toast.error(err.data?.message || "Registration failed");
     }
   };

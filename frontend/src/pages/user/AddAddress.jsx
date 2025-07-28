@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 import { useNavigate } from 'react-router';
 import { useAddAddressMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+
 const AddAddress = () => {
     const [name, setName] = useState("")
     const [houseName, setHouseName] = useState("");
@@ -12,10 +13,10 @@ const AddAddress = () => {
     const [zipcode, setZipcode] = useState("");
     const [country, setCountry] = useState("");
     const [phone, setPhone] = useState("");
-
     const [addAddress] = useAddAddressMutation();
     const navigate = useNavigate();
 
+    //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -31,6 +32,7 @@ const AddAddress = () => {
             toast.error(error?.data?.message || 'Failed to add address');
         }
     };
+
     return (
         <>
             <section className="vh-100" style={{ backgroundColor: "#f4f5f7" }}>
@@ -105,8 +107,6 @@ const AddAddress = () => {
                     </Row>
                 </Container>
             </section>
-
-
         </>
     )
 }

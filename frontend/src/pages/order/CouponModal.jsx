@@ -1,13 +1,17 @@
-import React, { useState } from "react";
-import { Modal, Button, Form, Alert, Spinner } from "react-bootstrap";
-import { useGetAllCouponsQuery, useGetAllCouponsUserQuery } from "../../redux/api/usersApiSlice";
-
+import { useState, useEffect } from "react";
+import { Modal, Button, Alert, Spinner } from "react-bootstrap";
+import { useGetAllCouponsUserQuery } from "../../redux/api/usersApiSlice";
 
 const CouponModal = ({ show, handleClose }) => {
-  const { data, error, isLoading } = useGetAllCouponsUserQuery();
-  console.log("couponssssssssss",data)
+  const { data, refetch, error, isLoading } = useGetAllCouponsUserQuery();
   const [copySuccess, setCopySuccess] = useState("");
 
+  useEffect(() => {
+    if (data)
+      refetch();
+  }, [data, refetch])
+
+  //copy coupon
   const copyCoupon = (code) => {
     navigator.clipboard.writeText(code).then(() => {
       setCopySuccess("Coupon copied to clipboard!");

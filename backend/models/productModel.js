@@ -21,7 +21,7 @@ const productSchema = new Schema({
     type: [String],
     default: []
   },
-  
+
   price: {
     type: Number,
     required: true,
@@ -56,12 +56,12 @@ const productSchema = new Schema({
   },
   offer: {
     type: String,
-    
+
   },
   ordered: {
     type: Number,
     default: 0
-},
+  },
   createdBy: {
     type: String,
     required: true

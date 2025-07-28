@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   Container,
   Row,
@@ -10,30 +10,30 @@ import {
   Spinner,
   Alert
 } from 'react-bootstrap';
-import { 
-  useGetReferralCodeMutation, 
+import { toast } from 'react-toastify';
+import {
+  useGetReferralCodeMutation,
   useGetReferralDetailsQuery,
- 
+
 } from '../../redux/api/usersApiSlice';
 
 const Referrals = () => {
-  const { data: referralData,isLoading, error, refetch } = useGetReferralDetailsQuery();
-  const [generateCode, { isLoading: isGenerating }] =useGetReferralCodeMutation();
-  console.log("ref",referralData)
+  const { data: referralData, isLoading, error, refetch } = useGetReferralDetailsQuery();
+  const [generateCode, { isLoading: isGenerating }] = useGetReferralCodeMutation();
 
   useEffect(() => {
-  if(referralData)
-    refetch()
+    if (referralData)
+      refetch()
   }, [refetch])
-  
-  
+
+
   const handleGetReferral = async () => {
     try {
       const { data } = await generateCode().unwrap();
       refetch(); // Refresh the referral data
-      console.log("Generated code:", data);
+
     } catch (err) {
-      console.error("Failed to generate code:", err);
+      toast.error("Failed to generate code");
     }
   };
 
@@ -41,21 +41,21 @@ const Referrals = () => {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
       .then(() => alert('Copied to clipboard!'))
-      .catch(err => console.error('Copy failed:', err));
+      .catch(err => toast.error('Copy failed'));
   };
 
   if (isLoading) return <Spinner animation="border" />;
   if (error) return <Alert variant="danger">Error loading referrals</Alert>;
 
   return (
-    
+
     <Container fluid className="pt-4 my-custom-min-height background-one">
       <Row>
         <Col lg={8}>
           <h2 className='heading'>My Referral Details</h2>
 
           {!referralData?.referrals?.referralCode ? (
-            <Button 
+            <Button
               onClick={handleGetReferral}
               disabled={isGenerating}
             >

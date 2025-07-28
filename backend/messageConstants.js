@@ -13,7 +13,7 @@ module.exports = {
     USER_DELETE_MSG: "User deleted successfully (soft delete)",
     USER_PASS_RESET_MSG: "Password reset successful. You can now log in!",
     USER_ID_MSG: "Invalid User ID",
-    
+
     ADDRESS_EXIST_MSG: "Address already exists",
     ADDRESS_ADD_MSG: "Address added successfully!",
     ADDRESS_INVALID_MSG: "Invalid address ID",

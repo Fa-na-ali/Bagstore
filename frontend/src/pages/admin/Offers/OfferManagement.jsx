@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
@@ -13,18 +13,17 @@ const OfferManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   let { data, refetch: load, error, isLoading } = useGetAllOffersQuery({ keyword: searchTerm, page: currentPage });
   const offers = data?.offers || [];
-  console.log(offers)
   const [deleteOffer] = useDeleteOfferMutation();
 
   const columns = [
     { key: "name", label: "Offer Name" },
-    { key: "discount", label: "Discount" }, 
+    { key: "discount", label: "Discount" },
     { key: "minAmount", label: "Min" },
     { key: "type", label: "Type" },
     { key: "expiry", label: "Expiry" },
     { key: "status", label: "Status" },
     { key: "createdAt", label: "created At" },
-    
+
   ];
 
   useEffect(() => {
@@ -33,6 +32,7 @@ const OfferManagement = () => {
 
   }, [load]);
 
+  //searching
   const searchHandler = (e) => {
     e.preventDefault();
     refetch();
@@ -99,15 +99,15 @@ const OfferManagement = () => {
                 </Col>
               </Row>
             </div>
-            {(offers) && (offers.length > 0 ) ? (
+            {(offers) && (offers.length > 0) ? (
               <Ttable
-              naming="offers"
-              data={offers}
-              columns={columns}
-              onDelete={handleDelete}
-              onPage={handlePageChange}
-              pageData={data}
-              currentPage={currentPage}
+                naming="offers"
+                data={offers}
+                columns={columns}
+                onDelete={handleDelete}
+                onPage={handlePageChange}
+                pageData={data}
+                currentPage={currentPage}
 
 
               />

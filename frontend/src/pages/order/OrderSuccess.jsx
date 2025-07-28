@@ -1,16 +1,12 @@
-import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, } from "react-bootstrap";
 import { useLocation, useNavigate, useParams } from "react-router";
 
-
 const OrderSuccess = () => {
-
 
     const navigate = useNavigate()
     const { search } = useLocation();
     const sp = new URLSearchParams(search);
     const id = sp.get("id") || "";
-    console.log("id",id)
 
     return (
 
@@ -34,10 +30,7 @@ const OrderSuccess = () => {
                                                 Continue Shopping
                                             </Button>
                                         </div>
-
-
                                     </Row>
-
                                 </Card.Body>
                             </Card>
                         </Col>

@@ -23,7 +23,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     getProductsByIds: builder.query({
       query: (ids) => ({
         url: `${PRODUCT_URL}/idarray`,
-        params: { ids: ids.join(",") }, 
+        params: { ids: ids.join(",") },
       }),
     }),
 
@@ -113,7 +113,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     }),
 
     filterProducts: builder.query({
-      query: ({ search, categories,  colors,minPrice, maxPrice,  sortBy, page}) => {
+      query: ({ search, categories, colors, minPrice, maxPrice, sortBy, page }) => {
         const params = new URLSearchParams();
 
         if (search) params.append("search", search);
@@ -121,10 +121,10 @@ export const productApiSlice = apiSlice.injectEndpoints({
         if (colors.length) colors.forEach((color) => params.append("color", color));
         if (minPrice) params.append("minPrice", minPrice);
         if (maxPrice) params.append("maxPrice", maxPrice);
-       
+
         if (sortBy) params.append("sortBy", sortBy);
         params.append("page", page);
-       
+
 
         return `${PRODUCT_URL}/shop-products?${params.toString()}`;
       },

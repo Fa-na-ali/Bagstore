@@ -6,10 +6,8 @@ const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     try {
-        console.log("Received OTP verification request:", { email, otp });
 
         const storedOtp = otpStore.get(email);
-        console.log("Stored OTP:", storedOtp);
 
         if (!storedOtp) {
             return res.status(400).json({ message: "OTP expired or not found" });
@@ -20,19 +18,16 @@ const verifyOtp = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
-        console.log("User found:", user);
 
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
 
-        const { token, refreshToken }  = generateToken(user);
-        console.log("Generated Token:", token);
+        const { token, refreshToken } = generateToken(user);
 
-        res.status(200).json({ message: "OTP verified", token, refreshToken, user});
+        res.status(200).json({ message: "OTP verified", token, refreshToken, user });
 
         otpStore.delete(email);
-        console.log("OTP cleared from store");
 
     } catch (error) {
         console.error("Error in verifyOtp:", error);
@@ -44,10 +39,8 @@ const verifyOtpPass = async (req, res) => {
     const { email, otp } = req.body;
 
     try {
-        console.log("Received OTP verification request:", { email, otp });
 
         const storedOtp = otpStore.get(email);
-        console.log("Stored OTP:", storedOtp);
 
         if (!storedOtp) {
             return res.status(400).json({ message: "OTP expired or not found" });
@@ -61,16 +54,13 @@ const verifyOtpPass = async (req, res) => {
             return res.status(400).json({ message: "Invalid OTP" });
         }
 
-
         const user = await User.findOne({ email });
-        console.log("User found:", user);
 
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
         res.status(200).json({ message: "OTP verified", });
         otpStore.delete(email);
-        console.log("OTP cleared from store");
 
     } catch (error) {
         console.error("Error in verifyOtp:", error);

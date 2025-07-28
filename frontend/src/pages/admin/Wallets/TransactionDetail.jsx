@@ -1,22 +1,18 @@
-import React from 'react';
-import { Card, Badge, Button } from 'react-bootstrap';
+import { Card, Badge,} from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useGetTransactionQuery } from '../../../redux/api/walletApiSlice';
 
 const TransactionDetail = () => {
   const { transactionId } = useParams();
-  console.log(transactionId)
   const { data: transactions, isLoading } = useGetTransactionQuery(transactionId);
-   console.log("trans",transactions)
-  
-   if (isLoading) return <p>Loading...</p>;
-if (!transactions || !transactions.transaction) return <p>Transaction not found</p>;
+
+  if (isLoading) return <p>Loading...</p>;
+  if (!transactions || !transactions.transaction) return <p>Transaction not found</p>;
 
 
   const { transaction: trxs, transactionType, orderButton } = transactions;
-  console.log("createdAt raw:", trxs.transaction.createdAt);
-  const trx= trxs.transaction
+  const trx = trxs.transaction
   const { user } = transactions;
 
   const getTypeBadge = (type) => {
@@ -113,11 +109,10 @@ if (!transactions || !transactions.transaction) return <p>Transaction not found<
               <Card.Body className="text-center p-4">
                 <div className="mb-4">
                   <span className="fw-bold text-dark d-block mb-2">Transaction Related To:</span>
-                  <span className={`badge rounded-pill p-2 ${
-                    trxs.transactionType === 'Order Returned' ? 'bg-warning text-dark' :
-                    trxs.transactionType === 'Order Cancelled' ? 'bg-danger' :
-                    trxs.transactionType === 'Debited' ? 'bg-info text-dark' : 'bg-secondary'
-                  }`}>
+                  <span className={`badge rounded-pill p-2 ${trxs.transactionType === 'Order Returned' ? 'bg-warning text-dark' :
+                      trxs.transactionType === 'Order Cancelled' ? 'bg-danger' :
+                        trxs.transactionType === 'Debited' ? 'bg-info text-dark' : 'bg-secondary'
+                    }`}>
                     {trxs.transactionType}
                   </span>
                 </div>

@@ -4,6 +4,7 @@ const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlew
 const { addProduct, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts, newProducts, fetchRelatedProducts, filterProducts,getQuantity, updateWishlist, fetchWishlist, removeFromWishlist } = require('../controllers/productController')
 const imageUpload = require('../imageUpload')
 
+//product routes
 router.route('/new').get(newProducts)
 router.route('/idarray').get(getQuantity)
 router.route('/shop-products').get(authenticate,blockDisabledUsers,filterProducts)
@@ -19,8 +20,6 @@ router.route('/:id')
     .put(authenticate,blockDisabledUsers, authorizeAdmin, imageUpload.array("pdImage"), updateProduct)
 router.route('/:id/:index').delete(authenticate, blockDisabledUsers,authorizeAdmin, deleteImage)
 router.route('/update-wishlist').post(authenticate,blockDisabledUsers,updateWishlist)
-
-
 
 
 module.exports = router

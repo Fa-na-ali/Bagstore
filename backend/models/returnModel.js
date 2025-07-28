@@ -35,7 +35,7 @@ const Schema = mongoose.Schema({
         type: String,
         required: false
     }
-}, {timestamps: {createdAt: "createdAt", updatedAt: "updatedAt"}});
+}, { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } });
 
 const Return = mongoose.model('Return', Schema);
 

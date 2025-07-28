@@ -1,7 +1,6 @@
-import React, { useState } from "react";
 import { FaEye } from "react-icons/fa";
-import { Table, Container, Row, Col, Form, InputGroup, Button, Pagination, FormControl, Dropdown, Badge } from "react-bootstrap";
-import { FaSort, FaSearch, FaTimes, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
+import { Table, Container, Button, Pagination, Badge } from "react-bootstrap";
+import { FaSort, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage }) => {
@@ -15,7 +14,6 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
           <div className="table-title my-5">
 
           </div>
-
 
           <Table bordered hover responsive>
             <thead className="heading">
@@ -68,19 +66,23 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                       {(naming === "orders" || naming === "wallets") ? (
                         <Link to={`/admin/${naming}/edit/${item._id}`}>
                           <Button variant="link" className="caption p-0 me-2" title="View">
-                          <FaEye />
+                            <FaEye />
                           </Button>
                         </Link>
                       ) : (
-                        <Link to={`/admin/${naming}/edit/${item._id}`}>
-                          <Button variant="link" className="caption p-0 me-2" title="Edit">
-                            <FaEdit />
-                          </Button>
-                        </Link>
+                        naming !== "user" && (
+                          <Link to={`/admin/${naming}/edit/${item._id}`}>
+                            <Button variant="link" className="caption p-0 me-2" title="Edit">
+                              <FaEdit />
+                            </Button>
+                          </Link>
+                        )
                       )}
-                      <Button variant="link" className="text-danger p-0" title="Delete" onClick={() => onDelete(item._id)}>
-                        <FaTrash />
-                      </Button>
+                      {naming !== "wallets" && (
+                        <Button variant="link" className="text-danger p-0" title="Delete" onClick={() => onDelete(item._id)}>
+                          <FaTrash />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -91,7 +93,6 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
               )}
             </tbody>
           </Table>
-
 
           <div className="clearfix d-flex justify-content-between align-items-center">
             <div className="hint-text">Showing <b>{data.length}</b> out of <b>{pageData?.count || 0}</b> entries</div>

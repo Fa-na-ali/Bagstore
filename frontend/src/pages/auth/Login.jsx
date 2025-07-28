@@ -1,4 +1,3 @@
-import React from "react";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import loginImage from "../../assets/images/b1.webp";
 import logo from "../../assets/images/2.png";
@@ -11,8 +10,6 @@ import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../../redux/api/usersApiSlice";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
-import GoolgeLogin from "./GoogleLogin";
-import { GoogleLogin } from "@react-oauth/google";
 import { GoogleWrapper } from "../../App";
 
 //Validation schema
@@ -24,8 +21,7 @@ const validationSchema = yup.object().shape({
 const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
-   const dispatch = useDispatch();
-  // React Hook Form setup
+  const dispatch = useDispatch();
   const {
     register,
     handleSubmit,
@@ -38,20 +34,19 @@ const Login = () => {
       const res = await login({ email: data.email, password: data.password }).unwrap();
 
       if (res) {
-         dispatch(setCredentials({ ...res }));
-              if (res.user.isAdmin && res.user.isExist) {
-                navigate("/admin/dashboard");
-              } else if(!res.user.isAdmin && res.user.isExist){
-                navigate("/");
-              }
-              else
-              toast.error("You are blocked");
-       
+        dispatch(setCredentials({ ...res }));
+        if (res.user.isAdmin && res.user.isExist) {
+          navigate("/admin/dashboard");
+        } else if (!res.user.isAdmin && res.user.isExist) {
+          navigate("/");
+        }
+        else
+          toast.error("You are blocked");
+
       } else {
         toast.error("Something went wrong. Please try again.");
       }
     } catch (err) {
-      console.log(err);
       toast.error(err.data?.message || "Login failed. Please check your credentials.");
     }
   };

@@ -12,8 +12,6 @@ const getWallets = async (req, res) => {
         const wallets = await Wallet.find()
             .populate('userId', 'name email')
             .sort({ 'transactions.createdAt': -1 });
-
-
         const transactionData = [];
         wallets.forEach(wallet => {
             wallet.transactions.forEach(transaction => {
@@ -54,19 +52,14 @@ const getWallets = async (req, res) => {
 const transactionDetail = async (req, res) => {
     try {
         const id = req.params.transactionId;
-        console.log("id", id)
-
         const wallet = await Wallet.findOne({ 'transactions._id': id })
             .populate('userId', 'name email');
-        console.log("wallet", wallet)
         if (!wallet) {
             return res.status(404).json({
                 status: 'error',
                 message: "Transaction not found"
             });
         }
-
-
         const transaction = wallet.transactions && Array.isArray(wallet.transactions)
             ? wallet.transactions.find(tx => tx._id.toString() === id)
             : null;
@@ -188,7 +181,6 @@ const showWallet = async (req, res) => {
             await wallet.save();
         }
 
-
         wallet.transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         res.status(200).json({
@@ -206,8 +198,6 @@ const showWallet = async (req, res) => {
 //create order for razorpay
 const createOrderWallet = async (req, res) => {
     const { amount } = req.body;
-
-    console.log("req", req.body)
     const options = {
         amount: amount * 100,
         currency: "INR",
@@ -219,7 +209,6 @@ const createOrderWallet = async (req, res) => {
         const order = await razorpay.orders.create(options);
         res.status(200).json(order);
     } catch (error) {
-        console.log(error)
         res.status(500).json({ error: error.message });
     }
 }

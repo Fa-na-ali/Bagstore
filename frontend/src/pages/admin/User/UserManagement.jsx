@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Col, Container, Row, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
 import AdminSidebar from '../../../components/AdminSidebar'
 import Ttable from '../../../components/Ttable'

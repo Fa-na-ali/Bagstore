@@ -1,4 +1,5 @@
 const Order = require("../models/orderModel");
+const Payment = require("../models/paymentModel");
 const User = require("../models/userModel");
 
 const getSalesReportData = async (filter, startDate, endDate) => {
@@ -61,17 +62,14 @@ const getSalesReportData = async (filter, startDate, endDate) => {
   if (Object.keys(dateRange).length > 0) {
     matchConditions.createdAt = dateRange;
   }
-  console.log('Final match conditions:', JSON.stringify(matchConditions, null, 2))
+
   const orders = await Order.find({
     "items.status": "Delivered"
   });
-  console.log("orders", orders)
 
   try {
 
     const orderCount = await Order.countDocuments(matchConditions);
-    console.log(`Found ${orderCount} matching orders`);
-
     if (orderCount === 0) {
       return {
         orders: [],
@@ -191,35 +189,67 @@ const getSalesReportData = async (filter, startDate, endDate) => {
       }
     ]);
 
+    //detailed orders
+    const detailedOrders = await Order.aggregate([
+      { $match: matchConditions },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $lookup: {
+          from: 'addresses',
+          localField: 'shippingAddress',
+          foreignField: '_id',
+          as: 'address'
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $unwind: "$address"
+      },
+      {
+        $project: {
+          orderDate: "$createdAt",
+          orderNumber: 1,
+          userName: "$user.name",
+          userEmail: "$user.email",
+          shippingAddress: "$address",
+          paymentMethod: 1,
+          couponDiscount: 1,
+          shippingPrice: 1,
+          tax: 1,
+          totalDiscount: 1,
+          totalPrice: 1,
+          items: 1
+        }
+      }
+    ]);
+
+
     const totalCouponDiscount = couponStats[0]?.totalCouponDiscount || 0;
     const totalProductDiscounts = result.reduce((sum, item) => sum + item.productDiscounts, 0);
     const totalRevenue = result.reduce((sum, item) => sum + item.revenue, 0);
     const totalSold = result.reduce((sum, item) => sum + item.soldCount, 0);
     const totalReturns = result.reduce((sum, item) => sum + item.returnedCount, 0);
 
-    console.log('Aggregation results:', JSON.stringify({
-      orders: result,
-      offerDiscounts: totalProductDiscounts,
-      couponDiscounts: totalCouponDiscount,
-      overallSalesCount: totalSold,
-      orderCount: couponStats[0]?.totalOrders || 0,
-      returnedOrderCount: couponStats[0]?.returnedOrders || 0,
-      overallDiscount: totalProductDiscounts + totalCouponDiscount,
-      netRevenue: totalRevenue,
-      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount
-    }, null, 2));
-
-
     return {
       orders: result,
-      offerDiscounts: totalProductDiscounts,
+      offerDiscounts: totalProductDiscounts.toFixed(2),
       couponDiscounts: totalCouponDiscount,
       overallSalesCount: totalSold,
       orderCount: couponStats[0]?.totalOrders || 0,
       returnedOrderCount: couponStats[0]?.returnedOrders || 0,
       overallDiscount: totalProductDiscounts + totalCouponDiscount,
       netRevenue: totalRevenue,
-      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount
+      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount,
+      detailedOrders
     };
   } catch (error) {
     console.error('Error in getSalesReportData:', error);
@@ -231,32 +261,11 @@ const getSalesReportData = async (filter, startDate, endDate) => {
 };
 
 
-const getDateRangeText = (filter, startDate, endDate) => {
-  switch (filter) {
-    case 'daily':
-      return `Date: ${new Date().toLocaleDateString()}`;
-    case 'weekly':
-      return `Week: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
-    case 'monthly':
-      return `Month: ${new Date(startDate).toLocaleString('default', { month: 'long', year: 'numeric' })}`;
-    case 'yearly':
-      return `Year: ${new Date().getFullYear()}`;
-    case 'custom':
-      return `Custom Range: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
-    default:
-      return 'Sales Report';
-  }
-};
-
-
-
+//sales report 
 const getSalesReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
-    console.log("query", req.query)
-
     const reportData = await getSalesReportData(filter, startDate, endDate);
-
     res.status(200).json(reportData);
   } catch (error) {
     console.error('Error generating sales report:', error);
@@ -267,8 +276,7 @@ const getSalesReport = async (req, res) => {
   }
 };
 
-
-
+//load sles report
 const loadSalesReport = async (req, res) => {
   try {
     const reportData = await getSalesReportData('daily');
@@ -292,10 +300,180 @@ const loadSalesReport = async (req, res) => {
     });
   }
 };
+///////////////////////////////////////////////////////////////////////
 
 const loadDashboard = async (req, res) => {
   try {
 
+    let { filter, startDate, endDate } = req.query;
+    startDate = parseInt(startDate);
+    endDate = endDate ? new Date(endDate) : null;
+    let dateRange = {};
+    const now = new Date();
+
+    switch (filter) {
+      case 'daily':
+        dateRange = {
+          $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          $lte: new Date(new Date().setHours(23, 59, 59, 999)),
+        };
+        break;
+      case 'weekly':
+
+        const day = now.getDay();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        dateRange = {
+          $gte: startOfWeek,
+          $lte: endOfWeek
+        };
+        break;
+      case 'monthly':
+        const month = parseInt(startDate);
+        const yearl = now.getFullYear();
+
+        const startOfMonth = new Date(yearl, month, 1);
+        const endOfMonth = new Date(yearl, month + 1, 0, 23, 59, 59, 999);
+
+        dateRange = {
+          $gte: startOfMonth,
+          $lte: endOfMonth
+        };
+        break;
+      case 'yearly':
+        const year = !isNaN(startDate) ? startDate : now.getFullYear();
+        dateRange = {
+          $gte: new Date(year, 0, 1),
+          $lte: new Date(year, 11, 31, 23, 59, 59, 999)
+        };
+        break;
+      case 'custom':
+        if (startDate && endDate) {
+          const endDateTime = new Date(endDate);
+          endDateTime.setHours(23, 59, 59, 999);
+          dateRange = {
+            $gte: new Date(startDate),
+            $lte: endDateTime
+          };
+        }
+        break;
+    }
+
+    //user data
+    const userData = await User.aggregate([
+      {
+        $match: {
+          createdAt:
+            dateRange
+
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" }
+          },
+          userCount: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id.year",
+          month: "$_id.month",
+          date: {
+            $concat: [
+              { $toString: "$_id.year" }, "-",
+              { $toString: "$_id.month" }, "-",
+              { $toString: "$_id.day" }
+            ]
+          },
+          userCount: 1
+        }
+      },
+      {
+        $sort: { year: 1, month: 1, date: 1 }
+      }
+    ]);
+
+    //sales data
+    const salesData = await Payment.aggregate([
+      {
+        $match: {
+          status: "Success",
+          createdAt:
+            dateRange
+
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" }
+          },
+          total_amount: { $sum: "$amount" }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
+      },
+      {
+        $project: {
+          _id: 0,
+          date: {
+            $concat: [
+              { $toString: "$_id.year" }, "-",
+              { $toString: "$_id.month" }, "-",
+              { $toString: "$_id.day" }
+            ]
+          },
+          total_amount: 1
+        }
+      }
+    ]);
+
+    //order data
+    const orderData = await Order.aggregate([
+      {
+        $match: {
+          paymentStatus: "Success",
+          createdAt:
+            dateRange
+
+        }
+      },
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.status": "Delivered"
+        }
+      },
+      {
+        $group: {
+          _id: "$items.status",
+          order_count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          status: "$_id",
+          order_count: 1
+        }
+      }
+    ])
+
+    //top selling products
     const topSellingProducts = await Order.aggregate([
       { $unwind: '$items' },
       {
@@ -335,12 +513,14 @@ const loadDashboard = async (req, res) => {
           totalRevenue: 1,
           'productInfo.pdImage': 1,
           'productInfo.brand': 1,
-          'productInfo.color': 1
+          'productInfo.color': 1,
         }
       },
       { $sort: { totalSold: -1 } },
       { $limit: 5 }
     ]);
+
+    //top selling categories
     const topSellingCategories = await Order.aggregate([
       { $unwind: '$items' },
       {
@@ -364,129 +544,13 @@ const loadDashboard = async (req, res) => {
       { $limit: 5 }
     ]);
 
-    const monthlySales = await Order.aggregate([
-      {
-        $match: {
-          'items.status': 'Delivered',
-          'paymentStatus': 'Success'
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
-          },
-          totalRevenue: { $sum: "$totalPrice" },
-          totalDiscount: { $sum: "$totalDiscount" },
-          totalTax: { $sum: "$tax" },
-          couponDiscount: { $sum: "$couponDiscount" },
-          itemDiscounts: {
-            $sum: {
-              $reduce: {
-                input: "$items",
-                initialValue: 0,
-                in: { $add: ["$$value", "$$this.discount"] }
-              }
-            }
-          },
-          orderCount: { $sum: 1 }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          year: "$_id.year",
-          month: "$_id.month",
-          totalRevenue: 1,
-          totalDiscount: 1,
-          totalTax: 1,
-          couponDiscount: 1,
-          itemDiscounts: 1,
-          orderCount: 1,
-          netSales: {
-            $subtract: [
-              "$totalRevenue",
-              { $add: ["$totalDiscount", "$totalTax"] }
-            ]
-          }
-        }
-      },
-      { $sort: { "year": 1, "month": 1 } }
-    ]);
-
-
-    const monthlySalesLabels = monthlySales.map(sale => {
-      const date = new Date(sale.year, sale.month - 1);
-      return date.toLocaleString('default', { month: 'short', year: 'numeric' });
-    });
-
-    const monthlySalesData = monthlySales.map(sale => sale.netSales);
-    const lastMonthlySales = monthlySales.length ? monthlySales[monthlySales.length - 1].netSales : 0;
-
-
-    const monthlyCustomers = await User.aggregate([
-      {
-        $match: {
-          isAdmin: false,
-          isExist: true
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
-          },
-          newCustomers: { $sum: 1 }
-        }
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
-    ]);
-
-    const monthlyCustomersData = Array(12).fill(0);
-    monthlyCustomers.forEach(item => {
-      monthlyCustomersData[item._id.month - 1] = item.newCustomers;
-    });
-
-    const lastMonthlyCustomers = monthlyCustomers.length ?
-      monthlyCustomers[monthlyCustomers.length - 1].newCustomers : 0;
-
-
-    const monthlyOrders = await Order.aggregate([
-      {
-        $match: {
-          'items.status': 'Delivered',
-          'paymentStatus': 'Success'
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" }
-          },
-          totalOrders: { $sum: 1 }
-        }
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
-    ]);
-
-    const lastMonthlyOrders = monthlyOrders.length ?
-      monthlyOrders[monthlyOrders.length - 1].totalOrders : 0;
-
     res.status(200).json({
       status: "success",
       topSellingProducts,
       topSellingCategories,
-      monthlySalesLabels: JSON.stringify(monthlySalesLabels),
-      monthlySalesData: JSON.stringify(monthlySalesData),
-      lastMonthlySales,
-      lastMonthlyCustomers,
-      lastMonthlyOrders,
-      categoryLabels: JSON.stringify(topSellingCategories.map(cat => cat._id)),
-      categorySales: JSON.stringify(topSellingCategories.map(cat => cat.totalSold)),
-      monthlyCustomersData: JSON.stringify(monthlyCustomersData),
+      salesData,
+      orderData,
+      userData
     });
 
   } catch (error) {
@@ -497,7 +561,6 @@ const loadDashboard = async (req, res) => {
     });
   }
 };
-
 
 
 

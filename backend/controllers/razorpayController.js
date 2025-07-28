@@ -76,12 +76,11 @@ const retryPayment = async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    const amount = existingOrder.totalPrice ? existingOrder.totalPrice * 100 : 0;
+    const amount = existingOrder.totalPrice ? Math.round(existingOrder.totalPrice * 100) : 0;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ success: false, message: "Invalid order amount." });
     }
-
     const razorpayOrder = await instance.orders.create({
       amount: amount,
       currency: "INR",
@@ -90,7 +89,7 @@ const retryPayment = async (req, res) => {
     });
 
     res.status(STATUS_CODES.OK).json({
-      status:"success",
+      status: "success",
       orderId: orderIdValue,
       orderNumber: orderNumber,
       order: {
@@ -102,7 +101,7 @@ const retryPayment = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating retry payment:", error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status:"error", message: "Error processing retry payment" });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: "Error processing retry payment" });
   }
 };
 

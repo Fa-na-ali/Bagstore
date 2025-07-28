@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
@@ -54,14 +54,12 @@ const CreateOffer = () => {
         }
     };
 
-
+    //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form Data:", formData);
         if (!validateForm()) return;
         try {
             const response = await addOffer(formData).unwrap();
-            console.log(response)
             navigate('/admin/offers')
             toast.success(response.message);
         } catch (err) {

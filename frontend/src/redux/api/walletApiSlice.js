@@ -32,7 +32,7 @@ export const walletApiSlice = apiSlice.injectEndpoints({
       query: (amount) => ({
         url: `${WALLET_URL}/update`,
         method: 'POST',
-        body: {amount},
+        body: { amount },
       }),
       invalidatesTags: ['Wallet'],
     }),
@@ -44,7 +44,7 @@ export const walletApiSlice = apiSlice.injectEndpoints({
   })
 })
 
-export const{
+export const {
   useGetTransactionQuery,
   useGetAllWalletsQuery,
   useCreateOrderWalletMutation,

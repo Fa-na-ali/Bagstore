@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Card, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useForgotPasswordMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+
 const ForgotPass = () => {
 
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
+  //reset password
   const handleClick = async () => {
 
     if (!email) {
@@ -17,7 +19,6 @@ const ForgotPass = () => {
     }
     try {
       const { data } = await forgotPassword({ email }).unwrap();
-      console.log(data)
       toast.success(data?.message || "OTP sent to your email!");
       navigate(`/verify-otp-password?email=${email}`);
     } catch (error) {
@@ -25,10 +26,7 @@ const ForgotPass = () => {
     }
   }
 
-
   return (
-
-
     <>
       <section className="d-flex vh-100 justify-content-center align-items-center background">
         <Card className="text-center shadow-lg mb-5" style={{ width: "400px" }}>

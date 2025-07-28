@@ -1,5 +1,5 @@
 import { apiSlice } from "./apiSlice";
-import { ORDERS_URL} from "../constants";
+import { ORDERS_URL } from "../constants";
 
 export const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -14,7 +14,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
     getMyOrders: builder.query({
       query: (searchTerm) => ({
         url: `${ORDERS_URL}/mine`,
-        params: { searchTerm } 
+        params: { searchTerm }
       }),
       keepUnusedDataFor: 5,
     }),
@@ -34,19 +34,19 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
     }),
 
     cancelOrder: builder.mutation({
-      query: ({orderId,item,cancelReason}) => ({
+      query: ({ orderId, item, cancelReason }) => ({
         url: `${ORDERS_URL}/cancel`,
         method: "PUT",
         body: { orderId, item, cancelReason },
       }),
-      invalidatesTags: ["Order"], 
+      invalidatesTags: ["Order"],
     }),
 
     setItemStatus: builder.mutation({
-      query: ({ status,item,id }) => ({
+      query: ({ status, item, id }) => ({
         url: `${ORDERS_URL}/save-item-status`,
         method: "PUT",
-        body: { status,item,id},
+        body: { status, item, id },
       }),
       invalidatesTags: ["Order"],
     }),
@@ -91,4 +91,4 @@ export const { useCreateOrderMutation,
   useCancelOrderMutation,
   useReturnOrderMutation,
   useGetAllOrdersQuery,
-useGetPendingOrderByIdQuery } = ordersApiSlice;
+  useGetPendingOrderByIdQuery } = ordersApiSlice;

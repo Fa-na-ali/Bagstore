@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDeleteCategoryMutation, useSearchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
@@ -46,13 +46,11 @@ const CategoryManagement = () => {
         await deleteCategory(id);
         toast.success(" Deleted Successfully")
         load();
-
       } catch (err) {
         toast.error(err?.data?.message || err.error);
       }
     }
   };
-
 
   return (
     <>
@@ -61,7 +59,6 @@ const CategoryManagement = () => {
           <Col lg={2} className="d-none d-lg-block">
             <AdminSidebar />
           </Col>
-
           <Col lg={9} className="p-4 background-one vw-75">
             <h2 className='text-center my-5 heading'>CATEGORIES</h2>
             <div className="table-title my-5">
@@ -93,17 +90,15 @@ const CategoryManagement = () => {
                 </Col>
               </Row>
             </div>
-            {(categories) && (categories.length > 0 ) ? (
+            {(categories) && (categories.length > 0) ? (
               <Ttable
-              naming="category"
-              data={categories}
-              columns={columns}
-              onDelete={handleDelete}
-              onPage={handlePageChange}
-              pageData={data}
-              currentPage={currentPage}
-
-
+                naming="category"
+                data={categories}
+                columns={columns}
+                onDelete={handleDelete}
+                onPage={handlePageChange}
+                pageData={data}
+                currentPage={currentPage}
               />
             ) : (
               <p>No categories found</p>

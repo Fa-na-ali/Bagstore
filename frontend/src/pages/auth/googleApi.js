@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { GOOGLE_API_URL } from '../../redux/constants';
 
 const api = axios.create({
-    baseURL: "http://localhost:5004/api/user",
+    baseURL: `${GOOGLE_API_URL}`,
     // withCredentials: true,
 });
 

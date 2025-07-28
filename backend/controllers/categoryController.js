@@ -6,29 +6,25 @@ const { USR_ID_MISSING, USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_N
 
 //add category
 const addCategory = async (req, res) => {
-console.log("hhhh")
   try {
-    const { name,offer } = req.body;
+    const { name, offer } = req.body;
     if (!req.user?._id) {
       return res.status(STATUS_CODES.UNAUTHORIZED).json({
-         message: USR_ID_MISSING });
+        message: USR_ID_MISSING
+      });
     }
-  console.log(name)
-
     if (!name) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ 
-        status:"error",
-        message:USR_NAME_RQD,
-       });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        status: "error",
+        message: USR_NAME_RQD,
+      });
     }
-
-    const existingCategory = await Category.findOne({name: name });
-     console.log(existingCategory)
+    const existingCategory = await Category.findOne({ name: name });
     if (existingCategory) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ 
-        status:"error",
-        message:CATEGORY_EXT,
-       });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        status: "error",
+        message: CATEGORY_EXT,
+      });
     }
     const category = await Category.create({
       name,
@@ -37,89 +33,86 @@ console.log("hhhh")
       updatedBy: req.user._id,
 
     })
-    return res.status(STATUS_CODES.OK).json({ 
-      status:"success",
-     category
-     });
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
+      category
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
-    
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
+
   }
 };
+
 //update category
 const updateCategory = async (req, res) => {
   try {
-  
-    console.log("upadte",req.params)
-    const category = await Category.findByIdAndUpdate({_id:req.params.id}, req.body, { new: true });
+
+    const category = await Category.findByIdAndUpdate({ _id: req.params.id }, req.body, { new: true });
     if (!category) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ 
-        status:"error",
-       message:CATEGORY_NOT_FOUND
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        status: "error",
+        message: CATEGORY_NOT_FOUND
       })
     }
     else {
-      return res.status(STATUS_CODES.OK).json({ 
-        status:"success",
+      return res.status(STATUS_CODES.OK).json({
+        status: "success",
         _id: category._id,
         name: category.name,
       })
     }
   } catch (error) {
     console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
   }
 };
+
 //delete category
 const deleteCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ 
-        status:"error",
-       message:CATEGORY_NOT_FOUND
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        status: "error",
+        message: CATEGORY_NOT_FOUND
       })
-      
+
     }
     category.isExist = false;
     await category.save();
-    return res.status(STATUS_CODES.OK).json({ 
-      status:"success",
-     message:CATEGORY_DLT_MSG,
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
+      message: CATEGORY_DLT_MSG,
     })
   } catch (error) {
     console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
   }
 };
 
 //All categories
 const listCategory = async (req, res) => {
-  console.log("hiiii")
   try {
     const all = await Category.find({}).sort({ createdAt: -1 });
-    console.log("categories",all)
-    return res.status(STATUS_CODES.OK).json({ 
-      status:"success",
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
       all
     })
   } catch (error) {
-    console.log(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
   }
 };
 
@@ -127,41 +120,39 @@ const listCategory = async (req, res) => {
 const listExistCategory = async (req, res) => {
   try {
     const categories = await Category.find({ isExist: true });
-    return res.status(STATUS_CODES.OK).json({ 
-      status:"success",
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
       categories
     })
   } catch (error) {
     console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
   }
 }
 
 //to get a particular category
 const readCategory = async (req, res) => {
   try {
-    
+
     const id = req.params.id;
-    const category = await Category.findById({_id:id });
-    console.log("read",category)
-    return res.status(STATUS_CODES.OK).json({ 
-      status:"success",
+    const category = await Category.findById({ _id: id });
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
       category
     })
   } catch (error) {
-    console.log(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
   }
 };
+
 //fetch categories on search and pagination
 const fetchCategories = async (req, res) => {
-  console.log("search")
   try {
     const pageSize = 6;
     const page = Number(req.query.page) || 1;
@@ -175,45 +166,40 @@ const fetchCategories = async (req, res) => {
       : {};
 
     const count = await Category.countDocuments({ ...keyword });
-    console.log("count", count)
     const categories = await Category.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
-    console.log("products", categories)
-    return res.status(STATUS_CODES.OK).json({ 
-      status:"success",
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
       categories,
       count,
       page,
       pages: Math.ceil(count / pageSize),
       hasMore: page < Math.ceil(count / pageSize),
-     });
+    });
   } catch (error) {
     console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-      status:"error",
-      message:error.message
-     });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: error.message
+    });
   }
 };
 
 
 //search category
 const searchCategory = async (req, res) => {
-  console.log("hiii")
   const search = new RegExp(req.params?.search, 'i')
   if (search !== '')
     try {
       const all = await Category.find({ name: search });
-      console.log("search", all)
-      return res.status(STATUS_CODES.OK).json({ 
-        status:"success",
+      return res.status(STATUS_CODES.OK).json({
+        status: "success",
         all
-       });
+      });
     } catch (error) {
-      console.log(error);
-      return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        status:"error",
-        message:error.message
-       });
+      return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        status: "error",
+        message: error.message
+      });
     }
 };
 

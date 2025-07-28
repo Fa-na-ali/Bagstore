@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useVerifyOtpMutation, useResendOtpMutation } from "../../redux/api/usersApiSlice";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -8,7 +8,7 @@ import { setCredentials } from "../../redux/features/auth/authSlice";
 
 const OTPVerify = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
-  const [timer, setTimer] = useState(180);
+  const [timer, setTimer] = useState(90);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -20,21 +20,21 @@ const OTPVerify = () => {
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
-console.log("user",userInfo)
-useEffect(() => {
-  if (timer > 0) {
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => prevTimer - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }
-}, [timer]);
 
-const formatTime = (time) => {
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-  return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
-};
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  };
 
   const handleChange = (index, e) => {
     const value = e.target.value;
@@ -69,16 +69,15 @@ const formatTime = (time) => {
     try {
       const res = await verifyOtp({ email, otp: otpCode }).unwrap();
       toast.success("OTP Verified Successfully!");
-      
+
       dispatch(setCredentials({ ...res }));
       if (res.user.isAdmin) {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
-   
+
     } catch (err) {
-      console.error("Verification Error:", err);
       toast.error(err?.data?.message || "Invalid OTP. Please try again.");
     }
   };
@@ -90,9 +89,8 @@ const formatTime = (time) => {
       toast.success("A new OTP has been sent to your email.");
       setOtp(new Array(6).fill(""));
       inputRefs.current[0]?.focus();
-      setTimer(180); 
+      setTimer(90);
     } catch (err) {
-      console.error("Resend OTP Error:", err);
       toast.error("Failed to resend OTP. Try again later.");
     }
   };
@@ -136,16 +134,16 @@ const formatTime = (time) => {
                   <p className="text-muted">Resend OTP in <strong>{formatTime(timer)}</strong></p>
                 ) : (
 
-              <Button
-                variant="secondary"
-                className="w-100 mt-2"
-                onClick={handleResendOtp}
-                disabled={isResending}
-              >
-                {isResending ? "Resending..." : "Resend OTP"}
-              </Button>
+                  <Button
+                    variant="secondary"
+                    className="w-100 mt-2"
+                    onClick={handleResendOtp}
+                    disabled={isResending}
+                  >
+                    {isResending ? "Resending..." : "Resend OTP"}
+                  </Button>
                 )}
-                </div>
+              </div>
             </Form>
           </div>
         </Col>

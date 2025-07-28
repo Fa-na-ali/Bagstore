@@ -43,7 +43,7 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-   
+
     items: [
       {
         product: {
@@ -52,8 +52,8 @@ const orderSchema = new mongoose.Schema(
           required: true,
         },
         name: { type: String, required: true },
-        category:{type: String, required: true},
-        price:{type:Number,required:true},
+        category: { type: String, required: true },
+        price: { type: Number, required: true },
         qty: {
           type: Number,
           required: true,

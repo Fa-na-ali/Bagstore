@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Table,
@@ -13,24 +13,22 @@ import {
 } from 'react-bootstrap';
 import { useGetSalesReportQuery } from '../../../redux/api/dashboardApiSlice';
 import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
+import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../redux/constants';
 
 // Initialize pdfMake
-//pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
 if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 } else {
   pdfMake.vfs = {
     Roboto: {
-      normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
-      bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
-      italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
-      bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+      normal: `${NORMAL_URL_FONT}`,
+      bold: `${BOLD_URL_FONT}`,
+      italics: `${ITALICS_URL_FONT}`,
+      bolditalics: `${BOLDITALICS_URL_FONT}`
     }
   };
 }
@@ -71,6 +69,25 @@ const SalesReport = () => {
       ])
     ];
 
+    const orderDetailsBody = [
+      [
+        'Date', 'Email', 'Payment Method',
+        'Coupon Discount', 'Shipping Price', 'Tax',
+        'Total Discount', 'Subtotal', 'Products'
+      ],
+      ...reportData.detailedOrders.map(order => [
+        new Date(order.orderDate).toLocaleString(),
+        order.userEmail,
+        order.paymentMethod,
+        `₹${order.couponDiscount}`,
+        `₹${order.shippingPrice}`,
+        `₹${order.tax.toFixed(2)}`,
+        `₹${order.totalDiscount}`,
+        `₹${order.totalPrice}`,
+        order.items.map(item => `${item.name} (${item.category}), Qty:${item.qty}, Price:₹${item.price}`).join('\n')
+      ])
+    ];
+
     const docDefinition = {
       content: [
         { text: 'Sales Report', style: 'header' },
@@ -103,6 +120,15 @@ const SalesReport = () => {
           alignment: 'left',
           style: 'subheader',
           margin: [10, 0, 0, 10],
+        },
+        { text: 'Order Details', style: 'header', margin: [0, 20, 0, 10] },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', '*'],
+            body: orderDetailsBody,
+          },
+          // layout: 'lightHorizontalLines'
         }
       ],
       styles: {
@@ -120,6 +146,7 @@ const SalesReport = () => {
         fontSize: 12,
         alignment: 'center'
       },
+      pageOrientation: 'landscape'
     };
 
     pdfMake.createPdf(docDefinition).download('sales_report.pdf');
@@ -128,28 +155,54 @@ const SalesReport = () => {
   const handleDownloadExcel = () => {
     if (!reportData?.orders) return;
 
-    const headers = ['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)'];
-
-    const data = [
-      headers,
-      ...reportData.orders.map(order => [
-        order.productName,
-        order.soldCount,
-        order.returnedCount,
-        order.productDiscounts,
-        order.revenue
-      ]),
+    // First sheet: Sales Report
+    const salesHeaders = ['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)'];
+    const salesData = reportData.orders.map(order => [
+      order.productName,
+      order.soldCount,
+      order.returnedCount,
+      order.productDiscounts,
+      order.revenue
+    ]);
+    const summaryData = [
       [],
       ['Offer Discounts', reportData.offerDiscounts],
       ['Coupon Discount', reportData.couponDiscounts],
       ['Net Revenue', reportData.netRevenue]
     ];
 
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
-    XLSX.writeFile(workbook, 'sales_report.xlsx');
+    // Second sheet: Order Details
+    const orderHeaders = [
+      'Order Date', 'Email', 'Payment Method',
+      'Coupon Discount', 'Shipping Price', 'Tax',
+      'Total Discount', 'Subtotal', 'Products'
+    ];
+    const orderData = reportData.detailedOrders.map(order => [
+      new Date(order.orderDate).toLocaleString(),
+      order.userEmail,
+      order.paymentMethod,
+      order.couponDiscount,
+      order.shippingPrice,
+      order.tax,
+      order.totalDiscount,
+      order.totalPrice,
+      order.items.map(item => `${item.name} (${item.category}) x${item.qty} @ ₹${item.price}`).join(', ')
+    ]);
+
+    const wb = XLSX.utils.book_new();
+
+    // Add Sales Report
+    const salesSheet = XLSX.utils.aoa_to_sheet([salesHeaders, ...salesData, ...summaryData]);
+    XLSX.utils.book_append_sheet(wb, salesSheet, 'Sales Report');
+
+    // Add Order Details
+    const orderSheet = XLSX.utils.aoa_to_sheet([orderHeaders, ...orderData]);
+    XLSX.utils.book_append_sheet(wb, orderSheet, 'Order Details');
+
+    XLSX.writeFile(wb, 'sales_report.xlsx');
   };
+
+
 
   const revenueTooltip = (
     <Tooltip id="revenue-tooltip">
@@ -260,8 +313,8 @@ const SalesReport = () => {
                       <td>{order.productName}</td>
                       <td>{order.soldCount}</td>
                       <td>{order.returnedCount}</td>
-                      <td>₹{order.productDiscounts}</td>
-                      <td>₹{order.revenue}</td>
+                      <td>₹{order.productDiscounts.toFixed(2)}</td>
+                      <td>₹{order.revenue.toFixed(2)}</td>
                     </tr>
                   ))
                 ) : (
@@ -272,6 +325,65 @@ const SalesReport = () => {
               </tbody>
             </Table>
           </div>
+
+          {reportData?.detailedOrders?.length > 0 && (
+            <>
+              <h4 className="mt-5 fw-bold">Order Details</h4>
+              <div className="table-responsive mt-3">
+                <Table bordered className="text-center">
+                  <thead>
+                    <tr>
+                      <th>Order Date</th>
+                      {/* <th>Order No.</th> */}
+                      {/* <th>Ordered By</th> */}
+                      <th>Email</th>
+                      <th>Shipping Address</th>
+                      <th>Payment Method</th>
+                      <th>Coupon Discount</th>
+                      <th>Shipping Price</th>
+                      <th>Tax</th>
+                      <th>Total Discount</th>
+                      <th>Subtotal</th>
+                      {/* <th>Net Total</th> */}
+                      <th>Products</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.detailedOrders.map((order, index) => (
+                      <tr key={index}>
+                        <td>{new Date(order.orderDate).toLocaleString()}</td>
+                        {/* <td>{order.orderNumber}</td> */}
+                        {/* <td>{order.userName}</td> */}
+                        <td>{order.userEmail}</td>
+                        <td>
+                          {order.shippingAddress.houseName},<br />
+                          {order.shippingAddress.town}, {order.shippingAddress.street},<br />
+                          {order.shippingAddress.state}
+                        </td>
+                        <td>{order.paymentMethod}</td>
+                        <td>₹{order.couponDiscount.toFixed(2)}</td>
+                        <td>₹{order.shippingPrice}</td>
+                        <td>₹{order.tax.toFixed(2)}</td>
+                        <td>₹{order.totalDiscount.toFixed(2)}</td>
+                        <td>₹{order.totalPrice.toFixed(2)}</td>
+                        {/* <td>₹{order.totalPrice + order.tax + order.shippingPrice - order.totalDiscount - order.couponDiscount}</td> */}
+                        <td>
+                          <ul className="text-start">
+                            {order.items.map((item, i) => (
+                              <li key={i}>
+                                {item.name} ({item.category}), Qty: {item.qty}, Price: ₹{item.price.toFixed(2)}
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </>
+          )}
+
 
           {!isLoading && reportData && (
             <Card className="mt-4 shadow-sm">
@@ -287,11 +399,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Coupon Discounts:</span>
-                      <span className="fw-medium">₹{reportData.couponDiscounts}</span>
+                      <span className="fw-medium">₹{reportData.couponDiscounts.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Sales Count:</span>
-                      <span className="fw-medium">{reportData.overallSalesCount}</span>
+                      <span className="fw-medium">{reportData.overallSalesCount.toFixed(2)}</span>
                     </div>
                   </Col>
                   <Col md={6}>
@@ -301,11 +413,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Discount:</span>
-                      <span className="fw-medium">₹{reportData.overallDiscount}</span>
+                      <span className="fw-medium">₹{reportData.overallDiscount.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Net Revenue:</span>
-                      <span className="fw-bold text-success">₹{reportData.netRevenue}</span>
+                      <span className="fw-bold text-success">₹{reportData.netRevenue.toFixed(2)}</span>
                     </div>
                   </Col>
                 </Row>

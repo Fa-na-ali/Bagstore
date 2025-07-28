@@ -1,15 +1,14 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { lazy, Suspense } from 'react';
 import { Accordion, Button, Form, Card, Container, Row, Col, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import { useFetchCategoriesQuery } from '../../redux/api/categoryApiSlice';
 import { useFilterProductsQuery } from '../../redux/api/productApiSlice';
-import Cards from '../../components/Cards';
 
+const Cards = lazy(() => import('../../components/Cards'));
 
 const ProductsList = () => {
-
   const { data: categories } = useFetchCategoriesQuery();
-  console.log("categories",categories)
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
@@ -17,7 +16,6 @@ const ProductsList = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
   const { data, isLoading } = useFilterProductsQuery({
     search: searchTerm,
     categories: selectedCategories,
@@ -28,7 +26,7 @@ const ProductsList = () => {
     page: currentPage,
   });
   const totalPages = data?.totalPages || 1;
-  console.log("filtered", data)
+
   const searchHandler = (e) => {
     e.preventDefault();
     refetch();
@@ -43,6 +41,7 @@ const ProductsList = () => {
       : selectedColors.filter((c) => c !== color);
     setSelectedColors(updatedChecked)
   };
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -122,6 +121,11 @@ const ProductsList = () => {
                         { name: "Black", },
                         { name: "Green", },
                         { name: "Red", },
+                        { name: "Blue", },
+                        { name: "Yellow", },
+                        { name: "Pink", },
+                        { name: "Violet", },
+                        { name: "Orange", },
                       ].map((color, index) => (
                         <Form.Check key={index} label={`${color.name}`}
                           type="checkbox"
@@ -186,7 +190,9 @@ const ProductsList = () => {
               </Card>
             </Col>
             <Col lg={9} >
-              <Cards products={data?.products} />
+              <Suspense fallback={<div>Loading products...</div>}>
+                <Cards products={data?.products} />
+              </Suspense>
             </Col>
           </Row>
 

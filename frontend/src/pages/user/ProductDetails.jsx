@@ -1,49 +1,45 @@
 import React, { useEffect, useState } from 'react'
-import { productApiSlice, useDeleteImageMutation, useFetchRelatedProductsQuery, useGetProductByIdQuery, useUpdateProductMutation } from '../../redux/api/productApiSlice';
+import { lazy, Suspense } from 'react';
+import { useFetchRelatedProductsQuery, useGetProductByIdQuery } from '../../redux/api/productApiSlice';
 import { useNavigate, useParams } from 'react-router';
 import { Row, Col, Container, Button, Card, Modal, Image } from 'react-bootstrap'
-import Cards from '../../components/Cards';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/features/cart/cartSlice';
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice';
+import { IMG_URL } from '../../redux/constants';
 
+const Cards = lazy(() => import('../../components/Cards'));
 
 const ProductDetails = () => {
   const { id } = useParams();
-  console.log("id", id)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
   const product = data?.product
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const [quantity, setQuantity] = useState(1);
   const [discounts, setDiscounts] = useState(0);
   const [salesPrices, setSalesPrices] = useState(0)
   const { data: off } = useGetAllOffersToAddQuery()
-  console.log(off)
   const offers = off?.offers
-
-  console.log(product?._id)
   const { data: products } = useFetchRelatedProductsQuery(id)
-  console.log(products)
 
   useEffect(() => {
     if (product && offers) {
       let newDiscounts = 0;
       let newSalesPrices = product.price;
-  
+
       let productDiscount = 0;
       let categoryDiscount = 0;
-  
-      // Find Product Offer Discount
+
+      // Product Offer Discount
       offers.forEach((offer) => {
         if (offer.name === product.offer) {
           productDiscount = offer.discount;
         }
       });
-  
-      // Find Category Offer Discount
+
+      // Category Offer Discount
       if (product.category && product.category.offer) {
         offers.forEach((offer) => {
           if (offer.type === "category" && offer.name === product.category.offer) {
@@ -51,16 +47,16 @@ const ProductDetails = () => {
           }
         });
       }
-  
+
       // Apply the highest discount
       const finalDiscount = Math.max(productDiscount, categoryDiscount);
       newDiscounts = finalDiscount;
-  
+
       // Calculate Sales Price
       if (finalDiscount !== 0) {
         newSalesPrices = product.price - (finalDiscount / 100) * product.price;
       }
-  
+
       setDiscounts(newDiscounts);
       setSalesPrices(newSalesPrices);
     }
@@ -69,8 +65,8 @@ const ProductDetails = () => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading product details.</div>;
   if (!product) return <div>Product not found.</div>;
-  
 
+  //add to cart
   const addToCartHandler = () => {
     dispatch(addToCart({
       ...product,
@@ -80,8 +76,6 @@ const ProductDetails = () => {
     }));
     toast.success("Item added successfully");
   };
-
-
 
   return (
 
@@ -94,7 +88,7 @@ const ProductDetails = () => {
 
               <Image
                 id="mainImage"
-                src={`${imageBaseUrl}${product.pdImage[0]}`}
+                src={`${IMG_URL}${product.pdImage[0]}`}
                 alt="Product"
                 fluid
                 rounded
@@ -107,11 +101,11 @@ const ProductDetails = () => {
                 {product.pdImage.slice(0, 5).map((image, index) => (
                   <Image
                     key={index}
-                    src={`${imageBaseUrl}${image}`}
+                    src={`${IMG_URL}${image}`}
                     alt={`Thumbnail ${index + 1}`}
                     rounded
                     className="thumbnail active"
-                    onClick={() => document.getElementById('mainImage').src = `${imageBaseUrl}${image}`}
+                    onClick={() => document.getElementById('mainImage').src = `${IMG_URL}${image}`}
                     style={{ width: "80px", height: "80px", objectFit: "cover", cursor: "pointer" }}
                   />
                 ))}
@@ -123,19 +117,18 @@ const ProductDetails = () => {
               <h2 className="mb-3 caption">{product.name}</h2>
               <p className="text-muted mb-4 caption">ID: {product._id}</p>
               <div className="mb-3">
-                {/* <span className="h6 me-2 caption">Price: ₹{product.price}</span> */}
                 {discounts !== 0 ? (
-                    <>
-                      <span className='text-decoration-line-through text-muted me-2'>
-                        ₹{product.price}
-                      </span>
-                      <span className='text-success fw-bold'>
-                        ₹{salesPrices}
-                      </span>
-                    </>
-                  ) : (
-                    <span>₹{product.price}</span>
-                  )}
+                  <>
+                    <span className='text-decoration-line-through text-muted me-2'>
+                      ₹{product.price}
+                    </span>
+                    <span className='text-success fw-bold'>
+                      ₹{salesPrices}
+                    </span>
+                  </>
+                ) : (
+                  <span>₹{product.price}</span>
+                )}
 
               </div>
               <div className="mb-3">
@@ -199,10 +192,12 @@ const ProductDetails = () => {
 
             <div className='text-center py-5'>
               <h4 className='mt-4 mb-5 heading'><strong>RELATED PRODUCTS</strong></h4>
-              <Cards
-                products={products?.relatedProducts}
+              <Suspense fallback={<div>Loading Related Products...</div>}>
+                <Cards
+                  products={products?.relatedProducts}
 
-              />
+                />
+              </Suspense>
             </div>
 
 

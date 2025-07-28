@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Form, Image } from "react-bootstrap";
-import { FaHeart, FaTrash, FaMinus, FaPlus } from "react-icons/fa";
+import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { addToCart, removeFromCart, syncCartWithDatabase, updateCartItemQuantity, } from "../../redux/features/cart/cartSlice";
+import { removeFromCart, syncCartWithDatabase, updateCartItemQuantity, } from "../../redux/features/cart/cartSlice";
 import { useGetProductsByIdsQuery } from "../../redux/api/productApiSlice";
-
+import { IMG_URL } from "../../redux/constants";
 
 const Cart = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const cart = useSelector((state) => state.cart);
   const { cartItems } = cart;
-  console.log(cartItems)
-  const imageBaseUrl = "http://localhost:5004/uploads/";
   const maximum = 5
-
   const productIds = cartItems.map((item) => item._id);
   const { data: latestProducts } = useGetProductsByIdsQuery(productIds);
-  console.log("data", latestProducts)
 
   useEffect(() => {
     if (latestProducts) {
@@ -28,16 +23,15 @@ const Cart = () => {
     }
   }, [latestProducts, dispatch]);
 
-
-
+  //out of stock
   const isAnyItemOutOfStock = () => {
     return cartItems.some((item) => item.quantity === 0
 
     );
   };
 
+  //update quantity
   const updateQuantityHandler = (product, qty) => {
-
     const maxAllowed = Math.min(maximum, product?.quantity);
     if (qty < 1 || qty > maxAllowed) {
       toast.error(`You can only add up to ${maxAllowed} units of this product`);
@@ -47,10 +41,12 @@ const Cart = () => {
     dispatch(updateCartItemQuantity({ productId: product._id, qty }))
 
   };
+
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
   const tax = subtotal * 0.05;
   const total = subtotal - discount + tax;
+
   return (
     <section className="bg-light my-5">
       <Container>
@@ -67,7 +63,7 @@ const Cart = () => {
                       <Col lg={5}>
                         <div className="d-flex">
                           <Image
-                            src={`${imageBaseUrl}${item.pdImage[0]}`}
+                            src={`${IMG_URL}${item.pdImage[0]}`}
                             className="border rounded me-3"
                             style={{ width: "96px", height: "96px" }}
                           />
@@ -111,7 +107,7 @@ const Cart = () => {
                               <span className="text-decoration-line-through text-muted me-2">
                                 ₹{item.originalPrice}
                               </span>
-                              <span className="text-success fw-bold">₹{item.discountedPrice}</span>
+                              <span className="text-success fw-bold">₹{item.discountedPrice.toFixed(2)}</span>
                             </>
                           ) : (
                             <span>₹{item.price}</span>
@@ -120,9 +116,6 @@ const Cart = () => {
                         </p></Col>
                       <Col lg className="d-flex justify-content-sm-center justify-content-md-start justify-content-lg-center justify-content-xl-end mb-2">
                         <div className="float-md-end">
-                          <Button variant="danger" className="border px-2">
-                            <FaHeart className="" />
-                          </Button>
                           <Button variant="primary" className="border  ms-2" onClick={() => dispatch(removeFromCart(item._id))}>
                             <FaTrash />
                           </Button>
