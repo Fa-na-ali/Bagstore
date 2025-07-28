@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useVerifyOtpPassMutation, useResendOtpMutation, useUpdateUserMutation, useProfileQuery } from "../../redux/api/usersApiSlice";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -21,7 +21,7 @@ const EmailVerify = () => {
   const { data: user, refetch } = useProfileQuery()
   const [update] = useUpdateUserMutation()
   const { updatedUser } = useSelector((state) => state.auth);
-  console.log("user", updatedUser)
+
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
@@ -81,7 +81,6 @@ const EmailVerify = () => {
       }
 
     } catch (err) {
-      console.error("Verification Error:", err);
       toast.error(err?.data?.message || "Invalid OTP. Please try again.");
     }
   };
@@ -95,7 +94,6 @@ const EmailVerify = () => {
       inputRefs.current[0]?.focus();
       setTimer(180);
     } catch (err) {
-      console.error("Resend OTP Error:", err);
       toast.error("Failed to resend OTP. Try again later.");
     }
   };

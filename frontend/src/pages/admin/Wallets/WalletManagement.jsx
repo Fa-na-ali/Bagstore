@@ -1,34 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
-import { Link } from 'react-router';
-import { MdOutlineAdd } from "react-icons/md";
-import { toast } from 'react-toastify';
 import {useGetAllWalletsQuery} from '../../../redux/api/walletApiSlice'
-
 
 const WalletManagement = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   let { data, refetch: load, error, isLoading } = useGetAllWalletsQuery({ page: currentPage });
   const wallets = data?.transactionData || [];
-  console.log(wallets)
   
   const columns = [
     { key: "transactionId", label: "TransctionID" },
     { key: "transactionDate", label: "Transaction Date" }, 
     { key: "email", label: "Email" },
     { key: "type", label: "Transaction Type" },
-    { key: "amount", label: "Amount" },
-    
-    
+    { key: "amount", label: "Amount" },    
   ];
 
   useEffect(() => {
     if (wallets)
       load()
-
   }, [load]);
 
   const searchHandler = (e) => {
@@ -39,6 +31,7 @@ const WalletManagement = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+  
    const handleDelete = () => {
      
     };

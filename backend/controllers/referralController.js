@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
 
 
 const getReferralCode = async (req, res) => {
-    console.log("hhh")
+
     try {
 
         let referral = await Referral.findOne({ user: req.user._id });
@@ -48,7 +48,6 @@ const getReferralCode = async (req, res) => {
 };
 const getReferrals = async (req, res) => {
     const id = req.user._id.toString();
-    console.log("iiiiiiii", id)
     if (!mongoose.Types.ObjectId.isValid(id)) {
         res.status(STATUS_CODES.BAD_REQUEST).json({
             status: "error",

@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { useGetAllOrdersQuery } from '../../../redux/api/ordersApiSlice';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
-import { Link } from 'react-router';
-import { MdOutlineAdd } from "react-icons/md";
-import { toast } from 'react-toastify';
 import Ttable from '../../../components/Ttable';
 
 const OrderManagement = () => {
-
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
@@ -21,9 +17,6 @@ const OrderManagement = () => {
   });
 
   const orders = data?.orders || [];
-  console.log("orders", orders)
-
-
 
   useEffect(() => {
     if (data)
@@ -39,6 +32,7 @@ const OrderManagement = () => {
       label: "User",
 
     },
+    { key: "totalPrice", label: "Total" },
     { key: "createdAt", label: "Date" },
 
   ];

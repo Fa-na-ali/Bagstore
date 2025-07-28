@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { lazy, Suspense } from 'react';
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
 import { FaTrash, } from "react-icons/fa";
 import { SiRazorpay } from "react-icons/si";
@@ -9,19 +10,17 @@ import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress 
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
-import CouponModal from "./CouponModal";
 import { useRef } from "react";
 import { IMG_URL } from "../../redux/constants";
+
+const CouponModal = lazy(() => import("./CouponModal"));
 
 const Checkout = () => {
 
   const cart = useSelector((state) => state.cart);
   const { data: user, refetch } = useProfileQuery()
-  console.log("iii", user)
   const { cartItems } = cart;
-  console.log(cart.cartItems)
   const address = user?.user?.address || [];
-  console.log("add", address)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const couponDiscountRef = useRef(0);
@@ -38,7 +37,6 @@ const Checkout = () => {
   const [initiatePayment] = useInitiatePaymentMutation();
   const [verifyPayment, { data }] = useVerifyPaymentMutation();
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
-
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [saveShipping, setSaveShipping] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("");
@@ -53,18 +51,18 @@ const Checkout = () => {
 
   useEffect(() => {
     refetch();
-    console.log("Updated couponDiscount:", couponDiscount);
     if (user?.user?.address && user?.user.address.length > 0) {
       setSelectedAddress(user?.user.address[0]._id);
     }
   }, [user, refetch, couponDiscount]);
 
+  //address selection
   const handleAddressChange = (id) => {
     setSelectedAddress(id);
     dispatch(saveShippingAddress(id));
   };
 
-
+  //on submit
   const handleContinue = () => {
     if (selectedPayment === "Razorpay") {
       handlePayment();
@@ -74,17 +72,20 @@ const Checkout = () => {
       handlePlaceOrder("", "", "", "Pending");
     }
   };
+
+  //selecting payment method
   const handlePaymentMethod = (method) => {
 
     dispatch(savePaymentMethod(method));
 
   }
+
+  //apply coupon
   const handleApplyCoupon = async () => {
     if (coupon.trim()) {
       setApplied(true);
       try {
         const res = await applyCoupon({ coupon_code: coupon, minAmount: total }).unwrap();
-        console.log("coupon res", res)
         if (res.status === "success") {
           toast.success(res.message);
           setCouponId(res?.coupon._id)
@@ -109,6 +110,7 @@ const Checkout = () => {
     }
   };
 
+  //remove coupon
   const handleRemoveCoupon = async () => {
     try {
       const res = await removeCoupon({ coupon_code: coupon }).unwrap();
@@ -135,6 +137,7 @@ const Checkout = () => {
     }
   };
 
+  //payment
   const handlePayment = async () => {
     try {
       const { data: orderData } = await initiatePayment(total);
@@ -156,7 +159,6 @@ const Checkout = () => {
           wallet: true,
         },
         handler: async function (response) {
-          console.log('Payment successful', response);
           await handlePlaceOrder(
             orderData.order.id,
             response.razorpay_payment_id,
@@ -169,8 +171,10 @@ const Checkout = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-
+      let paymentFailedHandled = false;
       rzp.on('payment.failed', async function (response) {
+        if (paymentFailedHandled) return;
+        paymentFailedHandled = true;
         await handlePlaceOrder(
           orderData.order.id,
           "",
@@ -180,12 +184,11 @@ const Checkout = () => {
       });
 
     } catch (error) {
-      console.error('Error initializing Razorpay:', error);
       toast.error("Payment initialization failed");
     }
   };
 
-
+  //placing order
   const handlePlaceOrder = async (razorpay_order_id, razorpay_payment_id, razorpay_signature, status) => {
 
     setShowModal(false);
@@ -193,10 +196,9 @@ const Checkout = () => {
       toast.error("Your cart is empty. Please add items before placing an order.");
       return;
     }
-    // if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
-    //   return handlePayment();
-    // }
-    console.log("couoo", couponDiscountRef.current)
+    if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
+      return handlePayment();
+    }
     try {
       const res = await createOrder({
         userId: user?.user._id,
@@ -207,57 +209,58 @@ const Checkout = () => {
         couponId: couponId || null,
         razorpay_order_id,
         paymentStatus: status,
-        couponDiscount: couponDiscountRef.current,
-        totalPrice: total,
-        tax,
-        totalDiscount,
+        couponDiscount: couponDiscountRef.current.toFixed(2),
+        totalPrice: total.toFixed(2),
+        tax: tax.toFixed(2),
+        totalDiscount: totalDiscount.toFixed(2),
       }).unwrap();
-      console.log('res', res)
       const id = res?._id
-      if (id) dispatch(clearCartItems());
+      if (id) {
+        dispatch(clearCartItems());
+        toast.success("Order Placed successfully");
+
+        navigate(`/order-success?id=${id}`);
+      }
       else {
         toast.error(res?.message);
       }
-      if (status === "Success" && cart?.paymentMethod === "Razorpay") {
+      // if (status === "Success" && cart?.paymentMethod === "Razorpay") {
 
-        const verifyData = await verifyPayment({
-          razorpay_order_id,
-          razorpay_payment_id,
-          razorpay_signature,
-        }).unwrap();
+      //   const verifyData = await verifyPayment({
+      //     razorpay_order_id,
+      //     razorpay_payment_id,
+      //     razorpay_signature,
+      //   }).unwrap();
 
-        if (verifyData.status === "success") {
+      //   if (verifyData.status === "success") {
 
-          toast.success("Order Placed successfully");
-          navigate(`/order-success?id=${id}`);
-        }
+      //     toast.success("Order Placed successfully");
+      //     navigate(`/order-success?id=${id}`);
+      //   }
 
-      } else if (status === "Failed") {
+      // } else if (status === "Failed") {
 
-        toast.success("Order Placed successfully");
-        navigate(`/mine`);
+      //   toast.success("Order Placed successfully");
+      //   navigate(`/mine`);
 
-      } else {
-        if (id) {
-          toast.success("Order Placed successfully");
-          navigate(`/order-success?id=${id}`);
-        }
+      // } else {
+      //   if (id) {
+      //     toast.success("Order Placed successfully");
+      //     navigate(`/order-success?id=${id}`);
+      //   }
 
-      }
+      // }
     } catch (error) {
-      console.error("Order creation error:", error);
       toast.error(error.message || "Failed to place order");
     }
   };
 
-  console.log("selec", selectedAddress)
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
   const totalDiscount = discount + couponDiscount
   const tax = subtotal * 0.05;
   const total = subtotal - (discount + couponDiscount) + tax;
   const id = selectedAddress
-
 
   return (
     <section className="my-custom-min-height" style={{ backgroundColor: "#eee" }}>
@@ -442,7 +445,9 @@ const Checkout = () => {
                       </Button>
                     </Col>
                   </Row>
-                  <CouponModal show={cModal} handleClose={() => setCModal(false)} />
+                  <Suspense fallback={<div>Loading modal...</div>}>
+                    <CouponModal show={cModal} handleClose={() => setCModal(false)} />
+                  </Suspense>
                   <Row>
                     <Col lg={7}>
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Row, Col, Button, Container, Form } from "react-bootstrap";
 import { MdOutlineAdd } from "react-icons/md";
 import AdminSidebar from "../../../components/AdminSidebar";
@@ -9,12 +9,11 @@ import { useGetAllOffersToAddQuery } from "../../../redux/api/usersApiSlice";
 
 const AddCategory = () => {
     const { data: off } = useGetAllOffersToAddQuery()
-      console.log(off)
-      const offers = off?.offers
+    const offers = off?.offers
     const [name, setName] = useState("");
     const [offer, setOffer] = useState("")
     const [createCategory] = useAddCategoryMutation();
-    const navigate=useNavigate()
+    const navigate = useNavigate()
 
     const handleCreateCategory = async (e) => {
         e.preventDefault();
@@ -25,19 +24,17 @@ const AddCategory = () => {
         }
 
         try {
-            const result = await createCategory({ name,offer }).unwrap();
-            console.log(result)
+            const result = await createCategory({ name, offer }).unwrap();
             setName("");
             if (result?.category?.name) {
                 toast.success(`${result?.category?.name} category created successfully.`);
                 navigate('/admin/category')
             } else if (result.message) {
-                toast.error(result.message); 
+                toast.error(result.message);
             } else {
                 toast.error("Unexpected response, try again.");
             }
         } catch (error) {
-            console.error(error);
             toast.error(error?.data.message);
         }
     };
@@ -64,16 +61,16 @@ const AddCategory = () => {
                             </Form.Group>
 
                             <Form.Group controlId="offer" className="mt-3">
-                            <Form.Label className="caption">Offer</Form.Label>
-                            <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
-                                <option value="none">None</option>
-                                {offers?.filter((o) => o.type === "category").map((o) => (
-                                    <option key={o.name} value={o.name}>
-                                        {o.name}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
+                                <Form.Label className="caption">Offer</Form.Label>
+                                <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
+                                    <option value="none">None</option>
+                                    {offers?.filter((o) => o.type === "category").map((o) => (
+                                        <option key={o.name} value={o.name}>
+                                            {o.name}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
                         </Form>
                     </Col>
                     <Col lg={4} className="my-5">

@@ -11,7 +11,6 @@ const EditCoupon = () => {
     const navigate = useNavigate();
 
     const { data, refetch, isLoading, isError } = useGetCouponByIdQuery(id);
-    console.log(data)
     const coupon = data?.coupon
     const [update] = useUpdateCouponMutation();
     const [formData, setFormData] = useState({
@@ -48,10 +47,9 @@ const EditCoupon = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
-
+    //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form Data:", formData);
         try {
             await update({ id, ...formData }).unwrap()
             navigate("/admin/coupons");
@@ -62,54 +60,50 @@ const EditCoupon = () => {
         }
     };
 
-    
-        const handleDateChange = (name, date) => {
-            if (date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const day = String(date.getDate()).padStart(2, "0"); 
-                const formattedDate = `${year}-${month}-${day}`;
-                
-                setFormData((prev) => ({
-                    ...prev,
-                    [name]: formattedDate, 
-                }));
-           }
+    const handleDateChange = (name, date) => {
+        if (date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const formattedDate = `${year}-${month}-${day}`;
+
+            setFormData((prev) => ({
+                ...prev,
+                [name]: formattedDate,
+            }));
+        }
+    };
+
+    React.useEffect(() => {
+        const activationPicker = flatpickr("#activation", {
+            dateFormat: "d-M-Y",
+            minDate: "today",
+            onChange: function (selectedDates) {
+                const activationDate = selectedDates[0];
+                if (activationDate) {
+                    expiryPicker.set("minDate", new Date(activationDate.getTime() + 24 * 60 * 60 * 1000));
+                    expiryPicker.setDate(null);
+                    handleDateChange("activation", activationDate);
+                }
+            },
+        });
+
+        const expiryPicker = flatpickr("#expiry", {
+            dateFormat: "d-M-Y",
+            minDate: "today",
+            onChange: function (selectedDates) {
+                const expiryDate = selectedDates[0];
+                if (expiryDate) {
+                    handleDateChange("expiry", expiryDate);
+                }
+            },
+        });
+
+        return () => {
+            activationPicker.destroy();
+            expiryPicker.destroy();
         };
-        
-        
-     React.useEffect(() => {
-            const activationPicker = flatpickr("#activation", {
-                dateFormat: "d-M-Y",
-                minDate: "today",
-                onChange: function (selectedDates) {
-                    const activationDate = selectedDates[0];
-                    if (activationDate) {
-                        expiryPicker.set("minDate", new Date(activationDate.getTime() + 24 * 60 * 60 * 1000));
-                        expiryPicker.setDate(null);
-                        handleDateChange("activation", activationDate);
-                    }
-                },
-            });
-    
-            const expiryPicker = flatpickr("#expiry", {
-                dateFormat: "d-M-Y",
-                minDate: "today",
-                onChange: function (selectedDates) {
-                    const expiryDate = selectedDates[0];
-                    if (expiryDate) {
-                        handleDateChange("expiry", expiryDate);
-                    }
-                },
-            });
-    
-            return () => {
-                activationPicker.destroy();
-                expiryPicker.destroy();
-            };
-        }, []);
-    
-   
+    }, []);
 
     return (
         <Container fluid>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router';
 import { Container, Row, Col, Card, Button, Table, Image, Form } from "react-bootstrap";
 import { useGetOrderDetailsQuery, useSetItemStatusMutation } from '../../../redux/api/ordersApiSlice';
@@ -9,17 +9,12 @@ import { IMG_URL } from '../../../redux/constants';
 
 const OrderDetails = () => {
 
-
   const { id } = useParams();
-  console.log("id", id)
-
   const { data: order, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
   const [itemStatuses, setItemStatuses] = useState({});
 
   const [orderStatus, setOrderStatus] = useState(order?.status);
   const [setItemStatus] = useSetItemStatusMutation();
-  console.log("API Response order:", order);
-  console.log("Error:", error);
 
   useEffect(() => {
     if (order?.items) {
@@ -67,10 +62,6 @@ const OrderDetails = () => {
       console.error("Error updating item status:", error);
     }
   };
-
-  const handleOrderStatus = () => {
-
-  }
 
   const address = order?.shippingAddress
 
@@ -124,7 +115,7 @@ const OrderDetails = () => {
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Total Price</h6>
-                  <p className="text-muted">{order?.totalPrice}</p>
+                  <p className="text-muted">{order?.totalPrice.toFixed(2)}</p>
                 </Col>
               </Row>
               <hr className="mt-0 mb-4" />
@@ -167,10 +158,10 @@ const OrderDetails = () => {
                         <p className="mb-0 fw-bold">{item.product.price}</p>
                       </td>
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item.discount}</p>
+                        <p className="mb-0 fw-bold">{item.discount.toFixed(2)}</p>
                       </td>
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{(item.product.price - item.discount) * item.qty}</p>
+                        <p className="mb-0 fw-bold">{(item.product.price - item.discount) * item.qty.toFixed(2)}</p>
                       </td>
                       <td className="align-middle">
                         {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (

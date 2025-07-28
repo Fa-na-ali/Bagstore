@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState,} from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
@@ -6,9 +6,6 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddReferralCouponMutation } from "../../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
-
-
-
 
 const AddCoupon = () => {
     const [formData, setFormData] = useState({
@@ -48,6 +45,7 @@ const AddCoupon = () => {
         setFormData({ ...formData, [name]: value });
     };
 
+    //on submit
     const handleSubmit = async(e) => {
         e.preventDefault();
         console.log("Form Data:", formData);

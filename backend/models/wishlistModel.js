@@ -15,7 +15,7 @@ const Schema = mongoose.Schema({
         type: String,
         required: true
     }
-}, {timestamps: {createdAt: "createdAt", updatedAt: "updatedAt"}})
+}, { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } })
 
 const Wishlist = mongoose.model("Wishlist", Schema);
 

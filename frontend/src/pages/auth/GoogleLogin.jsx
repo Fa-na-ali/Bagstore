@@ -14,14 +14,10 @@ const GoolgeLogin = (props) => {
     const responseGoogle = async (authResult) => {
         try {
             if (authResult["code"]) {
-                console.log("auth", authResult)
                 const result = await googleAuth(authResult.code);
-                console.log("result from back", result)
-                const { _id, email, name, isAdmin, isExist, address,refreshToken } = result?.data?.user;
+                const { _id, email, name, isAdmin, isExist, address, refreshToken } = result?.data?.user;
                 const token = result.data?.token;
-                
-                const obj = { _id, email, name, isAdmin, isExist, address, token ,refreshToken};
-                console.log("Dispatching credentials:", obj);
+                const obj = { _id, email, name, isAdmin, isExist, address, token, refreshToken };
 
                 dispatch(setCredentials(obj));
 
@@ -33,11 +29,10 @@ const GoolgeLogin = (props) => {
                 else
                     toast.error("You are blocked")
             } else {
-                console.log(authResult);
                 toast.error("Login Error")
             }
         } catch (e) {
-            console.log('Error while Google Login...', e);
+            toast.error(e)
         }
     };
 

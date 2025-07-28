@@ -1,24 +1,24 @@
 
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import { useCreateOrderWalletMutation, useGetMyWalletQuery, useGetRazorpayKeyQuery, useUpdateWalletMutation } from '../../redux/api/walletApiSlice';
+import { LOGO_URL, WALLET_IMG_URL } from '../../redux/constants';
 
 const Wallet = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { data: keyData } = useGetRazorpayKeyQuery();
-  const {data:myWallet,refetch} = useGetMyWalletQuery()
-  console.log("my wallet",myWallet)
-  const wallet= myWallet?.wallet
+  const { data: myWallet, refetch } = useGetMyWalletQuery()
+  const wallet = myWallet?.wallet
   const [createOrderWallet] = useCreateOrderWalletMutation();
   const [updateWallet] = useUpdateWalletMutation();
   const [amount, setAmount] = useState('');
   const [showInput, setShowInput] = useState(false);
 
   useEffect(() => {
-    refetch(); 
+    refetch();
   }, [refetch]);
 
   const handleAddMoney = async () => {
@@ -29,9 +29,7 @@ const Wallet = () => {
 
     try {
       const orderRes = await createOrderWallet(amount).unwrap();
-      console.log(orderRes)
       const key = keyData.key;
-
       const options = {
         key,
         amount: amount * 100,
@@ -39,7 +37,7 @@ const Wallet = () => {
         order_id: orderRes.id,
         name: 'Add Money to Wallet',
         description: 'Transaction for wallet',
-        image: 'https://your-logo-url.com/logo.png',
+        image: `${LOGO_URL}`,
         handler: async () => {
           const res = await updateWallet(amount).unwrap();
           if (res.success) {
@@ -80,7 +78,7 @@ const Wallet = () => {
                 <div>
                   <div className="fw-bold">{userInfo?.name}</div>
                 </div>
-                <img src="https://www.svgrepo.com/show/362035/visa-3.svg" alt="Chip" width="40" />
+                <img src={`${WALLET_IMG_URL}`} alt="Chip" width="40" />
               </div>
             </Card.Body>
           </Card>

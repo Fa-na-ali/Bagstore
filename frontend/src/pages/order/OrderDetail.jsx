@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router";
 import { useCancelOrderMutation, useGetOrderByIdQuery, useReturnOrderMutation } from "../../redux/api/ordersApiSlice";
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { toast } from "react-toastify";
@@ -11,7 +9,6 @@ import { IMG_URL } from "../../redux/constants";
 import RetryButton from "../../components/RetryButton";
 
 pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
-
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -24,40 +21,40 @@ const OrderDetail = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
-  console.log(order)
 
   if (isLoading) return <p>Loading...</p>;
   if (isError || !order) return <p>Error fetching order details.</p>;
 
-  
+
   const handleCancelClick = (orderId, item) => {
     setSelectedOrder(orderId);
     setSelectedProduct(item);
     setShowConfirmModal(true);
   };
+
+  //cancel order
   const handleCancelOrder = async (orderId, item) => {
     try {
       setShowReasonModal(false);
-
       const response = await cancelOrder({
         orderId: selectedOrder,
         item: selectedProduct,
         cancelReason: selectedReason,
       }).unwrap();
-
-      console.log("Order cancellation successful:", response);
       refetch();
     } catch (error) {
-      console.error("Error cancelling order:", error);
-      alert(error?.data?.message || "Failed to cancel order. Please try again.");
+      toast.error(error?.data?.message || "Failed to cancel order. Please try again.");
     }
 
   };
+
   const handleReturnClick = (orderId, item) => {
     setSelectedOrder(orderId);
     setSelectedProduct(item);
     setShowReturnModal(true);
   };
+
+  //return order
   const handleReturnOrder = async () => {
     try {
       setShowReturnModal(false);
@@ -68,11 +65,9 @@ const OrderDetail = () => {
       }).unwrap();
       if (response)
         toast.success("Return request sent")
-      console.log("Return request successful:", response);
       refetch();
     } catch (error) {
-      console.error("Error requesting return:", error);
-
+      toast.error(error)
     }
   };
 
@@ -81,6 +76,7 @@ const OrderDetail = () => {
     setShowReasonModal(true);
   };
 
+  //download invoice
   const generate_invoice = () => {
 
     const docDefinition = {
@@ -133,7 +129,6 @@ const OrderDetail = () => {
     pdfMake.createPdf(docDefinition).download(`invoice_${order.orderId}.pdf`);
   };
 
-
   return (
     <>
       <section className="full-height background">
@@ -147,11 +142,11 @@ const OrderDetail = () => {
         </div>
         <h2 className="text-center pt-5 heading">ORDER DETAILS</h2>
         <p className="text-center caption">Order Id : {order.orderId}</p>
-        {order.paymentStatus==="Failed"?( <div className="d-flex justify-content-center mb-4">
+        {order.paymentStatus === "Failed" ? (<div className="d-flex justify-content-center mb-4">
           <RetryButton orderId={id} />
-        </div>):""
+        </div>) : ""
         }
-       
+
         <Container id="order-details" className="">
           <Row className="d-flex justify-content-center  h-100">
             <Col>
@@ -190,7 +185,7 @@ const OrderDetail = () => {
                         <Col md={2} className="d-flex justify-content-center">
                           <div>
                             <p className="small text-muted mb-4 pb-2">Price</p>
-                            <p className="lead fw-normal mb-0 caption">₹{item?.product?.price}</p>
+                            <p className="lead fw-normal mb-0 caption">₹{item?.product?.price.toFixed(2)}</p>
                           </div>
                         </Col>
                         <Col md={2} className="d-flex justify-content-center">
@@ -229,8 +224,8 @@ const OrderDetail = () => {
                             ) : (
                               <h6
                                 className={`mb-0 ${item.status === "Cancelled" || item.status === "Returned"
-                                    ? "text-danger"
-                                    : "text-success"
+                                  ? "text-danger"
+                                  : "text-success"
                                   }`}
                               >
                                 {item.status}

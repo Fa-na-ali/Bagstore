@@ -5,7 +5,6 @@ const User = require('../models/userModel');
 
 //create coupon
 const addCoupon = async (req, res) => {
-    console.log("Received Coupon Data:", req.body);
     try {
         const {
             name,
@@ -34,7 +33,6 @@ const addCoupon = async (req, res) => {
             coupon
         });
     } catch (error) {
-        console.log("Error in adding coupon" + error)
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "An error occurred"
@@ -63,14 +61,12 @@ const getCoupons = async (req, res) => {
             status: "success",
             message: "",
             coupons,
-            //time: timer,
             count,
             page,
             pages: Math.ceil(count / limit),
             hasMore: page < Math.ceil(count / limit),
         });
     } catch (error) {
-        console.log("Error in getting coupons", error);
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "An error occurred"
@@ -82,8 +78,6 @@ const getCoupons = async (req, res) => {
 const editCoupon = async (req, res) => {
 
     const id = req.params.id;
-    console.log("Received request to update coupon with ID:", id);
-    console.log("Request Body:", req.body);
     try {
         const {
             name,
@@ -112,7 +106,6 @@ const editCoupon = async (req, res) => {
 
         });
     } catch (error) {
-        console.log("Error in updating coupon" + error)
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "An error occurred" + error
@@ -177,35 +170,40 @@ const getCouponById = async (req, res) => {
     }
 };
 
-
 //get all coupons in user side
 const getAllCouponsUser = async (req, res) => {
     try {
-        const coupons = await Coupon.find({ status: true });
+        const userId = req.user._id;
+
+        const coupons = await Coupon.find({
+            status: true,
+            expiry: { $gt: new Date() },
+            limit: { $gt: 0 },
+            usedUsers: { $ne: userId }
+        });
 
         if (!coupons.length) {
-            return res.status(STATUS_CODES.NOT_FOUND).json({
+            return res.status(404).json({
                 status: "error",
-                message: "Coupons not found"
-            })
-
+                message: "No available coupons found"
+            });
         }
 
-        return res.status(STATUS_CODES.OK).json({
+        return res.status(200).json({
             status: "success",
-            message: "",
+            message: "Applicable coupons fetched successfully",
             coupons
         });
 
     } catch (error) {
-        console.log(error)
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        console.error("Error fetching applicable coupons:", error);
+        return res.status(500).json({
             status: "error",
-            message: "Server Error",
+            message: "Server error"
         });
     }
+};
 
-}
 
 //applyCoupon
 const applyCoupon = async (req, res) => {
@@ -224,16 +222,11 @@ const applyCoupon = async (req, res) => {
         if (minAmount && coupon.minAmount > minAmount) {
             return res.json({ success: false, message: "Coupon minimum amount requirement not met" });
         }
-
-        // if (minAmount && coupon.maxAmount < minAmount) {
-        //     return res.json({ success: false, message: "Coupon maximum amount requirement exceeded" });
-        // }
         if (coupon.limit === 0) {
 
             return res.status(404).json({ status: "error", message: "No more coupons available" });
         }
         const userId = req.user._id;
-
         const hasUsed = coupon.usedUsers.some(id => id.toString() === userId.toString());
         if (hasUsed && coupon.type === "single") {
             return res.json({ success: false, message: "Coupon already used" });
@@ -260,7 +253,6 @@ const applyCoupon = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error)
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "Server Error",
@@ -271,7 +263,7 @@ const applyCoupon = async (req, res) => {
 
 //Remoove coupon
 const removeCoupon = async (req, res) => {
-    console.log("coup req", req.body);
+
     const { coupon_code } = req.body;
 
     const coupon = await Coupon.findOne({ coupon_code: coupon_code });
@@ -295,7 +287,7 @@ const removeCoupon = async (req, res) => {
             coupon.limit += 1;
         }
 
-        await coupon.save(); // Save the updated coupon object
+        await coupon.save();
         return res.json({ success: true, message: "Coupon removed successfully" });
     } else {
         return res.json({ success: false, message: "Coupon not applied to user" });

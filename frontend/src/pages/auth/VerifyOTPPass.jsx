@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useResendOtpMutation, useVerifyOtpPassMutation } from "../../redux/api/usersApiSlice";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -43,6 +43,7 @@ const VerifyOTPPass = () => {
             inputRefs.current[index + 1]?.focus();
         }
     };
+
     // Handle backspace navigation
     const handleKeyDown = (index, e) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
@@ -65,7 +66,6 @@ const VerifyOTPPass = () => {
             toast.success("OTP Verified Successfully!");
             navigate(`/reset-password?email=${email}`)
         } catch (err) {
-            console.error("Verification Error:", err);
             toast.error(err?.data?.message || "Invalid OTP. Please try again.");
         }
     };
@@ -79,7 +79,6 @@ const VerifyOTPPass = () => {
             inputRefs.current[0]?.focus();
             setTimer(180);
         } catch (err) {
-            console.error("Resend OTP Error:", err);
             toast.error("Failed to resend OTP. Try again later.");
         }
     };

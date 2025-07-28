@@ -84,7 +84,6 @@ cron.schedule('0 * * * *', async () => {
             { expiry: { $lt: now }, status: true },
             { $set: { status: false } }
         );
-        console.log(`Updated ${updated.modifiedCount} expired Coupons.`);
     } catch (error) {
         console.error("Error updating expired discounts:", error);
     }

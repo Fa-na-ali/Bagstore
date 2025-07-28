@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useDeleteImageMutation, useGetProductByIdQuery, useUpdateProductMutation } from '../../../redux/api/productApiSlice';
-import { Row, Col, Container, Form, Button, Card, Modal } from 'react-bootstrap';
+import { Row, Col, Container, Form, Button, Modal } from 'react-bootstrap';
 import { MdOutlineAdd } from "react-icons/md";
 import { MdOutlineRemove } from "react-icons/md";
 import Cropper from 'react-cropper';
@@ -13,18 +13,17 @@ import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 import { IMG_URL } from '../../../redux/constants';
+
+
 const EditProduct = () => {
 
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: off } = useGetAllOffersToAddQuery()
-  console.log(off)
   const offers = off?.offers
 
   const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
-  console.log("product", data)
   const product = data?.product
-  console.log(product?.category?.name)
   const [update, { isLoading: isUpdating }] = useUpdateProductMutation();
   const { data: datas } = useFetchCategoriesQuery();
   const categories = datas?.all
@@ -47,7 +46,6 @@ const EditProduct = () => {
   const [croppingIndex, setCroppingIndex] = useState(null);
 
   const productImages = product?.pdImage.map((img) => `${IMG_URL}${img}`);
-
 
   useEffect(() => {
     if (product) {
@@ -72,19 +70,17 @@ const EditProduct = () => {
   //on upload
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files)
-    //  console.log("image up",newFiles)
     const fileURLs = newFiles.map((file) => URL.createObjectURL(file));
     setFiles((prevFiles) => {
       const updatedFiles = [...prevFiles, ...fileURLs];
-      //  console.log("Updated length", updatedFiles);  // Correctly logs updated length
       return updatedFiles;
     });
-    // console.log("length", files)
+
   }
+
   //to remove image
   const removeImage = async (id, index) => {
-    console.log("idddddd", id)
-    console.log("index", index)
+
     try {
       if (index >= 0 && index < product?.pdImage.length) {
         await deleteImage({ id, index }).unwrap();
@@ -96,12 +92,14 @@ const EditProduct = () => {
       console.error("Error deleting image:", error);
     }
   };
+
   //to crop
   const openCropModal = (image, index) => {
     setCroppingIndex(index);
     setImageToCrop(image);
     setShowModal(true);
   };
+
   const handleCrop = () => {
     if (cropperRef.current) {
       const croppedCanvas = cropperRef.current.cropper.getCroppedCanvas();
@@ -125,11 +123,10 @@ const EditProduct = () => {
     }
     setShowModal(false);
   }
+
   //to update
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-
     const productData = new FormData();
     productData.append("name", name);
     productData.append("description", description);
@@ -143,26 +140,17 @@ const EditProduct = () => {
 
     let finalImages = croppedImages.length ? croppedImages : files;
 
-    // Convert Object URLs to actual File objects
     const convertedFiles = await Promise.all(
       finalImages.map(async (file) => {
         if (file instanceof File) return file;
-
-        // Fetch image from Object URL (blob:http://...)
         const response = await fetch(file);
         const blob = await response.blob();
-
-        // Convert Blob to File
         return new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
       })
     );
 
-    // Append images to FormData
     convertedFiles.forEach((file) => productData.append("pdImage", file));
 
-
-    console.log("prooo", productData)
-    console.log("pp", { name, description, price, category, quantity, offer, color, brand, productId: product._id, images: convertedFiles, })
     try {
       const { data } = await update({ id: product?._id, formData: productData }).unwrap()
       toast.success('Product Edited successfully!');
@@ -339,8 +327,6 @@ const EditProduct = () => {
           </Col>
         </Row>
 
-
-
         <Modal show={showModal} onHide={() => setShowModal(false)} centered>
           <Modal.Body>
             <Cropper
@@ -371,8 +357,6 @@ const EditProduct = () => {
         </Modal>
 
       </Container>
-
-
     </>
   )
 }

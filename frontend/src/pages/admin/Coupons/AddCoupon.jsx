@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
@@ -6,9 +6,6 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddCouponMutation } from "../../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
-
-
-
 
 const AddCoupon = () => {
     const [formData, setFormData] = useState({
@@ -25,7 +22,7 @@ const AddCoupon = () => {
     });
     const [errors, setErrors] = useState({});
     const [addCoupon] = useAddCouponMutation()
-    const navigate=useNavigate()
+    const navigate = useNavigate()
 
     const validateForm = () => {
         let newErrors = {};
@@ -50,37 +47,35 @@ const AddCoupon = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
-
-    const handleSubmit = async(e) => {
+    //on submit
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form Data:", formData);
         if (!validateForm()) return;
         try {
             const response = await addCoupon(formData).unwrap();
-            console.log(response)
-            toast.success(response.message); 
+            toast.success(response.message);
             navigate('/admin/coupons')
         } catch (err) {
-            toast.error(err.data?.message || "Failed to add coupon"); 
+            toast.error(err.data?.message || "Failed to add coupon");
         }
     };
 
+    //picking dates
     const handleDateChange = (name, date) => {
         if (date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, "0");
-            const day = String(date.getDate()).padStart(2, "0"); 
+            const day = String(date.getDate()).padStart(2, "0");
             const formattedDate = `${year}-${month}-${day}`;
-            
+
             setFormData((prev) => ({
                 ...prev,
-                [name]: formattedDate, 
+                [name]: formattedDate,
             }));
-       }
+        }
     };
-    
-    
- React.useEffect(() => {
+
+    React.useEffect(() => {
         const activationPicker = flatpickr("#activation", {
             dateFormat: "d-M-Y",
             minDate: "today",
@@ -130,9 +125,9 @@ const AddCoupon = () => {
                                 placeholder="Enter Coupon Name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                isInvalid={!!errors.name}  
+                                isInvalid={!!errors.name}
                             />
-                             <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
+                            <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
@@ -176,7 +171,7 @@ const AddCoupon = () => {
                                         onChange={handleChange}
                                         isInvalid={!!errors.expiry}
                                     />
-                                     <Form.Control.Feedback type="invalid">{errors.expiry}</Form.Control.Feedback>
+                                    <Form.Control.Feedback type="invalid">{errors.expiry}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -194,7 +189,7 @@ const AddCoupon = () => {
                                         onChange={handleChange}
                                         isInvalid={!!errors.discount}
                                     />
-                                     <Form.Control.Feedback type="invalid">{errors.discount}</Form.Control.Feedback>
+                                    <Form.Control.Feedback type="invalid">{errors.discount}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col>
@@ -205,7 +200,7 @@ const AddCoupon = () => {
                                         name="status"
                                         value={formData.status}
                                         onChange={handleChange}
-                                        
+
                                     >
                                         <option value={true}>Active</option>
                                         <option value={false}>Inactive</option>
@@ -229,7 +224,7 @@ const AddCoupon = () => {
                                             onChange={handleChange}
                                             isInvalid={!!errors.minAmount}
                                         />
-                                         <Form.Control.Feedback type="invalid">{errors.minAmount}</Form.Control.Feedback>
+                                        <Form.Control.Feedback type="invalid">{errors.minAmount}</Form.Control.Feedback>
                                     </div>
                                 </Form.Group>
                             </Col>
@@ -247,7 +242,7 @@ const AddCoupon = () => {
                                             onChange={handleChange}
                                             isInvalid={!!errors.maxAmount}
                                         />
-                                         <Form.Control.Feedback type="invalid">{errors.maxAmount}</Form.Control.Feedback>
+                                        <Form.Control.Feedback type="invalid">{errors.maxAmount}</Form.Control.Feedback>
                                     </div>
                                 </Form.Group>
                             </Col>
@@ -277,10 +272,10 @@ const AddCoupon = () => {
                                         name="type"
                                         value={formData.type}
                                         onChange={handleChange}
-                                        
+
                                     >
                                         <option value="single">Single</option>
-                                       
+
                                     </Form.Select>
                                 </Form.Group>
                             </Col>

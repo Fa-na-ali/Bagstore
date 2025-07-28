@@ -68,7 +68,10 @@ const userSignup = async (req, res) => {
             const referrer = await Referral.findOne({ referralCode: referCode });
 
             if (!referrer) {
-                console.log("Invalid referral code provided:", referCode);
+                return res.status(STATUS_CODES.BAD_REQUEST).json({
+                    status: "error",
+                    message: "Invalid Rferral code "
+                });
             } else {
 
                 referrer.referredUsers.push(user._id);
@@ -101,7 +104,7 @@ const userSignup = async (req, res) => {
 
                 await refWallet.save();
                 await referrer.save();
-                console.log("Referral processed successfully for referrer:", referrer.user);
+
             }
         }
 
@@ -115,8 +118,6 @@ const userSignup = async (req, res) => {
             text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
             html: `<p>Your OTP code is <strong>${otp}</strong>. It is valid for 5 minutes.</p>`
         });
-
-        console.log("OTP sent successfully to", email);
 
         return res.status(STATUS_CODES.CREATED).json({
             status: "success",
@@ -146,7 +147,6 @@ const userLogin = async (req, res) => {
 
         const user = await User.findOne({ email }).populate("address");
         if (!user) {
-            console.log("User not found!");
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
                 message: USER_NOT_MSG
@@ -157,7 +157,6 @@ const userLogin = async (req, res) => {
             const { token, refreshToken } = generateToken(user);
             user.refreshToken = refreshToken;
             await user.save();
-            console.log("Generated Token:", token);
             res.status(STATUS_CODES.OK).json({
                 status: "success",
                 message: USER_LOGIN_MSG,
@@ -195,8 +194,6 @@ const resendOtp = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000);
         otpStore.set(email, { otp, expires: Date.now() + 300000 });
 
-        console.log("Generated OTP:", otp);
-
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
@@ -204,7 +201,6 @@ const resendOtp = async (req, res) => {
             text: `Your OTP code is ${otp}. It is valid for 3 minutes.`,
         });
 
-        console.log("OTP sent successfully to", email);
         res.status(STATUS_CODES.CREATED).json({
             status: "success",
             message: USER_OTP_MSG
@@ -234,9 +230,7 @@ const googleLogin = async (req, res) => {
         const userRes = await axios.get(
             `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`
         );
-        console.log("google", userRes)
         const { email, name, } = userRes.data;
-        // console.log(userRes);
         let user = await User.findOne({ email }).populate("address");
 
         if (!user) {
@@ -250,7 +244,6 @@ const googleLogin = async (req, res) => {
             const { token, refreshToken } = generateToken(user)
             user.refreshToken = refreshToken;
             await user.save();
-            console.log("token generated", token)
             res.status(STATUS_CODES.OK).json({
                 status: "success",
                 message: USER_LOGIN_MSG,
@@ -258,7 +251,6 @@ const googleLogin = async (req, res) => {
             })
         }
     } catch (err) {
-        console.log(err.message)
         res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: err.msg
@@ -295,7 +287,6 @@ const logoutUser = async (req, res) => {
 
 };
 
-
 //delete user
 const deleteUser = async (req, res) => {
     try {
@@ -322,32 +313,8 @@ const deleteUser = async (req, res) => {
     }
 };
 
-//function to search a specific user
-// const searchUser = async (req, res) => {
-//     try {
-//         const { query} = req.query;
-
-//         if (query) {
-//             const users = await User.find({
-//                 $or: [
-//                     { name: { $regex: query, $options: 'i' } },
-//                     { email: { $regex: query, $options: 'i' } }
-//                 ]
-//             });
-
-//             return res.json(users);
-//         }
-//         const users = await User.find({});
-//         res.json(users);
-
-//     } catch (error) {
-//         res.status(500).json({ message: error.message })
-//     }
-
-// };
 //fetch all users using keyword and pagination
 const fetchUsers = async (req, res) => {
-    console.log("search")
     try {
         const pageSize = 6;
         const page = Number(req.query.page) || 1;
@@ -361,9 +328,7 @@ const fetchUsers = async (req, res) => {
             : {};
 
         const count = await User.countDocuments({ ...keyword });
-        console.log("count", count)
         const user = await User.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
-        console.log("users", user)
         res.status(STATUS_CODES.OK).json({
             status: "success",
             user,
@@ -381,19 +346,17 @@ const fetchUsers = async (req, res) => {
     }
 };
 
+//search user 
 const searchUser = async (req, res) => {
-    console.log("hiii searching")
     const search = new RegExp(req.params?.search, 'i')
     if (search !== '')
         try {
             const all = await User.find({ email: search });
-            console.log("search", all)
             res.status(STATUS_CODES.OK).json({
                 status: "success",
                 all
             })
         } catch (error) {
-            console.log(error);
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
                 status: "error",
                 message: error.msg
@@ -424,7 +387,6 @@ const getAllUsers = async (req, res) => {
 const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        console.log("email", email)
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -500,7 +462,6 @@ const resetPassword = async (req, res) => {
 const getCurrentUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).populate("address");
-        console.log("user profile", user)
         if (!user) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -522,10 +483,9 @@ const getCurrentUserProfile = async (req, res) => {
 
 //edit user profile
 const updateUser = async (req, res) => {
-    console.log("req", req)
+
     try {
         const id = req.user._id
-        console.log("id to edit user", id)
         const { name, email, phone, } = req.body;
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -534,7 +494,6 @@ const updateUser = async (req, res) => {
             })
         }
         const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
-        console.log("user found", user)
         if (!user) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -606,7 +565,6 @@ const addAddress = async (req, res) => {
 const getAddress = async (req, res) => {
     try {
         const id = req.params.id
-        console.log("id:", id)
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
@@ -731,25 +689,17 @@ const changePassword = async (req, res) => {
     }
 }
 
+//upload image for user
 const uploadImage = async (req, res) => {
     try {
         const id = req.params.id;
-        console.log("id", id)
-        console.log("req.files", req.body);
-
-
         if (!req.files || req.files.length === 0) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
                 message: "No files uploaded"
             });
         }
-
-
-        const imageUrls = req.files.map((file) => file.filename);
-
-
-
+        const imageUrls = req.files.map((file) => file.filename)
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
@@ -780,8 +730,9 @@ const uploadImage = async (req, res) => {
     }
 };
 
+//delete image
 const deleteUserImage = async (req, res) => {
-    console.log("params", req.params)
+
     try {
         const { id, index } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -791,7 +742,6 @@ const deleteUserImage = async (req, res) => {
             })
         }
         const user = await User.findById(id);
-        console.log("user", user)
         if (!user)
             return res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",

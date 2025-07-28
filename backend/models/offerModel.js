@@ -35,7 +35,7 @@ const Schema = mongoose.Schema({
         type: Number,
         required: true
     }
-}, {timestamps: {createdAt: "createdAt", updatedAt: "updatedAt"}});
+}, { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } });
 
 const Offer = mongoose.model('Offer', Schema);
 
@@ -46,7 +46,6 @@ cron.schedule('0 * * * *', async () => {
             { expiry: { $lt: now }, status: true },
             { $set: { status: false } }
         );
-        console.log(`Updated ${updated.modifiedCount} expired discounts.`);
     } catch (error) {
         console.error("Error updating expired discounts:", error);
     }

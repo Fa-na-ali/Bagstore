@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap'
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify'
 import { useGetAddressQuery, useUpdateAddressMutation } from '../../redux/api/usersApiSlice';
+
 const EditAddress = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-
-    const { data, refetch,isLoading } = useGetAddressQuery(id)
-    console.log("data",data)
-    const address= data?.address
+    const { data, refetch, isLoading } = useGetAddressQuery(id)
+    const address = data?.address
     const [updateAddress] = useUpdateAddressMutation()
-
     const [formData, setFormData] = useState({
         name: "",
         houseName: "",
@@ -42,6 +40,7 @@ const EditAddress = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -49,7 +48,7 @@ const EditAddress = () => {
             toast.success("User Edited successfully!");
             navigate(-1);
         } catch (error) {
-            console.error("Failed to update address", error);
+            toast.error("Failed to update address");
         }
     };
 

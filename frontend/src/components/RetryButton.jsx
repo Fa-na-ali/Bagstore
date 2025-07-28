@@ -1,9 +1,7 @@
-import React from 'react'
 import { useRetryPaymentMutation, useVerifyRetryPaymentMutation } from '../redux/api/usersApiSlice';
 import { Button, } from "react-bootstrap";
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router";
-
 
 const RetryButton = ({ orderId }) => {
 
@@ -11,10 +9,10 @@ const RetryButton = ({ orderId }) => {
     const [verifyRetryPayment] = useVerifyRetryPaymentMutation();
     const navigate = useNavigate()
 
+    //retry payment
     const handleRetryPayment = async (orderId) => {
         try {
             const { data } = await retryPayment(orderId);
-            console.log("data", data)
             if (data.status === "success") {
                 initiateRazorpay(data, orderId);
             } else {
@@ -25,7 +23,6 @@ const RetryButton = ({ orderId }) => {
                 });
             }
         } catch (err) {
-            console.error("Error retrying payment:", err);
             Swal.fire({
                 icon: "error",
                 title: "Payment Error",
@@ -34,6 +31,7 @@ const RetryButton = ({ orderId }) => {
         }
     };
 
+    //initiating payment
     const initiateRazorpay = (order, orderId) => {
         const options = {
             key: order.order.key,
@@ -65,7 +63,6 @@ const RetryButton = ({ orderId }) => {
                         });
                     }
                 } catch (error) {
-                    console.error("Error verifying payment:", error);
                     Swal.fire({
                         icon: "error",
                         title: "Payment Error",

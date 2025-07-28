@@ -24,8 +24,6 @@ const PORT = process.env.PORT || 5004
 dbConnect();
 
 //middlewares
-
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -37,14 +35,6 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/wallet", walletRouter);
-
-
-
-
-
-
-
-
 
 //connecting to the server
 app.listen(PORT, () => {

@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Container, Row, Col, Card, Button, Form, Image, Modal, InputGroup, FormControl } from "react-bootstrap";
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router';
 import { IMG_URL } from '../../redux/constants';
 import RetryButton from '../../components/RetryButton';
-import { useDispatch } from 'react-redux';
 
 const MyOrder = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,11 +18,10 @@ const MyOrder = () => {
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
   const navigate = useNavigate()
-  console.log("API Response:", orders);
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading orders</p>;
-  
+
 
   const handleCancelClick = (orderId, item) => {
     setSelectedOrder(orderId);
@@ -31,6 +29,7 @@ const MyOrder = () => {
     setShowConfirmModal(true);
   };
 
+  //cancel order
   const handleCancelOrder = async (orderId, item) => {
     try {
       setShowReasonModal(false);
@@ -40,12 +39,9 @@ const MyOrder = () => {
         item: selectedProduct,
         cancelReason: selectedReason,
       }).unwrap();
-
-      console.log("Order cancellation successful:", response);
       refetch();
     } catch (error) {
-      console.error("Error cancelling order:", error);
-      alert(error?.data?.message || "Failed to cancel order. Please try again.");
+      toast.error(error?.data?.message || "Failed to cancel order. Please try again.");
     }
 
   };
@@ -56,6 +52,7 @@ const MyOrder = () => {
     setShowReturnModal(true);
   };
 
+  //return order
   const handleReturnOrder = async () => {
     try {
       setShowReturnModal(false);
@@ -66,10 +63,9 @@ const MyOrder = () => {
       }).unwrap();
       if (response)
         toast.success("Return request sent")
-      console.log("Return request successful:", response);
       refetch();
     } catch (error) {
-      console.error("Error requesting return:", error);
+      toast.error(error)
 
     }
   };
@@ -86,7 +82,6 @@ const MyOrder = () => {
 
   return (
     <>
-
       <section className="full-height background">
         <Row className='py-5'>
           <Col lg={6}></Col>
@@ -121,8 +116,6 @@ const MyOrder = () => {
                       <h2 className="mb-1 text-center heading">MY ORDERS</h2>
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <div>
-
-
                         </div>
                       </div>
 
@@ -134,10 +127,10 @@ const MyOrder = () => {
                           <div key={order._id}>
                             <h5>Order ID: {order.orderId}</h5>
                             <p>Total Price: ₹{order.totalPrice}</p>
-                             {order.paymentStatus==="Failed"?( <div className="d-flex justify-content-center mb-4">
-          <RetryButton orderId={order._id} />
-        </div>):""
-        }
+                            {order.paymentStatus === "Failed" ? (<div className="d-flex justify-content-center mb-4">
+                              <RetryButton orderId={order._id} />
+                            </div>) : ""
+                            }
                             <hr />
                             {order?.items?.length > 0 ? (
                               order.items.map((item) => (

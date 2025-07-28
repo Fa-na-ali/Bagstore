@@ -5,7 +5,6 @@ const RequireAuth = () => {
     const { userInfo } = useSelector((state) => state.auth)
     const location = useLocation();
 
-
     return (
         userInfo
             ? <Outlet />

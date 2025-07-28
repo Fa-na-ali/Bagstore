@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Card, Button, Image as BootstrapImage, Form, Modal } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
@@ -15,9 +15,7 @@ const Account = () => {
     const navigate = useNavigate()
     const { data: users, refetch } = useProfileQuery()
     const [deleteAddress] = useDeleteAddressMutation();
-    console.log("useraccount", users)
     const user = users?.user
-
     const [files, setFiles] = useState([]);
     const [croppedImages, setCroppedImages] = useState([]);
     const [imageToCrop, setImageToCrop] = useState(null);
@@ -35,6 +33,7 @@ const Account = () => {
         refetch();
     }, [refetch, user]);
 
+    //delete address
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this address?")) {
             try {
@@ -42,7 +41,6 @@ const Account = () => {
                 toast.success("Address deleted successfully!");
                 refetch();
             } catch (error) {
-                console.error("Failed to delete address", error);
                 toast.error("Error deleting address.");
             }
         }
@@ -50,11 +48,9 @@ const Account = () => {
 
     const handleFileChange = (e) => {
         const newFiles = Array.from(e.target.files)
-        //  console.log("image up",newFiles)
         const fileURLs = newFiles.map((file) => URL.createObjectURL(file));
         setFiles((prevFiles) => {
             const updatedFiles = [...prevFiles, ...fileURLs];
-            //  console.log("Updated length", updatedFiles);  // Correctly logs updated length
             return updatedFiles;
         });
 
@@ -66,6 +62,7 @@ const Account = () => {
         setShowModal(true);
     };
 
+    //crop image
     const handleCrop = () => {
         if (cropperRef.current) {
             const croppedCanvas = cropperRef.current.cropper.getCroppedCanvas();
@@ -90,59 +87,43 @@ const Account = () => {
         setShowModal(false);
     }
 
+    //upload image
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-
         const userData = new FormData();
-
-
         let finalImages = croppedImages.length ? croppedImages : files;
-
-        // Convert Object URLs to actual File objects
         const convertedFiles = await Promise.all(
             finalImages.map(async (file) => {
                 if (file instanceof File) return file;
                 const response = await fetch(file);
                 const blob = await response.blob();
-
-                // Convert Blob to File
                 return new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
             })
         );
-
-        // Append images to FormData
         convertedFiles.forEach((file) => userData.append("image", file));
-
-
-        for (let [key, value] of userData.entries()) {
-            console.log(key, value);
-        }
-        console.log("pp", { images: convertedFiles, })
         try {
             const { data } = await upload({ id: user?._id, userData }).unwrap()
             toast.success('Profile pic added successfully!');
             refetch();
         } catch (error) {
-            console.log(error)
             toast.error(error?.data?.message || 'Failed to edit product');
         }
     };
 
+    //remove image
     const removeImage = async (id, index) => {
-        console.log("idddddd", id)
-        console.log("index", index)
+
         try {
-          if (index >= 0 && index < user?.image.length) {
-            await deleteImage({ id, index }).unwrap();
-          }
-    
-          setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
-    
+            if (index >= 0 && index < user?.image.length) {
+                await deleteImage({ id, index }).unwrap();
+            }
+
+            setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
+
         } catch (error) {
-          console.error("Error deleting image:", error);
+            toast.error("Error deleting image:");
         }
-      };
+    };
 
 
     return (

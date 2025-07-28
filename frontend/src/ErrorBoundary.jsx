@@ -1,19 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
 
-  componentDidCatch(error, errorInfo) {
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
-  }
+    componentDidCatch(error, errorInfo) {
+        toast.error("Error caught by ErrorBoundary:");
+    }
 
     render() {
         if (this.state.hasError) {
@@ -27,7 +28,7 @@ class ErrorBoundary extends React.Component {
                         <p className="lead">
                             The page you’re looking for doesn’t exist.
                         </p>
-                        <Link to="/" className="btn btn-primary"> 
+                        <Link to="/" className="btn btn-primary">
                             Go Home
                         </Link>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Table,
@@ -13,24 +13,22 @@ import {
 } from 'react-bootstrap';
 import { useGetSalesReportQuery } from '../../../redux/api/dashboardApiSlice';
 import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
+import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../redux/constants';
 
 // Initialize pdfMake
-//pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
 if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 } else {
   pdfMake.vfs = {
     Roboto: {
-      normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
-      bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
-      italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
-      bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+      normal: `${NORMAL_URL_FONT}`,
+      bold: `${BOLD_URL_FONT}`,
+      italics: `${ITALICS_URL_FONT}`,
+      bolditalics: `${BOLDITALICS_URL_FONT}`
     }
   };
 }

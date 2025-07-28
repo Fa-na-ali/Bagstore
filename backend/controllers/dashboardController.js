@@ -62,17 +62,14 @@ const getSalesReportData = async (filter, startDate, endDate) => {
   if (Object.keys(dateRange).length > 0) {
     matchConditions.createdAt = dateRange;
   }
-  console.log('Final match conditions:', JSON.stringify(matchConditions, null, 2))
+
   const orders = await Order.find({
     "items.status": "Delivered"
   });
-  console.log("orders", orders)
 
   try {
 
     const orderCount = await Order.countDocuments(matchConditions);
-    console.log(`Found ${orderCount} matching orders`);
-
     if (orderCount === 0) {
       return {
         orders: [],
@@ -192,6 +189,7 @@ const getSalesReportData = async (filter, startDate, endDate) => {
       }
     ]);
 
+    //detailed orders
     const detailedOrders = await Order.aggregate([
       { $match: matchConditions },
       {
@@ -241,19 +239,6 @@ const getSalesReportData = async (filter, startDate, endDate) => {
     const totalSold = result.reduce((sum, item) => sum + item.soldCount, 0);
     const totalReturns = result.reduce((sum, item) => sum + item.returnedCount, 0);
 
-    console.log('Aggregation results:', JSON.stringify({
-      orders: result,
-      offerDiscounts: totalProductDiscounts,
-      couponDiscounts: totalCouponDiscount,
-      overallSalesCount: totalSold,
-      orderCount: couponStats[0]?.totalOrders || 0,
-      returnedOrderCount: couponStats[0]?.returnedOrders || 0,
-      overallDiscount: totalProductDiscounts + totalCouponDiscount,
-      netRevenue: totalRevenue,
-      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount
-    }, null, 2));
-
-
     return {
       orders: result,
       offerDiscounts: totalProductDiscounts.toFixed(2),
@@ -276,14 +261,11 @@ const getSalesReportData = async (filter, startDate, endDate) => {
 };
 
 
-
+//sales report 
 const getSalesReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
-    console.log("query", req.query)
-
     const reportData = await getSalesReportData(filter, startDate, endDate);
-
     res.status(200).json(reportData);
   } catch (error) {
     console.error('Error generating sales report:', error);
@@ -294,8 +276,7 @@ const getSalesReport = async (req, res) => {
   }
 };
 
-
-
+//load sles report
 const loadSalesReport = async (req, res) => {
   try {
     const reportData = await getSalesReportData('daily');
@@ -323,14 +304,10 @@ const loadSalesReport = async (req, res) => {
 
 const loadDashboard = async (req, res) => {
   try {
-    // let { startDate, endDate } = req.body;
-    // console.log("date",startDate,endDate)
-    // startDate = new Date(startDate);
-    // endDate = new Date(endDate);
-    // startDate.setUTCHours(0, 0, 0);
-    // endDate.setUTCHours(23, 59, 59);
-    const { filter, startDate, endDate } = req.query;
-    console.log("query", req.query)
+
+    let { filter, startDate, endDate } = req.query;
+    startDate = parseInt(startDate);
+    endDate = endDate ? new Date(endDate) : null;
     let dateRange = {};
     const now = new Date();
 
@@ -342,12 +319,14 @@ const loadDashboard = async (req, res) => {
         };
         break;
       case 'weekly':
+
+        const day = now.getDay();
         const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
         startOfWeek.setHours(0, 0, 0, 0);
 
-        const endOfWeek = new Date(now);
-        endOfWeek.setDate(now.getDate() + (6 - now.getDay()));
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
         endOfWeek.setHours(23, 59, 59, 999);
 
         dateRange = {
@@ -356,15 +335,22 @@ const loadDashboard = async (req, res) => {
         };
         break;
       case 'monthly':
+        const month = parseInt(startDate);
+        const yearl = now.getFullYear();
+
+        const startOfMonth = new Date(yearl, month, 1);
+        const endOfMonth = new Date(yearl, month + 1, 0, 23, 59, 59, 999);
+
         dateRange = {
-          $gte: new Date(now.getFullYear(), now.getMonth(), 1),
-          $lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+          $gte: startOfMonth,
+          $lte: endOfMonth
         };
         break;
       case 'yearly':
+        const year = !isNaN(startDate) ? startDate : now.getFullYear();
         dateRange = {
-          $gte: new Date(now.getFullYear(), 0, 1),
-          $lte: new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999)
+          $gte: new Date(year, 0, 1),
+          $lte: new Date(year, 11, 31, 23, 59, 59, 999)
         };
         break;
       case 'custom':
@@ -379,6 +365,7 @@ const loadDashboard = async (req, res) => {
         break;
     }
 
+    //user data
     const userData = await User.aggregate([
       {
         $match: {
@@ -417,6 +404,7 @@ const loadDashboard = async (req, res) => {
       }
     ]);
 
+    //sales data
     const salesData = await Payment.aggregate([
       {
         $match: {
@@ -454,6 +442,7 @@ const loadDashboard = async (req, res) => {
       }
     ]);
 
+    //order data
     const orderData = await Order.aggregate([
       {
         $match: {
@@ -484,6 +473,7 @@ const loadDashboard = async (req, res) => {
       }
     ])
 
+    //top selling products
     const topSellingProducts = await Order.aggregate([
       { $unwind: '$items' },
       {
@@ -530,6 +520,7 @@ const loadDashboard = async (req, res) => {
       { $limit: 5 }
     ]);
 
+    //top selling categories
     const topSellingCategories = await Order.aggregate([
       { $unwind: '$items' },
       {

@@ -17,17 +17,15 @@ const generateOrderNumber = async () => Math.random().toString(36).substring(2, 
 //create order
 const createOrder = async (req, res) => {
   try {
-    console.log("Order request body:", req.body);
     const orderId = await generateOrderId();
     const orderNumber = await generateOrderNumber()
     let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
-    console.log("coooo", couponDiscount)
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in the order" });
     }
 
     const user = await User.findById(userId);
-    console.log("user", user)
+
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
@@ -35,23 +33,19 @@ const createOrder = async (req, res) => {
     const validatedItems = [];
     for (const item of items) {
       if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-        console.log("Invalid product ID:", item.product);
         return res.status(400).json({ status: "error", message: "Invalid product ID" });
       }
       if (!item.qty || item.qty < 1) {
-        console.log("Invalid quantity:", item.qty);
         return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
       }
       validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
     }
-    console.log("Validated Items:", validatedItems);
 
     if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
       return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
     }
     if (paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId: user._id });
-      console.log("wallet", wallet)
       if (!wallet || wallet.balance < totalPrice) {
         return res.json({ success: false, message: "Insufficient balance in wallet" });
       }
@@ -103,7 +97,6 @@ const createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-    console.log("Order created successfully", createdOrder);
 
     if (user.coupon) {
       const coupon = await Coupon.findById(user.coupon);
@@ -121,16 +114,11 @@ const createOrder = async (req, res) => {
       createdOrder.items.map(async (item) => {
         const product = await Product.findById(item.product);
         if (product) {
-          console.log(`Before Update - Product: ${product._id}, Stock: ${product.quantity}`);
           product.quantity -= item.qty;
           await product.save();
-          console.log(`After Update - Product: ${product._id}, Stock: ${product.quantity}`);
-        } else {
-          console.log(`Product not found: ${item.product}`);
         }
       })
     );
-    console.log("Stock updated for order");
 
     await Payment.updateOne(
       { _id: payment._id },
@@ -149,8 +137,6 @@ const createOrder = async (req, res) => {
 //get my orders
 const getMyOrders = async (req, res) => {
   try {
-    console.log("User ID:", req.user._id);
-    console.log("Query Params:", req.query);
 
     const filters = { userId: req.user._id };
     const { searchTerm } = req.query;
@@ -161,8 +147,6 @@ const getMyOrders = async (req, res) => {
     const orders = await Order.find(filters)
       .populate("items.product")
       .sort({ createdAt: -1 });
-
-    console.log("Orders:", orders);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -174,8 +158,6 @@ const getMyOrders = async (req, res) => {
 const cancelOrder = async (req, res) => {
   try {
     const { orderId, item, cancelReason } = req.body;
-    console.log(req.body)
-
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -221,7 +203,6 @@ const cancelOrder = async (req, res) => {
           balance: 0,
           transactions: []
         });
-        // await wallet.save()
       }
 
       let refundAmount = item.qty * product.price;
@@ -255,7 +236,6 @@ const getAllOrders = async (req, res) => {
 
   try {
     const { searchTerm, status, page = 1, } = req.query;
-    console.log(req.query)
     const limit = 6
     let query = {};
     if (searchTerm) {
@@ -267,7 +247,6 @@ const getAllOrders = async (req, res) => {
       query.status = status;
     }
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    console.log("Skip:", skip, "Limit:", limit);
     const orders = await Order.find(query)
       .populate("userId")
       .sort({ createdAt: -1 })
@@ -292,7 +271,6 @@ const getAllOrders = async (req, res) => {
 //get order  by id
 const findOrderById = async (req, res) => {
 
-  console.log("Received Order ID:", req.params.id);
   const id = req.params.id
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -302,8 +280,6 @@ const findOrderById = async (req, res) => {
       "userId")
       .populate("shippingAddress")
       .populate("items.product")
-
-    console.log("orrrrder", order)
     if (order) {
       res.json(order);
     } else {
@@ -311,7 +287,6 @@ const findOrderById = async (req, res) => {
 
     }
   } catch (error) {
-    console.log(error)
     res.status(500).json({ error: error.message });
   }
 };
@@ -320,7 +295,6 @@ const findOrderById = async (req, res) => {
 const setItemStatus = async (req, res) => {
   try {
     const { status, item, id } = req.body;
-    console.log("req", req.body)
     if (status == "Delivered") {
       const payment = await Payment.findOne({ orderId: id });
       if (!payment) {
@@ -339,7 +313,6 @@ const setItemStatus = async (req, res) => {
     }
 
     const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
-    console.log("item", orderItem)
     if (!orderItem) {
       return res.status(404).json({ message: "Item not found in order" });
     }
@@ -377,11 +350,9 @@ const setItemStatus = async (req, res) => {
     }
 
     await order.save();
-    console.log("status saved", order)
     return res.status(200).json({ success: true, message: `Order status updated successfully` });
 
   } catch (error) {
-    console.log("Error in set order status" + error)
     return res.status(500).json({ success: false, message: `An error occurred` });
   }
 };
@@ -398,7 +369,6 @@ const returnOrder = async (req, res) => {
     return res.json({ success: false, message: `Order not found` });
   }
   const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
-  console.log("item", orderItem)
   if (!orderItem) {
     return res.status(404).json({ message: "Item not found in order" });
   }
@@ -432,12 +402,10 @@ const returnOrder = async (req, res) => {
 const loadPendingOrder = async (req, res) => {
   try {
     const id = req.params.id
-    console.log(id)
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid Order ID" });
     }
     const userId = req.user._id;
-    console.log(userId)
     const page = parseInt(req.query.page) || 1;
     const limit = 5;
     const skip = (page - 1) * limit;
@@ -448,7 +416,6 @@ const loadPendingOrder = async (req, res) => {
       .populate("items.product")
       .skip(skip)
       .limit(limit);
-    console.log("ordersss", orders)
 
     const totalOrders = await Order.countDocuments({
       userId: userId,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
 import {
@@ -18,7 +18,7 @@ import { Chart } from 'chart.js/auto';
 import { useGetDashboardDataQuery } from '../../../redux/api/dashboardApiSlice';
 import { IMG_URL } from '../../../redux/constants';
 
-
+//to get months
 const getMonthName = (monthIndex) => {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
   return months[monthIndex];
@@ -32,7 +32,7 @@ const getRandomColor = () => {
 };
 
 const AdminDashboard = () => {
-  const [filter, setFilter] = useState('monthly');
+  const [filter, setFilter] = useState('weekly');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showDateInputs, setShowDateInputs] = useState(false);
@@ -40,10 +40,14 @@ const AdminDashboard = () => {
   const [chartInstance, setChartInstance] = useState(null);
   const [lineChart, setlineChart] = useState(null);
   const [categoryChartInstance, setCategoryChartInstance] = useState(null);
-  console.log("dash", dashboardData)
 
   useEffect(() => {
     setShowDateInputs(filter === 'custom');
+
+    if (filter === 'monthly') {
+      const currentMonth = new Date().getMonth();
+      setStartDate(currentMonth.toString());
+    }
   }, [filter]);
 
   useEffect(() => {
@@ -58,7 +62,7 @@ const AdminDashboard = () => {
 
       dashboardData?.salesData?.forEach(item => {
         const date = new Date(item.date);
-        let key = filter === 'year' ? getMonthName(date.getMonth()) : date.toISOString().split('T')[0];
+        let key = filter === 'yearly' ? getMonthName(date.getMonth()) : date.toISOString().split('T')[0];
         const group = groupedData.find(g => g.key === key);
         if (group) {
           group.total_amount += item.total_amount;
@@ -66,7 +70,6 @@ const AdminDashboard = () => {
           groupedData.push({ key, total_amount: item.total_amount });
         }
       });
-
       const newChart = new Chart(salesCtx, {
         type: 'bar',
         data: {
@@ -80,6 +83,7 @@ const AdminDashboard = () => {
             borderRadius: 5,
           }]
         },
+
         options: {
           responsive: true,
           scales: {
@@ -93,6 +97,7 @@ const AdminDashboard = () => {
 
       setChartInstance(newChart);
     }
+
     // user chart
     if (dashboardData?.userData && lineChart) {
       lineChart.destroy();
@@ -203,7 +208,7 @@ const AdminDashboard = () => {
                   </Link>
                 </Col>
                 <Col lg={4} className="d-flex justify-content-space between align-items-center">
-                  <Form.Label htmlFor="filter">Filter by:</Form.Label>
+                  <Form.Label htmlFor="filter">Filter:</Form.Label>
                   <Form.Select
                     id="filter"
                     className="w-auto ms-3"
@@ -216,6 +221,32 @@ const AdminDashboard = () => {
                     <option value="yearly">Yearly</option>
                     <option value="custom">Custom Date</option>
                   </Form.Select>
+                  {filter === 'monthly' && (
+                    <Form.Select
+                      className="ms-3"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    >
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <option key={i} value={i}>
+                          {getMonthName(i)}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  )}
+
+                  {filter === 'yearly' && (
+                    <Form.Select
+                      className="ms-3"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    >
+                      {[2023, 2024, 2025].map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </Form.Select>
+                  )}
+
                 </Col>
                 {showDateInputs && (
                   <Col xs={12} lg={4} className="date-inputs d-flex gap-2">

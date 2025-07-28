@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navbar, Nav, Badge, Container, Form, FormControl } from 'react-bootstrap';
@@ -14,12 +13,9 @@ const Header = () => {
 
     // Get user info from Redux state
     const { userInfo } = useSelector((state) => state.auth);
-    console.log("userinfo", userInfo);
     const id = (userInfo?._id) ? userInfo?._id : userInfo?.user._id
-    console.log(id)
     const cart = useSelector((state) => state.cart);
     const { cartItems } = cart;
-    console.log("cart", cartItems)
     const [logoutApiCall] = useLogoutMutation();
 
     const logoutHandler = async () => {
@@ -31,7 +27,6 @@ const Header = () => {
             console.error(error);
         }
     };
-
 
     return (
         <>
@@ -58,19 +53,18 @@ const Header = () => {
                                 <Nav.Link as={Link} to="/" className='caption'>Home</Nav.Link>
                                 <Nav.Link as={Link} to="/shop-products" className='caption'>Shop</Nav.Link>
                                 <Nav.Link as={Link} to="/" className='caption'>Categories</Nav.Link>
-                                <Nav.Link as={Link} to="/" className='caption'>About</Nav.Link>
-                                <Nav.Link as={Link} to="/" className='caption'>Contact</Nav.Link>
+                                <Nav.Link as={Link} to="/about" className='caption'>About</Nav.Link>
+                                {/* <Nav.Link as={Link} to="/" className='caption'>Contact</Nav.Link> */}
                             </Nav>
 
-                            <Form className="mx-auto" style={{ maxWidth: "20rem", flex: 1 }}>
+                            {/* <Form className="mx-auto" style={{ maxWidth: "20rem", flex: 1 }}>
                                 <FormControl
                                     type="search"
                                     placeholder="Search"
                                     aria-label="Search"
                                     className="rounded-0"
                                 />
-                            </Form>
-
+                            </Form> */}
 
                             <Nav>
                                 {userInfo ? (

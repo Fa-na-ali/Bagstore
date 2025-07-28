@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Row, Col, Container, Form, Button, Card, Modal } from 'react-bootstrap';
 import { MdOutlineAdd } from "react-icons/md";
@@ -14,7 +14,6 @@ import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 
 const AddProduct = () => {
   const { data: off } = useGetAllOffersToAddQuery()
-  console.log(off)
   const offers = off?.offers
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -66,13 +65,14 @@ const AddProduct = () => {
 
             const file = new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
 
-            setCroppedImages((prevImages) => [...prevImages, file]); // Store as File, not Blob
+            setCroppedImages((prevImages) => [...prevImages, file]); 
           }
         }, "image/webp");
       }
     }
     setShowModal(false);
   };
+  //on submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) {
@@ -97,7 +97,6 @@ const AddProduct = () => {
       croppedImages.forEach((file) => {
         productData.append('pdImage', file);
       });
-      console.log("pp", name, description, price, category, quantity, color, brand, size, croppedImages)
       const { data } = await addProduct(productData).unwrap()
       toast.success('Product added successfully!');
       navigate('/admin/products')

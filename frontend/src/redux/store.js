@@ -6,17 +6,17 @@ import cartSliceReducer from './features/cart/cartSlice'
 import { apiSlice } from "./api/apiSlice";
 
 const store = configureStore({
-    reducer: {
-      [apiSlice.reducerPath]: apiSlice.reducer,
-      auth: authReducer,
-      cart: cartSliceReducer,
-    },
+  reducer: {
+    [apiSlice.reducerPath]: apiSlice.reducer,
+    auth: authReducer,
+    cart: cartSliceReducer,
+  },
 
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(apiSlice.middleware),
-      devTools: true,
-    });
-    
-    setupListeners(store.dispatch);
-    export default store;
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
+  devTools: true,
+});
+
+setupListeners(store.dispatch);
+export default store;
 

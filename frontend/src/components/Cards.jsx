@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Modal, Card, Badge, Button } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
@@ -7,21 +7,18 @@ import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
 import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
-import { IMG_URL } from '../redux/constants';
+import { IMG_URL, PLACEHOLDER_URL } from '../redux/constants';
 
 const Cards = ({ products }) => {
   const { data: off } = useGetAllOffersToAddQuery()
-  console.log(off)
   const offers = off?.offers
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  console.log("pdts", products)
   const items = products || products?.all
   const [likedProducts, setLikedProducts] = useState({});
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
   const { data: wishlistData, refetch } = useGetWishlistQuery()
-  console.log(wishlistData)
   const [update] = useUpdateWishlistMutation()
 
   useEffect(() => {
@@ -46,7 +43,6 @@ const Cards = ({ products }) => {
 
   };
 
-
   useEffect(() => {
     if (!products || !offers) return;
 
@@ -63,7 +59,6 @@ const Cards = ({ products }) => {
           productDiscount = offer.discount;
         }
       });
-
 
       if (product.category && product.category.offer) {
         offers.forEach((offer) => {
@@ -122,7 +117,7 @@ const Cards = ({ products }) => {
         {products?.map((product) => {
           const productImages = product.pdImage?.length
             ? product.pdImage.map((img) => `${IMG_URL}${img}`)
-            : ['https://via.placeholder.com/300'];
+            : [`${PLACEHOLDER_URL}`];
 
           return (
             <Col key={product._id} lg={4} md={6} className='mb-4'>

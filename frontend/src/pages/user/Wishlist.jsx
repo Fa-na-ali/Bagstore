@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { useGetWishlistQuery, useRemoveFromWishlistMutation, useUpdateWishlistMutation } from '../../redux/api/productApiSlice'
+import { useEffect, useState } from 'react'
+import { useGetWishlistQuery, useUpdateWishlistMutation } from '../../redux/api/productApiSlice'
 import { Badge, Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { FaTrash } from 'react-icons/fa'
 import { Link } from 'react-router'
@@ -7,20 +7,17 @@ import { useDispatch } from 'react-redux'
 import { addToCart } from '../../redux/features/cart/cartSlice'
 import { toast } from 'react-toastify'
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice'
-import { IMG_URL } from '../../redux/constants'
+import { IMG_URL, PLACEHOLDER_URL } from '../../redux/constants'
 
 const Wishlist = () => {
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
   const { data, refetch } = useGetWishlistQuery()
-  console.log("wishlist", data)
   const { data: off } = useGetAllOffersToAddQuery()
-  console.log(off)
   const offers = off?.offers
   const products = data?.wishlist
   const [update] = useUpdateWishlistMutation()
   const dispatch = useDispatch()
-
 
   useEffect(() => {
     refetch()
@@ -66,7 +63,7 @@ const Wishlist = () => {
   }, [products, offers]);
 
 
-
+  //ADD TO CART 
   const cartHandler = (product) => {
 
     const finalPrice = salesPrices[product._id] || product.price;
@@ -81,16 +78,17 @@ const Wishlist = () => {
 
   };
 
+  //remove from wishlist
   const removeHandler = async (productId) => {
     try {
-      console.log(productId)
       const res = await update({ productId, }).unwrap();
       refetch();
     } catch (error) {
-      console.error("Error removing product:", error);
+      toast.error("Error removing product:");
     }
 
   }
+
   return (
     <>
       <section className='background my-custom-min-height'>
@@ -100,7 +98,7 @@ const Wishlist = () => {
             {products?.map((product) => {
               const productImages = product?.productId?.pdImage?.length
                 ? product?.productId?.pdImage.map((img) => `${IMG_URL}${img}`)
-                : ['https://via.placeholder.com/300'];
+                : [`${PLACEHOLDER_URL}`];
               return (
                 <Col key={product?.productId?._id} lg={4} md={4} className='mb-4'>
                   <Card className='shadow-lg hover-shadow h-100 d-flex flex-column'>

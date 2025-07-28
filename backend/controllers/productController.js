@@ -14,9 +14,6 @@ const addProduct = async (req, res) => {
   try {
     const { name, description, price, category, offer, quantity, brand, size, color } = req.body;
     const files = req.files;
-    console.log(req.body)
-    console.log(req.files)
-
     if (!name) return res.status(400).json({ error: "Name is required" });
     if (!brand) return res.status(400).json({ error: "Brand is required" });
     if (!description) return res.status(400).json({ error: "Description is required" });
@@ -27,9 +24,7 @@ const addProduct = async (req, res) => {
     if (!color) return res.status(400).json({ error: "Color is required" });
     if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
 
-
     const imageUrls = files.map((file) => file.filename);
-
     const product = await Product.create({
       name,
       description,
@@ -67,7 +62,6 @@ const newProducts = async (req, res) => {
       all
     })
   } catch (error) {
-    console.log(error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: error.message
@@ -75,16 +69,11 @@ const newProducts = async (req, res) => {
   }
 };
 
-
-
-
 //update product
 const updateProduct = async (req, res) => {
   try {
     const { name, description, price, category, quantity, brand, size, color } = req.body;
     const files = req.files;
-    console.log("body", req.body)
-    console.log("files", req.files)
     const id = req.params.id
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -115,7 +104,6 @@ const updateProduct = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error)
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: error.message
@@ -126,7 +114,7 @@ const updateProduct = async (req, res) => {
 };
 //delete Image
 const deleteImage = async (req, res) => {
-  console.log("params", req.params)
+
   try {
     const { id, index } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -136,7 +124,6 @@ const deleteImage = async (req, res) => {
       })
     }
     const product = await Product.findById(id);
-    console.log("prooo", product)
     if (!product)
       return res.status(STATUS_CODES.NOT_FOUND).json({
         status: "error",
@@ -185,13 +172,11 @@ const readProduct = async (req, res) => {
 
     const id = req.params.id;
     const product = await Product.findById({ _id: id }).populate("category")
-    console.log("read", product)
     return res.status(STATUS_CODES.OK).json({
       status: "success",
       product
     });
   } catch (error) {
-    console.log(error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: error.message
@@ -200,9 +185,8 @@ const readProduct = async (req, res) => {
 };
 
 //fetch products in the product management with pagination and search
-
 const fetchProducts = async (req, res) => {
-  console.log("search")
+
   try {
     const pageSize = 6;
     const page = Number(req.query.page) || 1;
@@ -216,9 +200,7 @@ const fetchProducts = async (req, res) => {
       : {};
 
     const count = await Product.countDocuments({ ...keyword });
-    console.log("count", count)
     const products = await Product.find({ ...keyword }).populate("category", "name -_id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
-    console.log("products", products)
     return res.status(STATUS_CODES.OK).json({
       status: "success",
       products,
@@ -267,10 +249,9 @@ const fetchAllProducts = async (req, res) => {
 
 //fetch related products
 const fetchRelatedProducts = async (req, res) => {
-  console.log("fetchrelated")
+
   try {
     const { id } = req.params;
-    console.log(req.params)
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         status: "error",
@@ -285,7 +266,6 @@ const fetchRelatedProducts = async (req, res) => {
       });
 
     }
-    console.log("currentpro", currentProduct)
     const relatedProducts = await Product.find({
       category: currentProduct.category,
       isExist: true,
@@ -310,7 +290,7 @@ const fetchRelatedProducts = async (req, res) => {
 
 //filtering,sorting and search
 const filterProducts = async (req, res) => {
-  console.log(req.query)
+
   try {
     const {
       search,
@@ -349,7 +329,6 @@ const filterProducts = async (req, res) => {
       const colorsArray = Array.isArray(color) ? color : [color];
       filters.color = { $in: colorsArray.map((c) => new RegExp(c, "i")) };
     }
-    console.log("filtersss", filters)
 
     let sortOption = {};
     if (sortBy) {
@@ -378,7 +357,6 @@ const filterProducts = async (req, res) => {
       .sort(sortOption)
       .skip(skip)
       .limit(parseInt(limit));
-    console.log('filtered', products)
     const totalProducts = await Product.countDocuments(filters);
     return res.status(STATUS_CODES.OK).json({
       status: "success",
@@ -460,10 +438,10 @@ const updateWishlist = async (req, res) => {
 
 //load wishlist
 const fetchWishlist = async (req, res) => {
-  console.log("id", req.user._id)
+
   try {
     const userId = req.user._id
-    console.log("id", userId);
+
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         status: "error",
@@ -474,11 +452,10 @@ const fetchWishlist = async (req, res) => {
       .populate({
         path: "productId",
         populate: {
-          path: "category", // Assuming 'category' is a reference in the 'Product' model
+          path: "category",
           model: "Category",
         },
       });
-    console.log(wishlist);
     if (!wishlist) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         status: "error",
@@ -491,7 +468,6 @@ const fetchWishlist = async (req, res) => {
       wishlist
     });
   } catch (error) {
-    console.log(error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: "Server error", error
@@ -503,16 +479,9 @@ const fetchWishlist = async (req, res) => {
 const removeFromWishlist = async (req, res) => {
   const userId = req.user._id;
   const { productId } = req.body;
-  console.log("removingggg")
-  console.log("userIx", userId);
-  console.log("productId", productId);
+
   try {
-    // if (!mongoose.Types.ObjectId.isValid(productId)) {
-    //   return res.status(400).json({
-    //     status: "error",
-    //     message: "Invalid productId",
-    //   });
-    // }
+
     const wishlist = await Wishlist.findOne({ userId });
 
     if (!wishlist) {
@@ -525,7 +494,6 @@ const removeFromWishlist = async (req, res) => {
     wishlist.products = wishlist?.productId?.filter(
       (id) => id.toString() != productId
     );
-    console.log(wishlist.products);
     await wishlist.save();
     res.status(STATUS_CODES.OK).json({
       status: "success",
@@ -533,7 +501,6 @@ const removeFromWishlist = async (req, res) => {
       wishlist
     });
   } catch (error) {
-    console.log(error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: "Server error", error

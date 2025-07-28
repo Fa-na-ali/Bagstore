@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Form, Button, Row, Col, Container } from "react-bootstrap";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
@@ -20,7 +20,6 @@ const EditOffer = () => {
         minAmount: "",
     });
     const { data, refetch, isLoading, isError } = useGetOfferByIdQuery(id);
-    console.log(data)
     const offer = data?.offer
     const [update] = useUpdateOfferMutation();
 
@@ -56,10 +55,9 @@ const EditOffer = () => {
             }));
         }
     };
-
+    //on submit 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form Data:", formData);
         try {
             await update({ id, ...formData }).unwrap()
             navigate("/admin/offers");
