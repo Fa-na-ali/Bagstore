@@ -6,10 +6,17 @@ const app = express();
 const path = require('path')
 
 app.use(cookieParser());
-app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-}));
+
+const corsOptions = {
+  origin: [process.env.DOMAIN_URL, process.env.FRONTEND_URL],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+};
+app.use(cors(corsOptions));
+// app.use(cors({
+//     origin: process.env.FRONTEND_URL,
+//     credentials: true,
+// }));
 const userRouter = require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
@@ -38,5 +45,5 @@ app.use("/api/wallet", walletRouter);
 
 //connecting to the server
 app.listen(PORT, () => {
-    console.log(`server running at port ${PORT}`)
+  console.log(`server running at port ${PORT}`)
 })
