@@ -250,6 +250,13 @@ const googleLogin = async (req, res) => {
                 token, refreshToken, user
             })
         }
+        else {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                status: "error",
+                message: "You are blocked",
+
+            })
+        }
     } catch (err) {
         res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
@@ -299,6 +306,7 @@ const deleteUser = async (req, res) => {
             });
         }
         user.isExist = false;
+        user.token  = null
         await user.save();
         res.status(STATUS_CODES.OK).json({
             status: "success",

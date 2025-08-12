@@ -6,17 +6,10 @@ const app = express();
 const path = require('path')
 
 app.use(cookieParser());
-
-const corsOptions = {
-  origin: [process.env.DOMAIN_URL, process.env.FRONTEND_URL],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-};
-app.use(cors(corsOptions));
-// app.use(cors({
-//     origin: process.env.FRONTEND_URL,
-//     credentials: true,
-// }));
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+}));
 const userRouter = require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')

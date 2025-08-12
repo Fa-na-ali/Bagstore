@@ -40,7 +40,7 @@ const Login = () => {
         } else if (!res.user.isAdmin && res.user.isExist) {
           navigate("/");
         }
-        else
+        if (!res.user.isExist)
           toast.error("You are blocked");
 
       } else {

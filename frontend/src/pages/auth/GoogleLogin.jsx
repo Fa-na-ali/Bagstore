@@ -18,7 +18,7 @@ const GoolgeLogin = (props) => {
                 const { _id, email, name, isAdmin, isExist, address, refreshToken } = result?.data?.user;
                 const token = result.data?.token;
                 const obj = { _id, email, name, isAdmin, isExist, address, token, refreshToken };
-
+                console.log(obj)
                 dispatch(setCredentials(obj));
 
                 if (isAdmin && isExist) {
@@ -26,13 +26,19 @@ const GoolgeLogin = (props) => {
                 } else if (isExist) {
                     navigate("/");
                 }
-                else
-                    toast.error("You are blocked")
+                else if (!isExist) {
+
+                    toast.error("You are blocked");
+                    return;
+                }
+
             } else {
                 toast.error("Login Error")
             }
         } catch (e) {
-            toast.error(e)
+           if (e.response?.data?.message) {
+           toast.error(e.response.data.message);
+    }
         }
     };
 

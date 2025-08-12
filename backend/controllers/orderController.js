@@ -329,10 +329,15 @@ const setItemStatus = async (req, res) => {
         product.quantity += orderItem.qty;
         await product.save();
       }
-
-      let refundAmount = item.qty * product.price;
-      if (item.discount) {
-        refundAmount -= item.discount
+      let refundAmount;
+      if (order?.items?.length === 1) {
+         refundAmount = order.totalPrice
+      }
+      else {
+         refundAmount = item.qty * product.price;
+        if (item.discount) {
+          refundAmount -= item.discount
+        }
       }
       await Payment.updateOne({ _id: order.paymentId }, { $set: { status: "Refund" } });
       await Wallet.updateOne({ userId: order.userId }, {
