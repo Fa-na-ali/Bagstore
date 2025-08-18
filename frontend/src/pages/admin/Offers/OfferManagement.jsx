@@ -6,9 +6,11 @@ import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { useDeleteOfferMutation, useGetAllOffersQuery } from '../../../redux/api/usersApiSlice';
+import debounce from 'lodash.debounce';
 
 const OfferManagement = () => {
 
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   let { data, refetch: load, error, isLoading } = useGetAllOffersQuery({ keyword: searchTerm, page: currentPage });
@@ -27,15 +29,22 @@ const OfferManagement = () => {
   ];
 
   useEffect(() => {
-    if (offers)
-      load()
 
-  }, [load]);
+    const debouncedResults = debounce(() => {
+      setSearchTerm(inputValue);
+    }, 500);
 
-  //searching
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
+    debouncedResults()
+
+    return () => {
+      debouncedResults.cancel();
+    };
+
+  }, [inputValue]);
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -82,18 +91,15 @@ const OfferManagement = () => {
                 <Col lg={3}></Col>
                 <Col lg={3} className="d-flex justify-content-end gap-3">
                   <InputGroup className="mb-3">
-                    <Form onSubmit={searchHandler} method="GET" className="d-flex">
+                    <Form className="d-flex">
                       <FormControl
                         type="search"
                         placeholder="Search"
                         aria-label="Search"
                         aria-describedby="search-addon"
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value) }}
+                        value={inputValue}
+                        onChange={handleChange}
                       />
-                      <Button type='submit' variant="outline-primary" id="search-addon">
-                        Search
-                      </Button>
                     </Form>
                   </InputGroup>
                 </Col>

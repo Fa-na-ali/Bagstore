@@ -14,14 +14,14 @@ import {
 import { useGetSalesReportQuery } from '../../../redux/api/dashboardApiSlice';
 import * as XLSX from 'xlsx';
 import 'jspdf-autotable';
-import * as pdfMake from 'pdfmake/build/pdfmake';
+import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
 import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../redux/constants';
 
 // Initialize pdfMake
 if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
-  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+  pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
 } else {
   pdfMake.vfs = {
     Roboto: {

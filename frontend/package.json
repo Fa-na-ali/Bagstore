@@ -22,6 +22,7 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "keep-react": "^1.6.1",
+    "lodash.debounce": "^4.0.8",
     "pdfmake": "^0.2.18",
     "razorpay": "^2.9.6",
     "react": "^18.3.1",

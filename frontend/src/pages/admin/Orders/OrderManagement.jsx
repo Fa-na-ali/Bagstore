@@ -3,9 +3,11 @@ import AdminSidebar from '../../../components/AdminSidebar';
 import { useGetAllOrdersQuery } from '../../../redux/api/ordersApiSlice';
 import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
 import Ttable from '../../../components/Ttable';
+import debounce from 'lodash.debounce';
 
 const OrderManagement = () => {
 
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,10 +21,23 @@ const OrderManagement = () => {
   const orders = data?.orders || [];
 
   useEffect(() => {
-    if (data)
-      refetch()
 
-  }, [refetch]);
+    const debouncedResults = debounce(() => {
+      setSearchTerm(inputValue);
+    }, 500);
+
+    debouncedResults()
+
+    return () => {
+      debouncedResults.cancel();
+    };
+
+  }, [inputValue]);
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+    setCurrentPage(1);
+  };
 
   const columns = [
     { key: "orderId", label: "OrderID" },
@@ -37,16 +52,10 @@ const OrderManagement = () => {
 
   ];
 
-
-
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
-  };
-
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
   const handleDelete = () => {
 
   }
@@ -89,18 +98,15 @@ const OrderManagement = () => {
 
                 <Col lg={3} className="d-flex justify-content-end gap-3">
                   <InputGroup className="mb-3">
-                    <Form onSubmit={searchHandler} method="GET" className="d-flex">
+                    <Form className="d-flex">
                       <FormControl
                         type="search"
                         placeholder="Search"
                         aria-label="Search"
                         aria-describedby="search-addon"
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value) }}
+                        value={inputValue}
+                        onChange={handleChange}
                       />
-                      <Button type='submit' variant="outline-primary" id="search-addon">
-                        Search
-                      </Button>
                     </Form>
                   </InputGroup>
                 </Col>

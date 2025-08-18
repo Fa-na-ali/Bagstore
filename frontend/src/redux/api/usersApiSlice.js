@@ -2,6 +2,7 @@ import { apiSlice } from "./apiSlice";
 import { USERS_URL } from "../constants";
 
 export const userApiSlice = apiSlice.injectEndpoints({
+  tagTypes: ['User'],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
@@ -103,6 +104,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/${userId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ['User'],
     }),
     getUserDetails: builder.query({
       query: (id) => ({

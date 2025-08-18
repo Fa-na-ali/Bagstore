@@ -160,7 +160,15 @@ const userLogin = async (req, res) => {
             res.status(STATUS_CODES.OK).json({
                 status: "success",
                 message: USER_LOGIN_MSG,
-                token, refreshToken, user
+                token, refreshToken,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    isAdmin: user.isAdmin,
+                    isExist: user.isExist,
+                }
             })
 
         }
@@ -247,7 +255,15 @@ const googleLogin = async (req, res) => {
             res.status(STATUS_CODES.OK).json({
                 status: "success",
                 message: USER_LOGIN_MSG,
-                token, refreshToken, user
+                token, refreshToken,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    isAdmin: user.isAdmin,
+                    isExist: user.isExist,
+                }
             })
         }
         else {
@@ -306,7 +322,7 @@ const deleteUser = async (req, res) => {
             });
         }
         user.isExist = false;
-        user.token  = null
+        user.token = null
         await user.save();
         res.status(STATUS_CODES.OK).json({
             status: "success",
@@ -336,7 +352,7 @@ const fetchUsers = async (req, res) => {
             : {};
 
         const count = await User.countDocuments({ ...keyword });
-        const user = await User.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+        const user = await User.find({ ...keyword }).select("-password").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
         res.status(STATUS_CODES.OK).json({
             status: "success",
             user,
@@ -359,7 +375,7 @@ const searchUser = async (req, res) => {
     const search = new RegExp(req.params?.search, 'i')
     if (search !== '')
         try {
-            const all = await User.find({ email: search });
+            const all = await User.find({ email: search }).select("-password");
             res.status(STATUS_CODES.OK).json({
                 status: "success",
                 all
@@ -375,7 +391,7 @@ const searchUser = async (req, res) => {
 //function to get all users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({})
+        const users = await User.find({}).select("-password")
         res.status(STATUS_CODES.OK).json({
             status: "success",
             users
@@ -469,7 +485,7 @@ const resetPassword = async (req, res) => {
 //get current user
 const getCurrentUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).populate("address");
+        const user = await User.findById(req.user._id).select("-password").populate("address");
         if (!user) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -501,7 +517,7 @@ const updateUser = async (req, res) => {
                 message: USER_ID_MSG
             })
         }
-        const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true });
+        const user = await User.findByIdAndUpdate(id, { ...req.body }, { new: true }).select("-password");
         if (!user) {
             res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
@@ -714,7 +730,7 @@ const uploadImage = async (req, res) => {
                 message: USER_ID_MSG
             });
         }
-        const user = await User.findById({ _id: req.params.id });
+        const user = await User.findById({ _id: req.params.id }).select("-password");
         if (!user) {
             return res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",

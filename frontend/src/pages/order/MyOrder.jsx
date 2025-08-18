@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Container, Row, Col, Card, Button, Form, Image, Modal, InputGroup, FormControl } from "react-bootstrap";
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router';
 import { IMG_URL } from '../../redux/constants';
 import RetryButton from '../../components/RetryButton';
+import debounce from 'lodash.debounce';
 
 const MyOrder = () => {
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const { data: orders, refetch, isLoading, error } = useGetMyOrdersQuery(searchTerm);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -18,6 +20,25 @@ const MyOrder = () => {
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
   const navigate = useNavigate()
+
+  useEffect(() => {
+
+    const debouncedResults = debounce(() => {
+      setSearchTerm(inputValue);
+    }, 500);
+
+    debouncedResults()
+
+    return () => {
+      debouncedResults.cancel();
+    };
+
+  }, [inputValue]);
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+    setCurrentPage(1);
+  };
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading orders</p>;
@@ -70,11 +91,6 @@ const MyOrder = () => {
     }
   };
 
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
-  };
-
   const handleConfirmCancel = () => {
     setShowConfirmModal(false);
     setShowReasonModal(true);
@@ -89,18 +105,15 @@ const MyOrder = () => {
 
           <Col lg={3} className="d-flex justify-content-end gap-3">
             <InputGroup className="mb-3">
-              <Form onSubmit={searchHandler} method="GET" className="d-flex">
+              <Form className="d-flex">
                 <FormControl
                   type="search"
                   placeholder="Search"
                   aria-label="Search"
                   aria-describedby="search-addon"
-                  value={searchTerm}
-                  onChange={(e) => { setSearchTerm(e.target.value) }}
+                  value={inputValue}
+                  onChange={handleChange}
                 />
-                <Button type='submit' variant="outline-primary" id="search-addon">
-                  Search
-                </Button>
               </Form>
             </InputGroup>
           </Col>
