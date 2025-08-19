@@ -12,7 +12,7 @@ import { GoogleWrapper } from "../../App";
 
 //  Yup validation schema
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Name is required"),
+  name: yup.string().max(25, "Name must be atmost 25 characters long").required("Name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
   phone: yup
     .string()

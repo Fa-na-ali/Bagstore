@@ -260,6 +260,7 @@ const getAllOrders = async (req, res) => {
       message: "",
       orders,
       page,
+      count: totalOrders,
       pages: Math.ceil(totalOrders / limit),
     });
   } catch (error) {
@@ -331,10 +332,10 @@ const setItemStatus = async (req, res) => {
       }
       let refundAmount;
       if (order?.items?.length === 1) {
-         refundAmount = order.totalPrice
+        refundAmount = order.totalPrice
       }
       else {
-         refundAmount = item.qty * product.price;
+        refundAmount = item.qty * product.price;
         if (item.discount) {
           refundAmount -= item.discount
         }

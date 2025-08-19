@@ -8,7 +8,6 @@ const getWallets = async (req, res) => {
     try {
         const limit = 6;
         const page = Number(req.query.page) || 1;
-        const count = await Wallet.countDocuments({});
         const wallets = await Wallet.find()
             .populate('userId', 'name email')
             .sort({ 'transactions.createdAt': -1 });
@@ -27,13 +26,17 @@ const getWallets = async (req, res) => {
                 });
             });
         });
+        const count = transactionData?.length
 
         transactionData.sort((a, b) => b.transactionDate - a.transactionDate);
 
+        let start = (page - 1) * limit;
+        let end = page * limit;
+        let paginatedTransactions = transactionData.slice(start, end);
 
         res.status(200).json({
             status: "success",
-            transactionData,
+            transactionData: paginatedTransactions,
             count,
             page,
             pages: Math.ceil(count / limit),

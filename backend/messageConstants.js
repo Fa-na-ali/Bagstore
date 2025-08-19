@@ -1,5 +1,6 @@
 module.exports = {
     USER_VALIDATION_MSG: "Please fill all the fields",
+    USER_VALIDATION_MSG2: "Name should be maximum of 25 characters long",
     USER_EXT_MSG: "User already exists",
     USER_PASS_VALIDATION: "Passwords should match",
     USER_REG_MSG: "User registered successfully. OTP sent to email.",

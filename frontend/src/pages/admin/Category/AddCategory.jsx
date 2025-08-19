@@ -18,8 +18,8 @@ const AddCategory = () => {
     const handleCreateCategory = async (e) => {
         e.preventDefault();
 
-        if (!name.trim()) {
-            toast.error("Category name is required");
+        if (!name.trim() || name.length > 15) {
+            toast.error("Category must be of atmost 15 characters long");
             return;
         }
 

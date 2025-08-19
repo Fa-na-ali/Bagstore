@@ -22,15 +22,15 @@ const CreateOffer = () => {
 
     const validateForm = () => {
         let newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Offer name is required";
-        if (!formData.description.trim()) newErrors.description = "Description is required";
+        if (!formData.name.trim() || formData.name.length > 20) newErrors.name = "Offer name must be atmost 20 characters long";
+        if (!formData.description.trim() || formData.description.length > 50) newErrors.description = "Description must be atmost 50 characters long";
         if (!formData.activation) newErrors.activation = "Activation date is required";
         if (!formData.expiry) newErrors.expiry = "Expiry date is required";
         if (formData.activation && formData.expiry && new Date(formData.expiry) <= new Date(formData.activation)) {
             newErrors.expiry = "Expiry date must be after activation date";
         }
-        if (!formData.discount || formData.discount <= 0) newErrors.discount = "Discount must be a positive number";
-        if (!formData.minAmount || formData.minAmount <= 0) newErrors.minAmount = "Minimum amount must be a positive number";
+        if (!formData.discount || formData.discount <= 0 || formData.discount > 100) newErrors.discount = "Enter a valid discount";
+        if (!formData.minAmount || formData.minAmount <= 0 || formData.minAmount > 100000) newErrors.minAmount = "Enter a valid minimum amount";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };

@@ -10,7 +10,7 @@ require("dotenv").config();
 const mongoose = require('mongoose')
 const Address = require('../models/addressModel')
 const responseHandler = require('./../middlewares/responseHandler');
-const { USER_VALIDATION_MSG, USER_EXT_MSG, USER_PASS_VALIDATION, USER_REG_MSG, USER_NOT_MSG, USER_LOGIN_MSG, USER_INVALID_MSG, USER_EMAIL_MSG, USER_OTP_MSG, USER_GOOGLE_MSG, USER_LOGOUT_MSG, USER_DELETE_MSG, USER_PASS_RESET_MSG, USER_ID_MSG, ADDRESS_EXIST_MSG, ADDRESS_ADD_MSG, ADDRESS_INVALID_MSG, ADDRESS_NOT_MSG, ADDRESS_UPDATE_MSG, ADDRESS_DELETE_MSG } = require("../messageConstants");
+const { USER_VALIDATION_MSG, USER_EXT_MSG, USER_PASS_VALIDATION, USER_REG_MSG, USER_NOT_MSG, USER_LOGIN_MSG, USER_INVALID_MSG, USER_EMAIL_MSG, USER_OTP_MSG, USER_GOOGLE_MSG, USER_LOGOUT_MSG, USER_DELETE_MSG, USER_PASS_RESET_MSG, USER_ID_MSG, ADDRESS_EXIST_MSG, ADDRESS_ADD_MSG, ADDRESS_INVALID_MSG, ADDRESS_NOT_MSG, ADDRESS_UPDATE_MSG, ADDRESS_DELETE_MSG, USER_VALIDATION_MSG2 } = require("../messageConstants");
 const STATUS_CODES = require("../middlewares/statusCodes");
 const Referral = require("../models/referralModel");
 const Wallet = require('../models/wallet')
@@ -30,6 +30,12 @@ const userSignup = async (req, res) => {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",
                 message: USER_VALIDATION_MSG,
+            });
+        }
+        if (name.lenght > 25) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_VALIDATION_MSG2,
             });
         }
 
@@ -511,6 +517,13 @@ const updateUser = async (req, res) => {
     try {
         const id = req.user._id
         const { name, email, phone, } = req.body;
+
+        if (name.lenght > 25) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                status: "error",
+                message: USER_VALIDATION_MSG2,
+            });
+        }
         if (!mongoose.Types.ObjectId.isValid(id)) {
             res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: "error",

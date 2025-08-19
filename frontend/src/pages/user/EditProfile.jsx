@@ -28,6 +28,8 @@ const EditProfile = () => {
     //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (name.length > 25)
+            return toast.error("Name must be maximum of 25 characters long")
         try {
             await resendOtp({ email: user.email }).unwrap();
             toast.info("OTP sent to your email. Please verify.");

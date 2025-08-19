@@ -28,6 +28,12 @@ const EditCategory = () => {
     //onclicking update
     const updateHandler = async (e, id) => {
         e.preventDefault();
+
+        if (!updatingName.trim() || updatingName.length > 15) {
+            toast.error("Category must be of atmost 15 characters long");
+            return;
+        }
+
         try {
             await update({
                 id,

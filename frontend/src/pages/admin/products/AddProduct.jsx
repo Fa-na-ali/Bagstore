@@ -37,12 +37,13 @@ const AddProduct = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!name) newErrors.name = 'Name of Product is required';
+    if (!name || name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
     if (!category) newErrors.category = 'Category is required';
-    if (!description) newErrors.description = 'Description is required';
+    if (!description || description.length > 50) newErrors.description = 'Description should be of atmost 50 characters long';
     if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
     if (!color) newErrors.color = 'Color is required';
-    if (!brand) newErrors.brand = 'Brand is required';
+    if (!brand || brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
+    if (!size || size.length > 20) newErrors.size = "Size is required"
     if (quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
     if (files.length === 0) newErrors.files = 'At least one image is required';
     setErrors(newErrors);
@@ -65,7 +66,7 @@ const AddProduct = () => {
 
             const file = new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
 
-            setCroppedImages((prevImages) => [...prevImages, file]); 
+            setCroppedImages((prevImages) => [...prevImages, file]);
           }
         }, "image/webp");
       }
