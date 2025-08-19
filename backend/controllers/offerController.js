@@ -1,4 +1,4 @@
-const STATUS_CODES = require("../middlewares/statusCodes");
+const STATUS_CODES = require("../statusCodes");
 const Offer = require("../models/offerModel");
 
 //create offer
@@ -43,11 +43,10 @@ const getoffers = async (req, res) => {
         const count = await Offer.countDocuments({ ...keyword });
         const offers = await Offer.find({ ...keyword }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
 
-        return res.status(200).json({
+        return res.status(STATUS_CODES.OK).json({
             status: "success",
             message: "",
             offers,
-            //time: timer,
             count,
             page,
             pages: Math.ceil(count / limit),

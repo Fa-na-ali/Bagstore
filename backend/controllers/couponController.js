@@ -1,4 +1,4 @@
-const STATUS_CODES = require("../middlewares/statusCodes");
+const STATUS_CODES = require("../statusCodes");
 const Coupon = require("../models/couponModel");
 const Order = require('../models/orderModel');
 const User = require('../models/userModel');
@@ -57,7 +57,7 @@ const getCoupons = async (req, res) => {
         const count = await Coupon.countDocuments({ ...keyword });
         const coupons = await Coupon.find({ ...keyword }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
 
-        return res.status(200).json({
+        return res.status(STATUS_CODES.OK).json({
             status: "success",
             message: "",
             coupons,
@@ -183,13 +183,13 @@ const getAllCouponsUser = async (req, res) => {
         });
 
         if (!coupons.length) {
-            return res.status(404).json({
+            return res.status(STATUS_CODES.NOT_FOUND).json({
                 status: "error",
                 message: "No available coupons found"
             });
         }
 
-        return res.status(200).json({
+        return res.status(STATUS_CODES.OK).json({
             status: "success",
             message: "Applicable coupons fetched successfully",
             coupons
@@ -197,7 +197,7 @@ const getAllCouponsUser = async (req, res) => {
 
     } catch (error) {
         console.error("Error fetching applicable coupons:", error);
-        return res.status(500).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "Server error"
         });
@@ -211,30 +211,30 @@ const applyCoupon = async (req, res) => {
         const { coupon_code, minAmount } = req.body;
         const coupon = await Coupon.findOne({ coupon_code: coupon_code });
         if (!coupon || coupon.limit <= 0) {
-            return res.json({ success: false, message: "Invalid coupon code" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid coupon code" });
         }
         if (coupon.expiry < new Date()) {
-            return res.json({ success: false, message: "Coupon has expired" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Coupon has expired" });
         }
         if (coupon.status == false) {
-            return res.json({ success: false, message: "Coupon is inactive" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Coupon is inactive" });
         }
         if (minAmount && coupon.minAmount > minAmount) {
-            return res.json({ success: false, message: "Coupon minimum amount requirement not met" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Coupon minimum amount requirement not met" });
         }
         if (coupon.limit === 0) {
 
-            return res.status(404).json({ status: "error", message: "No more coupons available" });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "No more coupons available" });
         }
         const userId = req.user._id;
         const hasUsed = coupon.usedUsers.some(id => id.toString() === userId.toString());
         if (hasUsed && coupon.type === "single") {
-            return res.json({ success: false, message: "Coupon already used" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Coupon already used" });
         }
 
         const user = await User.findById(userId);
         if (!user) {
-            return res.json({ success: false, message: "User not found" });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
         }
 
         if (!coupon.users.includes(user._id)) {
@@ -268,12 +268,12 @@ const removeCoupon = async (req, res) => {
 
     const coupon = await Coupon.findOne({ coupon_code: coupon_code });
     if (!coupon) {
-        return res.json({ success: false, message: "Coupon not found" });
+        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Coupon not found" });
     }
 
     const user = await User.findOne({ _id: req.user._id });
     if (!user) {
-        return res.json({ success: false, message: "User not found" });
+        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
     }
 
 
@@ -288,9 +288,9 @@ const removeCoupon = async (req, res) => {
         }
 
         await coupon.save();
-        return res.json({ success: true, message: "Coupon removed successfully" });
+        return res.status(STATUS_CODES.OK).json({ status: "success", message: "Coupon removed successfully" });
     } else {
-        return res.json({ success: false, message: "Coupon not applied to user" });
+        return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Coupon not applied to user" });
     }
 };
 

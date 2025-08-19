@@ -1,6 +1,7 @@
 const Order = require("../models/orderModel");
 const Payment = require("../models/paymentModel");
 const User = require("../models/userModel");
+const STATUS_CODES = require("../statusCodes");
 
 const getSalesReportData = async (filter, startDate, endDate) => {
   let matchConditions = {
@@ -253,9 +254,9 @@ const getSalesReportData = async (filter, startDate, endDate) => {
     };
   } catch (error) {
     console.error('Error in getSalesReportData:', error);
-    res.status(500).json({
-      status: "success",
-      message: "internal server error"
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "Internal server error"
     })
   }
 };
@@ -266,10 +267,10 @@ const getSalesReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
     const reportData = await getSalesReportData(filter, startDate, endDate);
-    res.status(200).json(reportData);
+    res.status(STATUS_CODES.OK).json({ status: "success", reportData });
   } catch (error) {
     console.error('Error generating sales report:', error);
-    res.status(500).json({
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       staus: "error",
       message: 'Failed to generate report'
     });
@@ -280,7 +281,7 @@ const getSalesReport = async (req, res) => {
 const loadSalesReport = async (req, res) => {
   try {
     const reportData = await getSalesReportData('daily');
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       status: "success",
       orders: reportData.orders,
       offerDiscounts: reportData.offerDiscounts.toFixed(2),
@@ -294,7 +295,7 @@ const loadSalesReport = async (req, res) => {
     });
   } catch (error) {
     console.error('Error loading sales report page:', error);
-    res.status(500).json({
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: 'Failed to load sales report'
     });
@@ -544,7 +545,7 @@ const loadDashboard = async (req, res) => {
       { $limit: 5 }
     ]);
 
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       status: "success",
       topSellingProducts,
       topSellingCategories,
@@ -555,9 +556,10 @@ const loadDashboard = async (req, res) => {
 
   } catch (error) {
     console.error('Error loading dashboard:', error);
-    res.status(500).render('error', {
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: 'error',
       message: 'Failed to load dashboard data',
-      error
+
     });
   }
 };

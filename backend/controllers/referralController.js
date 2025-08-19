@@ -1,4 +1,4 @@
-const STATUS_CODES = require("../middlewares/statusCodes");
+const STATUS_CODES = require("../statusCodes");
 const Referral = require("../models/referralModel");
 const User = require("../models/userModel");
 const { generateReferralCode } = require("./userController");
@@ -12,7 +12,7 @@ const getReferralCode = async (req, res) => {
         let referral = await Referral.findOne({ user: req.user._id });
 
         if (referral?.referralCode) {
-            return res.status(200).json({
+            return res.status(STATUS_CODES.OK).json({
                 status: "success",
                 referralCode: referral.referralCode,
                 referralLink: `${process.env.FRONTEND_URL}/signup?ref=${referral.referralCode}`
@@ -32,7 +32,7 @@ const getReferralCode = async (req, res) => {
             await referral.save();
         }
 
-        res.status(200).json({
+        res.status(STATUS_CODES.OK).json({
             status: "success",
             referralCode: referral.referralCode,
 
@@ -40,7 +40,7 @@ const getReferralCode = async (req, res) => {
 
     } catch (error) {
         console.error("Error in referral code:", error);
-        res.status(500).json({
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: "Failed to generate referral code"
         });

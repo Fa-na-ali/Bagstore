@@ -1,18 +1,13 @@
 const mongoose = require('mongoose')
 const Category = require("../models/categoryModel.js");
 const Product = require('../models/productModel.js');
-const STATUS_CODES = require('../middlewares/statusCodes.js');
+const STATUS_CODES = require('../statusCodes.js');
 const { USR_ID_MISSING, USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_NOT_FOUND } = require('../categoryMsgConstants.js');
 
 //add category
 const addCategory = async (req, res) => {
   try {
     const { name, offer } = req.body;
-    if (!req.user?._id) {
-      return res.status(STATUS_CODES.UNAUTHORIZED).json({
-        message: USR_ID_MISSING
-      });
-    }
     if (!name) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         status: "error",

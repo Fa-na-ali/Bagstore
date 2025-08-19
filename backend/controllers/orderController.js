@@ -4,7 +4,7 @@ const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const Payment = require('../models/paymentModel');
 const Return = require('../models/returnModel');
-const STATUS_CODES = require('../middlewares/statusCodes');
+const STATUS_CODES = require('../statusCodes');
 const Wallet = require('../models/wallet');
 const Coupon = require('../models/couponModel');
 
@@ -21,33 +21,33 @@ const createOrder = async (req, res) => {
     const orderNumber = await generateOrderNumber()
     let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
     if (!items || items.length === 0) {
-      return res.status(400).json({ message: "No items in the order" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "No items in the order" });
     }
 
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
     }
 
     const validatedItems = [];
     for (const item of items) {
       if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-        return res.status(400).json({ status: "error", message: "Invalid product ID" });
+        return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid product ID" });
       }
       if (!item.qty || item.qty < 1) {
-        return res.status(400).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
+        return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
       }
       validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
     }
 
     if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
-      return res.json({ message: "COD payment is not available for orders above ₹ 1000" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "COD payment is not available for orders above ₹ 1000" });
     }
     if (paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId: user._id });
       if (!wallet || wallet.balance < totalPrice) {
-        return res.json({ success: false, message: "Insufficient balance in wallet" });
+        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Insufficient balance in wallet" });
       }
       wallet.balance -= totalPrice;
       wallet.transactions.push({
@@ -126,10 +126,10 @@ const createOrder = async (req, res) => {
     )
 
     await user.save();
-    res.status(201).json(createdOrder);
+    res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ message: error.message });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: error.message });
   }
 };
 
@@ -147,10 +147,10 @@ const getMyOrders = async (req, res) => {
     const orders = await Order.find(filters)
       .populate("items.product")
       .sort({ createdAt: -1 });
-    res.status(200).json(orders);
+    res.status(STATUS_CODES.OK).json({ status: "success", orders });
   } catch (error) {
     console.error("Error fetching orders:", error);
-    res.status(500).json({ error: error.message });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", error: error.message });
   }
 };
 
@@ -160,21 +160,21 @@ const cancelOrder = async (req, res) => {
     const { orderId, item, cancelReason } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
     }
 
     const order = await Order.findOne({ _id: orderId, userId: user._id });
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order not found" });
     }
 
     const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
     if (!orderItem) {
-      return res.status(404).json({ message: "Item not found in order" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Item not found in order" });
     }
 
     if (orderItem.status !== "Pending") {
-      return res.status(400).json({ message: "Order can only be cancelled in pending state" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Order can only be cancelled in pending state" });
     }
 
     const product = await Product.findById(item.product);
@@ -189,7 +189,7 @@ const cancelOrder = async (req, res) => {
     await order.save();
     const payment = await Payment.findOne({ orderId: order._id });
     if (!payment) {
-      return res.status(400).json({ success: false, message: "Payment not found for this order" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Payment not found for this order" });
     }
     if (payment.method !== "Cash On Delivery") {
 
@@ -221,13 +221,13 @@ const cancelOrder = async (req, res) => {
       await wallet.save();
     }
 
-    return res.status(200).json({
-      success: true,
+    return res.status(STATUS_CODES.OK).json({
+      status: "success",
       message: "Order item cancelled successfully",
     });
   } catch (error) {
     console.error("Error cancelling order:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: "Internal Server Error" });
   }
 };
 
@@ -255,7 +255,7 @@ const getAllOrders = async (req, res) => {
 
     const totalOrders = await Order.countDocuments(query);
 
-    res.json({
+    res.status(STATUS_CODES.OK).json({
       status: "success",
       message: "",
       orders,
@@ -265,7 +265,7 @@ const getAllOrders = async (req, res) => {
     });
   } catch (error) {
     console.error("Error Fetching Orders:", error);
-    res.status(500).json({ error: error.message, stack: error.stack });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: error.message, stack: error.stack });
   }
 };
 
@@ -275,16 +275,16 @@ const findOrderById = async (req, res) => {
   const id = req.params.id
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid Order ID" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid Order ID" });
     }
     const order = await Order.findById(id).populate(
       "userId")
       .populate("shippingAddress")
       .populate("items.product")
     if (order) {
-      res.json(order);
+      res.status(STATUS_CODES.OK).json({ status: "success", order });
     } else {
-      res.status(404).json({ error: "Order Not Found" })
+      res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order Not Found" })
 
     }
   } catch (error) {
@@ -299,7 +299,7 @@ const setItemStatus = async (req, res) => {
     if (status == "Delivered") {
       const payment = await Payment.findOne({ orderId: id });
       if (!payment) {
-        return res.status(400).json({ success: false, message: "Payment not found for this order" });
+        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Payment not found for this order" });
       }
 
       if (payment.status == "Pending") {
@@ -310,12 +310,12 @@ const setItemStatus = async (req, res) => {
     const order = await Order.findOne({ _id: id });
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order not found" });
     }
 
     const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
     if (!orderItem) {
-      return res.status(404).json({ message: "Item not found in order" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Item not found in order" });
     }
 
     orderItem.status = status
@@ -356,10 +356,10 @@ const setItemStatus = async (req, res) => {
     }
 
     await order.save();
-    return res.status(200).json({ success: true, message: `Order status updated successfully` });
+    return res.status(STATUS_CODES.OK).json({ status: "success", message: `Order status updated successfully` });
 
   } catch (error) {
-    return res.status(500).json({ success: false, message: `An error occurred` });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: `An error occurred` });
   }
 };
 
@@ -368,27 +368,27 @@ const returnOrder = async (req, res) => {
   const { orderId, item, returnReason } = req.body;
   const user = await User.findOne({ _id: req.user._id });
   if (!user) {
-    return res.json({ success: false, message: `User not found` });
+    return res.staus(STATUS_CODES.NOT_FOUND).json({ status: "error", message: `User not found` });
   }
   const order = await Order.findOne({ _id: orderId, userId: user._id });
   if (!order) {
-    return res.json({ success: false, message: `Order not found` });
+    return res.staus(STATUS_CODES.NOT_FOUND).json({ status: "error", message: `Order not found` });
   }
   const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
   if (!orderItem) {
-    return res.status(404).json({ message: "Item not found in order" });
+    return res.staus(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Item not found in order" });
   }
   if (item.status !== "Delivered") {
-    return res.json({ success: false, message: "Order can only be returned after delivery" });
+    return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Order can only be returned after delivery" });
   }
 
   const payment = await Payment.findOne({ _id: order.paymentId });
   if (!payment) {
-    return res.status(400).json({ success: false, message: "Payment record not found for this order" });
+    return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Payment record not found for this order" });
   }
   const exists = await Return.findOne({ orderId: order._id });
   if (exists) {
-    return res.json({ success: false, message: "Return request already sent for this order" });
+    return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Return request already sent for this order" });
   }
   const returnData = new Return({
     userId: user._id,
@@ -401,7 +401,7 @@ const returnOrder = async (req, res) => {
   orderItem.returnReason = returnReason
   orderItem.status = "Return requested"
   await order.save()
-  return res.status(200).json({ success: true, message: "Return request sent successfully" });
+  return res.status(STATUS_CODES.OK).json({ status: "success", message: "Return request sent successfully" });
 };
 
 
@@ -409,7 +409,7 @@ const loadPendingOrder = async (req, res) => {
   try {
     const id = req.params.id
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid Order ID" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid Order ID" });
     }
     const userId = req.user._id;
     const page = parseInt(req.query.page) || 1;

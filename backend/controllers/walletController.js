@@ -1,7 +1,8 @@
 const Order = require("../models/orderModel");
 const Wallet = require("../models/wallet");
 const Razorpay = require("razorpay");
-const User = require('../models/userModel')
+const User = require('../models/userModel');
+const STATUS_CODES = require("../statusCodes");
 
 
 const getWallets = async (req, res) => {
@@ -34,7 +35,7 @@ const getWallets = async (req, res) => {
         let end = page * limit;
         let paginatedTransactions = transactionData.slice(start, end);
 
-        res.status(200).json({
+        res.status(STATUS_CODES.OK).json({
             status: "success",
             transactionData: paginatedTransactions,
             count,
@@ -44,7 +45,7 @@ const getWallets = async (req, res) => {
         })
     } catch (error) {
         console.error('Error fetching wallet transactions:', error);
-        res.status(500).json({
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: "error",
             message: 'Internal Server Error'
         });
@@ -58,7 +59,7 @@ const transactionDetail = async (req, res) => {
         const wallet = await Wallet.findOne({ 'transactions._id': id })
             .populate('userId', 'name email');
         if (!wallet) {
-            return res.status(404).json({
+            return res.status(STATUS_CODES.NOT_FOUND).json({
                 status: 'error',
                 message: "Transaction not found"
             });
@@ -68,7 +69,7 @@ const transactionDetail = async (req, res) => {
             : null;
 
         if (!transaction) {
-            return res.status(404).json({
+            return res.status(STATUS_CODES.NOT_FOUND).json({
                 status: 'error',
                 message: "Transaction not found"
             });
@@ -150,7 +151,7 @@ const transactionDetail = async (req, res) => {
         }
 
 
-        res.status(200).json({
+        res.status(STATUS_CODES.OK).json({
             status: "success",
             user: wallet.userId,
             transaction: {
@@ -163,7 +164,7 @@ const transactionDetail = async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching transaction:', error);
-        res.status(500).send('Internal Server Error');
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: 'Internal Server Error' });
     }
 };
 
@@ -186,7 +187,8 @@ const showWallet = async (req, res) => {
 
         wallet.transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        res.status(200).json({
+        res.status(STATUS_CODES.OK).json({
+            status: "success",
             message: "",
             user,
             wallet,
@@ -194,7 +196,7 @@ const showWallet = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).send('Server Error');
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: 'Server Error' });
     }
 };
 
@@ -210,14 +212,14 @@ const createOrderWallet = async (req, res) => {
 
     try {
         const order = await razorpay.orders.create(options);
-        res.status(200).json(order);
+        res.status(STATUS_CODES.OK).json({ status: "success", order });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: error.message });
     }
 }
 
 const shareKey = (req, res) => {
-    res.status(200).json({ key: process.env.RAZORPAY_KEY_ID });
+    res.status(STATUS_CODES.OK).json({ status: "success", key: process.env.RAZORPAY_KEY_ID });
 }
 
 //update wallet balance
@@ -245,10 +247,10 @@ const updateWalletBalance = async (req, res) => {
         await wallet.save();
 
 
-        res.status(200).json({ success: true, balance: wallet.balance });
+        res.status(STATUS_CODES.OK).json({ status: "success", balance: wallet.balance });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: 'Server Error' });
     }
 };
 

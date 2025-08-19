@@ -1,7 +1,7 @@
 const express = require('express')
 const Product = require('../models/productModel')
 const mongoose = require('mongoose');
-const STATUS_CODES = require('../middlewares/statusCodes');
+const STATUS_CODES = require('../statusCodes');
 const { PRODUCT_ADDED, PRODUCT_NOT_FOUND, PRODUCT_DELETED, PRODUCT_INVALID, PRODUCT_IMG_DELETED } = require('../productMsgConstants');
 const User = require('../models/userModel');
 const { USER_NOT_MSG } = require('../messageConstants');
@@ -14,15 +14,15 @@ const addProduct = async (req, res) => {
   try {
     const { name, description, price, category, offer, quantity, brand, size, color } = req.body;
     const files = req.files;
-    if (!name) return res.status(400).json({ error: "Name is required" });
-    if (!brand) return res.status(400).json({ error: "Brand is required" });
-    if (!description) return res.status(400).json({ error: "Description is required" });
-    if (!price) return res.status(400).json({ error: "Price is required" });
-    if (!category) return res.status(400).json({ error: "Category is required" });
-    if (!quantity) return res.status(400).json({ error: "Quantity is required" });
-    if (!size) return res.status(400).json({ error: "Size is required" });
-    if (!color) return res.status(400).json({ error: "Color is required" });
-    if (!files || files.length === 0) return res.status(400).json({ message: "At least three images are required" });
+    if (!name) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Name is required" });
+    if (!brand) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Brand is required" });
+    if (!description) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Description is required" });
+    if (!price) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Price is required" });
+    if (!category) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Category is required" });
+    if (!quantity) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Quantity is required" });
+    if (!size) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Size is required" });
+    if (!color) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Color is required" });
+    if (!files || files.length === 0) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "At least three images are required" });
 
     const imageUrls = files.map((file) => file.filename);
     const product = await Product.create({
@@ -132,7 +132,7 @@ const deleteImage = async (req, res) => {
 
 
     if (index < 0 || index >= product.pdImage.length) {
-      return res.status(400).json({ error: "Invalid image index" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid image index" });
     }
 
     product.pdImage.splice(index, 1);

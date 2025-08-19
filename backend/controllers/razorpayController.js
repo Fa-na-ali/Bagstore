@@ -4,7 +4,7 @@ const Order = require('../models/orderModel');
 const dotenv = require('dotenv');
 const crypto = require('crypto');
 const Payment = require('../models/paymentModel');
-const STATUS_CODES = require("../middlewares/statusCodes");
+const STATUS_CODES = require("../statusCodes");
 
 dotenv.config();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
@@ -73,13 +73,13 @@ const retryPayment = async (req, res) => {
     const existingOrder = await Order.findById(orderIdValue);
 
     if (!existingOrder) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order not found" });
     }
 
     const amount = existingOrder.totalPrice ? Math.round(existingOrder.totalPrice * 100) : 0;
 
     if (!amount || amount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid order amount." });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid order amount." });
     }
     const razorpayOrder = await instance.orders.create({
       amount: amount,
@@ -121,7 +121,7 @@ const verifyRetryPayment = async (req, res) => {
 
     if (!process.env.RAZORPAY_KEY_SECRET) {
       console.error("Razorpay Key Secret is missing!");
-      return res.status(500).json({ success: false, message: "Server error: Missing Razorpay credentials." });
+      return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: "Server error: Missing Razorpay credentials." });
     }
 
 
@@ -132,7 +132,7 @@ const verifyRetryPayment = async (req, res) => {
 
 
     if (generatedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Invalid payment signature." });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid payment signature." });
     }
 
 
@@ -141,10 +141,10 @@ const verifyRetryPayment = async (req, res) => {
       { $set: { paymentStatus: "Success", paymentMethod: "Razorpay" } }
     );
 
-    res.status(200).json({ status: "success", message: "Payment verified successfully." });
+    res.status(STATUS_CODES.OK).json({ status: "success", message: "Payment verified successfully." });
   } catch (error) {
     console.error("Error verifying retry payment:", error);
-    res.status(500).json({ success: false, message: "Error verifying payment." });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: "Error verifying payment." });
   }
 };
 
