@@ -18,22 +18,20 @@ const OrderDetails = () => {
   const [itemStatuses, setItemStatuses] = useState({});
   const [orderStatus, setOrderStatus] = useState(order?.status);
   const [setItemStatus] = useSetItemStatusMutation();
-  
-useEffect(() => {
-  socket.on('orderStatusUpdated', (updatedOrder) => {
+
+  useEffect(() => {
+    socket.on('orderStatusUpdated', (updatedOrder) => {
       if (updatedOrder.orderId === id) {
         toast.success("Order status updated");
         refetch();
       }
     });
-     return () => {
+    return () => {
       socket.off('orderStatusUpdated');
     };
   }, [id, refetch]);
-  
-  useEffect(() => {
 
-     
+  useEffect(() => {
     if (order?.items) {
       const initialStatuses = order?.items?.reduce((acc, item) => {
         acc[item._id] = item.status;
@@ -137,7 +135,7 @@ useEffect(() => {
               </Row>
               <hr className="mt-0 mb-4" />
             </Card.Body>
-  
+
             <div className="table-responsive">
               <Table>
                 <thead>
