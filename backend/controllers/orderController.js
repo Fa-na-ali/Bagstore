@@ -189,6 +189,12 @@ const cancelOrder = asyncHandler(async (req, res) => {
   orderItem.cancel_reason = cancelReason || "Not specified";
 
   await order.save();
+   req.io.emit('orderStatusUpdated', {
+        orderId: order._id,
+        item:orderItem,
+        newStatus: 'Cancelled',
+        message: `Order ${order.orderId} was cancelled.`
+    });
   const payment = await Payment.findOne({ orderId: order._id });
   if (!payment) {
     res.status(STATUS_CODES.NOT_FOUND)
