@@ -41,12 +41,13 @@ const SalesReport = () => {
   const tableRef = useRef(null);
 
   const {
-    data: reportData,
+    data: report,
     isLoading,
     isFetching,
     refetch
   } = useGetSalesReportQuery({ filter, startDate, endDate });
-
+  const reportData = report?.reportData
+  
   useEffect(() => {
     setShowDateInputs(filter === 'custom');
   }, [filter]);
@@ -399,11 +400,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Coupon Discounts:</span>
-                      <span className="fw-medium">₹{reportData.couponDiscounts.toFixed(2)}</span>
+                      <span className="fw-medium">₹{reportData?.couponDiscounts?.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Sales Count:</span>
-                      <span className="fw-medium">{reportData.overallSalesCount.toFixed(2)}</span>
+                      <span className="fw-medium">{reportData?.overallSalesCount?.toFixed(2)}</span>
                     </div>
                   </Col>
                   <Col md={6}>
@@ -413,11 +414,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Discount:</span>
-                      <span className="fw-medium">₹{reportData.overallDiscount.toFixed(2)}</span>
+                      <span className="fw-medium">₹{reportData?.overallDiscount?.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Net Revenue:</span>
-                      <span className="fw-bold text-success">₹{reportData.netRevenue.toFixed(2)}</span>
+                      <span className="fw-bold text-success">₹{reportData?.netRevenue?.toFixed(2)}</span>
                     </div>
                   </Col>
                 </Row>

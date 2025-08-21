@@ -214,7 +214,7 @@ const Checkout = () => {
         tax: tax.toFixed(2),
         totalDiscount: totalDiscount.toFixed(2),
       }).unwrap();
-      const id = res?._id
+      const id = res?.createdOrder?._id
       if (id) {
         dispatch(clearCartItems());
         toast.success("Order Placed successfully");

@@ -7,6 +7,7 @@ const Return = require('../models/returnModel');
 const STATUS_CODES = require('../statusCodes');
 const Wallet = require('../models/wallet');
 const Coupon = require('../models/couponModel');
+const asyncHandler = require('../middlewares/asyncHandler');
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -15,380 +16,377 @@ async function generateOrderId() {
 
 const generateOrderNumber = async () => Math.random().toString(36).substring(2, 12).toUpperCase();
 //create order
-const createOrder = async (req, res) => {
-  try {
-    const orderId = await generateOrderId();
-    const orderNumber = await generateOrderNumber()
-    let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
-    if (!items || items.length === 0) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "No items in the order" });
-    }
+const createOrder = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
-    }
-
-    const validatedItems = [];
-    for (const item of items) {
-      if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid product ID" });
-      }
-      if (!item.qty || item.qty < 1) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: `Invalid quantity for product ${item.product}` });
-      }
-      validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
-    }
-
-    if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "COD payment is not available for orders above ₹ 1000" });
-    }
-    if (paymentMethod === "Wallet") {
-      const wallet = await Wallet.findOne({ userId: user._id });
-      if (!wallet || wallet.balance < totalPrice) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Insufficient balance in wallet" });
-      }
-      wallet.balance -= totalPrice;
-      wallet.transactions.push({
-        amount: totalPrice,
-        type: "Debit",
-        description: `Order Payment - ${orderNumber}`,
-      });
-      await wallet.save();
-    }
-
-    let payment = new Payment({
-      userId: user._id,
-      method: paymentMethod,
-      amount: totalPrice,
-
-    });
-
-    if (paymentMethod === "Razorpay" && razorpay_order_id !== "") {
-      payment.razorpay_order_id = razorpay_order_id;
-      payment.status = paymentStatus;
-    }
-    if (paymentMethod == "Wallet") {
-      payment.status = "Success";
-      paymentStatus = "Success"
-    }
-    if (!isNaN(couponDiscount)) {
-      payment.couponDiscount = couponDiscount;
-    }
-    await payment.save()
-
-    const order = new Order({
-      orderId,
-      orderNumber,
-      userId,
-      items: validatedItems,
-      shippingAddress,
-      paymentMethod,
-      paymentStatus: paymentMethod === "Cash On Delivery" ? "Success" : paymentStatus,
-      paymentId: payment._id,
-      shippingPrice,
-      status: "Not completed",
-      totalPrice,
-      couponId,
-      couponDiscount,
-      totalDiscount,
-      tax
-    });
-
-    const createdOrder = await order.save();
-
-    if (user.coupon) {
-      const coupon = await Coupon.findById(user.coupon);
-      if (coupon && !coupon.usedUsers.includes(user._id)) {
-        coupon.usedUsers.push(user._id);
-        coupon.limit -= 1;
-        await coupon.save();
-      }
-
-      user.coupon = null;
-      await user.save();
-    }
-
-    await Promise.all(
-      createdOrder.items.map(async (item) => {
-        const product = await Product.findById(item.product);
-        if (product) {
-          product.quantity -= item.qty;
-          await product.save();
-        }
-      })
-    );
-
-    await Payment.updateOne(
-      { _id: payment._id },
-      { $set: { orderId: createdOrder._id } }
-    )
-
-    await user.save();
-    res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
-  } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: error.message });
+  const orderId = await generateOrderId();
+  const orderNumber = await generateOrderNumber()
+  let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
+  if (!items || items.length === 0) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("No items in the order");
   }
-};
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("User not found");
+  }
+
+  const validatedItems = [];
+  for (const item of items) {
+    if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+      res.status(STATUS_CODES.BAD_REQUEST)
+      throw new Error("Invalid product ID");
+    }
+    if (!item.qty || item.qty < 1) {
+      res.status(STATUS_CODES.BAD_REQUEST)
+      throw new Error(`Invalid quantity for product ${item.product}`);
+    }
+    validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
+  }
+
+  if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("COD payment is not available for orders above ₹ 1000");
+  }
+  if (paymentMethod === "Wallet") {
+    const wallet = await Wallet.findOne({ userId: user._id });
+    if (!wallet || wallet.balance < totalPrice) {
+      res.status(STATUS_CODES.NOT_FOUND)
+      throw new Error("Insufficient balance in wallet");
+    }
+    wallet.balance -= totalPrice;
+    wallet.transactions.push({
+      amount: totalPrice,
+      type: "Debit",
+      description: `Order Payment - ${orderNumber}`,
+    });
+    await wallet.save();
+  }
+
+  let payment = new Payment({
+    userId: user._id,
+    method: paymentMethod,
+    amount: totalPrice,
+
+  });
+
+  if (paymentMethod === "Razorpay" && razorpay_order_id !== "") {
+    payment.razorpay_order_id = razorpay_order_id;
+    payment.status = paymentStatus;
+  }
+  if (paymentMethod == "Wallet") {
+    payment.status = "Success";
+    paymentStatus = "Success"
+  }
+  if (!isNaN(couponDiscount)) {
+    payment.couponDiscount = couponDiscount;
+  }
+  await payment.save()
+
+  const order = new Order({
+    orderId,
+    orderNumber,
+    userId,
+    items: validatedItems,
+    shippingAddress,
+    paymentMethod,
+    paymentStatus: paymentMethod === "Cash On Delivery" ? "Success" : paymentStatus,
+    paymentId: payment._id,
+    shippingPrice,
+    status: "Not completed",
+    totalPrice,
+    couponId,
+    couponDiscount,
+    totalDiscount,
+    tax
+  });
+
+  const createdOrder = await order.save();
+
+  if (user.coupon) {
+    const coupon = await Coupon.findById(user.coupon);
+    if (coupon && !coupon.usedUsers.includes(user._id)) {
+      coupon.usedUsers.push(user._id);
+      coupon.limit -= 1;
+      await coupon.save();
+    }
+
+    user.coupon = null;
+    await user.save();
+  }
+
+  await Promise.all(
+    createdOrder.items.map(async (item) => {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.quantity -= item.qty;
+        await product.save();
+      }
+    })
+  );
+
+  await Payment.updateOne(
+    { _id: payment._id },
+    { $set: { orderId: createdOrder._id } }
+  )
+
+  await user.save();
+  return res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
+});
 
 
 //get my orders
-const getMyOrders = async (req, res) => {
-  try {
+const getMyOrders = asyncHandler(async (req, res) => {
 
-    const filters = { userId: req.user._id };
-    const { searchTerm } = req.query;
+  const filters = { userId: req.user._id };
+  const { searchTerm } = req.query;
 
-    if (searchTerm) {
-      filters.orderId = searchTerm; `  `
-    }
-    const orders = await Order.find(filters)
-      .populate("items.product")
-      .sort({ createdAt: -1 });
-    res.status(STATUS_CODES.OK).json({ status: "success", orders });
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", error: error.message });
+  if (searchTerm) {
+    filters.orderId = searchTerm; `  `
   }
-};
+  const orders = await Order.find(filters)
+    .populate("items.product")
+    .sort({ createdAt: -1 });
+  return res.status(STATUS_CODES.OK).json({ status: "success", orders });
+});
 
 //cancel order
-const cancelOrder = async (req, res) => {
-  try {
-    const { orderId, item, cancelReason } = req.body;
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "User not found" });
+const cancelOrder = asyncHandler(async (req, res) => {
+
+  const { orderId, item, cancelReason } = req.body;
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("User not found");
+  }
+
+  const order = await Order.findOne({ _id: orderId, userId: user._id });
+  if (!order) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Order not found");
+  }
+
+  const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
+  if (!orderItem) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Item not found in order");
+  }
+
+  if (orderItem.status !== "Pending") {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Order can only be cancelled in pending state");
+  }
+
+  const product = await Product.findById(item.product);
+  if (product) {
+    product.quantity += orderItem.qty;
+    await product.save();
+  }
+
+  orderItem.status = "Cancelled";
+  orderItem.cancel_reason = cancelReason || "Not specified";
+
+  await order.save();
+  const payment = await Payment.findOne({ orderId: order._id });
+  if (!payment) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Payment not found for this order");
+  }
+  if (payment.method !== "Cash On Delivery") {
+
+    await Payment.updateOne({ _id: order.paymentId }, { $set: { status: "Refund" } });
+    let wallet = await Wallet.findOne({ userId: order.userId });
+
+    if (!wallet) {
+
+      wallet = new Wallet({
+        userId: order.userId,
+        balance: 0,
+        transactions: []
+      });
     }
 
-    const order = await Order.findOne({ _id: orderId, userId: user._id });
-    if (!order) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order not found" });
+    let refundAmount = item.qty * product.price;
+    if (item.discount) {
+      refundAmount -= item.discount
+    }
+    wallet.balance += refundAmount;
+
+
+    wallet.transactions.push({
+      amount: refundAmount,
+      type: "Credit",
+      description: `Refund for cancelled product: ${product.name} ${order.orderNumber}`
+    });
+
+    await wallet.save();
+  }
+
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    message: "Order item cancelled successfully",
+  });
+});
+
+//get all orders in admin
+const getAllOrders = asyncHandler(async (req, res) => {
+
+  const { searchTerm, status, page = 1, } = req.query;
+  const limit = 6
+  let query = {};
+  if (searchTerm) {
+    query.orderId = { $regex: searchTerm, $options: "i" };
+
+  }
+
+  if (status) {
+    query.status = status;
+  }
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const orders = await Order.find(query)
+    .populate("userId")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+  const totalOrders = await Order.countDocuments(query);
+
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    message: "",
+    orders,
+    page,
+    count: totalOrders,
+    pages: Math.ceil(totalOrders / limit),
+  });
+});
+
+//get order  by id
+const findOrderById = asyncHandler(async (req, res) => {
+
+  const id = req.params.id
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Invalid Order ID");
+  }
+  const order = await Order.findById(id).populate(
+    "userId")
+    .populate("shippingAddress")
+    .populate("items.product")
+  if (order) {
+    return res.status(STATUS_CODES.OK).json({ status: "success", order });
+  } else {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Order Not Found")
+
+  }
+});
+
+//set product/item status
+const setItemStatus = asyncHandler(async (req, res) => {
+
+  const { status, item, id } = req.body;
+  if (status == "Delivered") {
+    const payment = await Payment.findOne({ orderId: id });
+    if (!payment) {
+      res.status(STATUS_CODES.NOT_FOUND)
+      throw new Error("Payment not found for this order");
     }
 
-    const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
-    if (!orderItem) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Item not found in order" });
+    if (payment.status == "Pending") {
+      await Payment.updateOne({ _id: payment._id }, { $set: { status: "Success" } });
     }
+  }
 
-    if (orderItem.status !== "Pending") {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Order can only be cancelled in pending state" });
-    }
+  const order = await Order.findOne({ _id: id });
 
+  if (!order) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Order not found");
+  }
+
+  const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
+  if (!orderItem) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Item not found in order");
+  }
+
+  orderItem.status = status
+  const allDelivered = order.items.every((i) => i.status === "Delivered");
+
+  if (allDelivered) {
+    order.status = "Completed";
+  }
+  if (status === "Returned") {
     const product = await Product.findById(item.product);
     if (product) {
       product.quantity += orderItem.qty;
       await product.save();
     }
-
-    orderItem.status = "Cancelled";
-    orderItem.cancel_reason = cancelReason || "Not specified";
-
-    await order.save();
-    const payment = await Payment.findOne({ orderId: order._id });
-    if (!payment) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Payment not found for this order" });
+    let refundAmount;
+    if (order?.items?.length === 1) {
+      refundAmount = order.totalPrice
     }
-    if (payment.method !== "Cash On Delivery") {
-
-      await Payment.updateOne({ _id: order.paymentId }, { $set: { status: "Refund" } });
-      let wallet = await Wallet.findOne({ userId: order.userId });
-
-      if (!wallet) {
-
-        wallet = new Wallet({
-          userId: order.userId,
-          balance: 0,
-          transactions: []
-        });
-      }
-
-      let refundAmount = item.qty * product.price;
+    else {
+      refundAmount = item.qty * product.price;
       if (item.discount) {
         refundAmount -= item.discount
       }
-      wallet.balance += refundAmount;
-
-
-      wallet.transactions.push({
-        amount: refundAmount,
-        type: "Credit",
-        description: `Refund for cancelled product: ${product.name} ${order.orderNumber}`
-      });
-
-      await wallet.save();
     }
-
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      message: "Order item cancelled successfully",
-    });
-  } catch (error) {
-    console.error("Error cancelling order:", error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: "Internal Server Error" });
-  }
-};
-
-//get all orders in admin
-const getAllOrders = async (req, res) => {
-
-  try {
-    const { searchTerm, status, page = 1, } = req.query;
-    const limit = 6
-    let query = {};
-    if (searchTerm) {
-      query.orderId = { $regex: searchTerm, $options: "i" };
-
-    }
-
-    if (status) {
-      query.status = status;
-    }
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const orders = await Order.find(query)
-      .populate("userId")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const totalOrders = await Order.countDocuments(query);
-
-    res.status(STATUS_CODES.OK).json({
-      status: "success",
-      message: "",
-      orders,
-      page,
-      count: totalOrders,
-      pages: Math.ceil(totalOrders / limit),
-    });
-  } catch (error) {
-    console.error("Error Fetching Orders:", error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: error.message, stack: error.stack });
-  }
-};
-
-//get order  by id
-const findOrderById = async (req, res) => {
-
-  const id = req.params.id
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid Order ID" });
-    }
-    const order = await Order.findById(id).populate(
-      "userId")
-      .populate("shippingAddress")
-      .populate("items.product")
-    if (order) {
-      res.status(STATUS_CODES.OK).json({ status: "success", order });
-    } else {
-      res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order Not Found" })
-
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-//set product/item status
-const setItemStatus = async (req, res) => {
-  try {
-    const { status, item, id } = req.body;
-    if (status == "Delivered") {
-      const payment = await Payment.findOne({ orderId: id });
-      if (!payment) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Payment not found for this order" });
-      }
-
-      if (payment.status == "Pending") {
-        await Payment.updateOne({ _id: payment._id }, { $set: { status: "Success" } });
-      }
-    }
-
-    const order = await Order.findOne({ _id: id });
-
-    if (!order) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Order not found" });
-    }
-
-    const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
-    if (!orderItem) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Item not found in order" });
-    }
-
-    orderItem.status = status
-    const allDelivered = order.items.every((i) => i.status === "Delivered");
-
-    if (allDelivered) {
-      order.status = "Completed";
-    }
-    if (status === "Returned") {
-      const product = await Product.findById(item.product);
-      if (product) {
-        product.quantity += orderItem.qty;
-        await product.save();
-      }
-      let refundAmount;
-      if (order?.items?.length === 1) {
-        refundAmount = order.totalPrice
-      }
-      else {
-        refundAmount = item.qty * product.price;
-        if (item.discount) {
-          refundAmount -= item.discount
+    await Payment.updateOne({ _id: order.paymentId }, { $set: { status: "Refund" } });
+    await Wallet.updateOne({ userId: order.userId }, {
+      $push: {
+        transactions: {
+          type: "Credit",
+          amount: refundAmount,
+          description: `Refund for returned product: ${product.name} ${order.orderNumber}`
         }
+      },
+      $inc: {
+        balance: refundAmount
       }
-      await Payment.updateOne({ _id: order.paymentId }, { $set: { status: "Refund" } });
-      await Wallet.updateOne({ userId: order.userId }, {
-        $push: {
-          transactions: {
-            type: "Credit",
-            amount: refundAmount,
-            description: `Refund for returned product: ${product.name} ${order.orderNumber}`
-          }
-        },
-        $inc: {
-          balance: refundAmount
-        }
-      })
-    }
-
-    await order.save();
-    return res.status(STATUS_CODES.OK).json({ status: "success", message: `Order status updated successfully` });
-
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: "error", message: `An error occurred` });
+    })
   }
-};
+
+  await order.save();
+  return res.status(STATUS_CODES.OK).json({ status: "success", message: `Order status updated successfully` });
+});
 
 //return order by user
-const returnOrder = async (req, res) => {
+const returnOrder = asyncHandler(async (req, res) => {
   const { orderId, item, returnReason } = req.body;
   const user = await User.findOne({ _id: req.user._id });
   if (!user) {
-    return res.staus(STATUS_CODES.NOT_FOUND).json({ status: "error", message: `User not found` });
+    res.staus(STATUS_CODES.NOT_FOUND)
+    throw new Error(`User not found`);
   }
   const order = await Order.findOne({ _id: orderId, userId: user._id });
   if (!order) {
-    return res.staus(STATUS_CODES.NOT_FOUND).json({ status: "error", message: `Order not found` });
+    res.staus(STATUS_CODES.NOT_FOUND)
+    throw new Error(`Order not found`);
   }
   const orderItem = order.items.find((i) => i.product.toString() === item.product._id);
   if (!orderItem) {
-    return res.staus(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Item not found in order" });
+    res.staus(STATUS_CODES.NOT_FOUND)
+    throw new Error("Item not found in order");
   }
   if (item.status !== "Delivered") {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Order can only be returned after delivery" });
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Order can only be returned after delivery");
   }
 
   const payment = await Payment.findOne({ _id: order.paymentId });
   if (!payment) {
-    return res.status(STATUS_CODES.NOT_FOUND).json({ status: "error", message: "Payment record not found for this order" });
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error("Payment record not found for this order");
   }
   const exists = await Return.findOne({ orderId: order._id });
   if (exists) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Return request already sent for this order" });
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Return request already sent for this order");
   }
   const returnData = new Return({
     userId: user._id,
@@ -402,50 +400,42 @@ const returnOrder = async (req, res) => {
   orderItem.status = "Return requested"
   await order.save()
   return res.status(STATUS_CODES.OK).json({ status: "success", message: "Return request sent successfully" });
-};
+});
 
+//pending orders
+const loadPendingOrder = asyncHandler(async (req, res) => {
 
-const loadPendingOrder = async (req, res) => {
-  try {
-    const id = req.params.id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid Order ID" });
-    }
-    const userId = req.user._id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = 5;
-    const skip = (page - 1) * limit;
-
-    const orders = await Order.find({ _id: id }).populate(
-      "userId")
-      .populate("shippingAddress")
-      .populate("items.product")
-      .skip(skip)
-      .limit(limit);
-
-    const totalOrders = await Order.countDocuments({
-      userId: userId,
-      paymentMethod: "Razorpay",
-      paymentStatus: "Pending"
-
-    });
-
-    const totalPages = Math.ceil(totalOrders / limit);
-
-    res.status(STATUS_CODES.OK).json({
-      status: "success",
-      orders, page, totalPages
-    })
-
-
-  } catch (error) {
-    console.error(error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: "Internal Server Error"
-    })
+  const id = req.params.id
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Invalid Order ID");
   }
-};
+  const userId = req.user._id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 5;
+  const skip = (page - 1) * limit;
+
+  const orders = await Order.find({ _id: id }).populate(
+    "userId")
+    .populate("shippingAddress")
+    .populate("items.product")
+    .skip(skip)
+    .limit(limit);
+
+  const totalOrders = await Order.countDocuments({
+    userId: userId,
+    paymentMethod: "Razorpay",
+    paymentStatus: "Pending"
+
+  });
+
+  const totalPages = Math.ceil(totalOrders / limit);
+
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    orders, page, totalPages
+  })
+})
 
 
 

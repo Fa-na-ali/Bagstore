@@ -8,412 +8,341 @@ const { USER_NOT_MSG } = require('../messageConstants');
 const Wishlist = require('../models/wishlistModel');
 const Offer = require('../models/offerModel');
 const Category = require('../models/categoryModel');
+const asyncHandler = require('../middlewares/asyncHandler');
 
 //add Product
-const addProduct = async (req, res) => {
-  try {
-    const { name, description, price, category, offer, quantity, brand, size, color } = req.body;
-    const files = req.files;
-    if (!name) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Name is required" });
-    if (!brand) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Brand is required" });
-    if (!description) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Description is required" });
-    if (!price) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Price is required" });
-    if (!category) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Category is required" });
-    if (!quantity) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Quantity is required" });
-    if (!size) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Size is required" });
-    if (!color) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Color is required" });
-    if (!files || files.length === 0) return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "At least three images are required" });
+const addProduct = asyncHandler(async (req, res) => {
 
-    const imageUrls = files.map((file) => file.filename);
-    const product = await Product.create({
-      name,
-      description,
-      brand,
-      category,
-      quantity,
-      size,
-      offer: offer || "",
-      price,
-      color,
-      pdImage: imageUrls,
-      createdBy: req.user._id,
-      updatedBy: req.user._id,
-    });
-    return res.status(STATUS_CODES.CREATED).json({
-      status: "success",
-      message: PRODUCT_ADDED,
-      product
-    })
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
+  const { name, description, price, category, offer, quantity, brand, size, color } = req.body;
+  const files = req.files;
+  if (!name) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Name is required");
   }
-};
+  if (!brand) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Brand is required");
+  }
+  if (!description) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Description is required");
+  }
+  if (!price) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Price is required");
+  }
+  if (!category) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Category is required");
+  }
+  if (!quantity) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Quantity is required");
+  }
+  if (!size) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Size is required");
+  }
+  if (!color) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Color is required");
+  }
+  if (!files || files.length === 0) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("At least three images are required");
+  }
+
+  const imageUrls = files.map((file) => file.filename);
+  const product = await Product.create({
+    name,
+    description,
+    brand,
+    category,
+    quantity,
+    size,
+    offer: offer || "",
+    price,
+    color,
+    pdImage: imageUrls,
+    createdBy: req.user._id,
+    updatedBy: req.user._id,
+  });
+  return res.status(STATUS_CODES.CREATED).json({
+    status: "success",
+    message: PRODUCT_ADDED,
+    product
+  })
+});
 
 //NEW products
-const newProducts = async (req, res) => {
-  try {
-    const all = await Product.find({}).sort({ createdAt: -1 }).limit(6).populate('category');
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      all
-    })
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-  }
-};
+const newProducts = asyncHandler(async (req, res) => {
+
+  const all = await Product.find({}).sort({ createdAt: -1 }).limit(6).populate('category');
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    all
+  })
+});
 
 //update product
-const updateProduct = async (req, res) => {
-  try {
-    const { name, description, price, category, quantity, brand, size, color } = req.body;
-    const files = req.files;
-    const id = req.params.id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message: PRODUCT_INVALID
-      })
-    }
-    const product = await Product.findByIdAndUpdate(
-      id,
-      { ...req.body },
-      { new: true }
-    );
-    const imageUrls = files.map((file) => file.filename);
-    product.pdImage = [...imageUrls]
+const updateProduct = asyncHandler(async (req, res) => {
 
-    if (!product) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        status: "error",
-        message: PRODUCT_NOT_FOUND
-      });
-
-    }
-    else {
-      await product.save();
-      return res.status(STATUS_CODES.OK).json({
-        status: "success",
-        product
-      });
-    }
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-
+  const { name, description, price, category, quantity, brand, size, color } = req.body;
+  const files = req.files;
+  const id = req.params.id
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error(PRODUCT_INVALID)
   }
+  const product = await Product.findByIdAndUpdate(
+    id,
+    { ...req.body },
+    { new: true }
+  );
+  const imageUrls = files.map((file) => file.filename);
+  product.pdImage = [...imageUrls]
 
-};
-//delete Image
-const deleteImage = async (req, res) => {
-
-  try {
-    const { id, index } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message: PRODUCT_INVALID
-      })
-    }
-    const product = await Product.findById(id);
-    if (!product)
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        status: "error",
-        message: PRODUCT_NOT_FOUND
-      });
-
-
-    if (index < 0 || index >= product.pdImage.length) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: "Invalid image index" });
-    }
-
-    product.pdImage.splice(index, 1);
+  if (!product) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(PRODUCT_NOT_FOUND)
+  }
+  else {
     await product.save();
     return res.status(STATUS_CODES.OK).json({
       status: "success",
-      message: PRODUCT_IMG_DELETED
-    });
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-  }
-}
-
-//to get product quantity
-const getQuantity = async (req, res) => {
-  const ids = req.query.ids?.split(",") || [];
-  try {
-    const products = await Product.find({ _id: { $in: ids } });
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      products
-    });
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-  }
-}
-
-//to get a particular product
-const readProduct = async (req, res) => {
-  try {
-
-    const id = req.params.id;
-    const product = await Product.findById({ _id: id }).populate("category")
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
       product
     });
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
   }
-};
+});
+
+//delete Image
+const deleteImage = asyncHandler(async (req, res) => {
+
+  const { id, index } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error(PRODUCT_INVALID)
+  }
+  const product = await Product.findById(id);
+  if (!product) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(PRODUCT_NOT_FOUND)
+  }
+  if (index < 0 || index >= product.pdImage.length) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("Invalid image index")
+  }
+
+  product.pdImage.splice(index, 1);
+  await product.save();
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    message: PRODUCT_IMG_DELETED
+  });
+});
+
+//to get product quantity
+const getQuantity = asyncHandler(async (req, res) => {
+  const ids = req.query.ids?.split(",") || [];
+  const products = await Product.find({ _id: { $in: ids } });
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    products
+  });
+});
+
+//to get a particular product
+const readProduct = asyncHandler(async (req, res) => {
+
+  const id = req.params.id;
+  const product = await Product.findById({ _id: id }).populate("category")
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    product
+  });
+});
 
 //fetch products in the product management with pagination and search
-const fetchProducts = async (req, res) => {
+const fetchProducts = asyncHandler(async (req, res) => {
 
-  try {
-    const pageSize = 6;
-    const page = Number(req.query.page) || 1;
-    const keyword = req.query.keyword
-      ? {
-        name: {
-          $regex: req.query.keyword,
-          $options: "i",
-        },
-      }
-      : {};
+  const pageSize = 6;
+  const page = Number(req.query.page) || 1;
+  const keyword = req.query.keyword
+    ? {
+      name: {
+        $regex: req.query.keyword,
+        $options: "i",
+      },
+    }
+    : {};
 
-    const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword }).populate("category", "name -_id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      products,
-      count,
-      page,
-      pages: Math.ceil(count / pageSize),
-      hasMore: page < Math.ceil(count / pageSize),
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-  }
-};
+  const count = await Product.countDocuments({ ...keyword });
+  const products = await Product.find({ ...keyword }).populate("category", "name -_id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    products,
+    count,
+    page,
+    pages: Math.ceil(count / pageSize),
+    hasMore: page < Math.ceil(count / pageSize),
+  });
+});
 
 //fetch all products
-const fetchAllProducts = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 3;
-    const skip = (page - 1) * limit;
-    const products = await Product.find({})
-      .populate("category")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-    const totalProducts = await Product.countDocuments({});
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      products,
-      totalProducts,
-      totalPages: Math.ceil(totalProducts / limit),
-      currentPage: page
-    });
+const fetchAllProducts = asyncHandler(async (req, res) => {
 
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
-  }
-};
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 3;
+  const skip = (page - 1) * limit;
+  const products = await Product.find({})
+    .populate("category")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+  const totalProducts = await Product.countDocuments({});
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    products,
+    totalProducts,
+    totalPages: Math.ceil(totalProducts / limit),
+    currentPage: page
+  });
+});
 
 //fetch related products
-const fetchRelatedProducts = async (req, res) => {
+const fetchRelatedProducts = asyncHandler(async (req, res) => {
 
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message: PRODUCT_INVALID
-      })
-    }
-    const currentProduct = await Product.findById(id);
-    if (!currentProduct) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        status: "error",
-        message: PRODUCT_NOT_FOUND
-      });
-
-    }
-    const relatedProducts = await Product.find({
-      category: currentProduct.category,
-      isExist: true,
-      _id: { $ne: currentProduct._id }
-    })
-      .populate("category")
-      .limit(6)
-      .sort({ createdAt: -1 });
-
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      relatedProducts
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error(PRODUCT_INVALID)
   }
-};
+  const currentProduct = await Product.findById(id);
+  if (!currentProduct) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(PRODUCT_NOT_FOUND)
+  }
+  const relatedProducts = await Product.find({
+    category: currentProduct.category,
+    isExist: true,
+    _id: { $ne: currentProduct._id }
+  })
+    .populate("category")
+    .limit(6)
+    .sort({ createdAt: -1 });
+
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    relatedProducts
+  });
+});
 
 //filtering,sorting and search
-const filterProducts = async (req, res) => {
+const filterProducts = asyncHandler(async (req, res) => {
 
-  try {
-    const {
-      search,
-      category,
-      minPrice,
-      maxPrice,
-      color,
-      sortBy,
-      page,
+  const {
+    search,
+    category,
+    minPrice,
+    maxPrice,
+    color,
+    sortBy,
+    page,
 
-    } = req.query;
+  } = req.query;
 
-    const limit = req.query.limit || 12;
+  const limit = req.query.limit || 12;
 
-    const filters = { isExist: true };
-
-
-    if (search) {
-      filters.name = { $regex: search, $options: "i" };
-    }
+  const filters = { isExist: true };
 
 
-    if (category) {
-      const categoriesArray = Array.isArray(category) ? category : [category];
-      filters.category = { $in: categoriesArray };
-    }
-
-
-    if (minPrice || maxPrice) {
-      filters.price = {};
-      if (minPrice) filters.price.$gte = parseInt(minPrice);
-      if (maxPrice) filters.price.$lte = parseInt(maxPrice);
-    }
-
-    if (color) {
-      const colorsArray = Array.isArray(color) ? color : [color];
-      filters.color = { $in: colorsArray.map((c) => new RegExp(c, "i")) };
-    }
-
-    let sortOption = {};
-    if (sortBy) {
-      switch (sortBy) {
-        case "priceLowHigh":
-          sortOption.price = 1;
-          break;
-        case "priceHighLow":
-          sortOption.price = -1;
-          break;
-        case "nameAsc":
-          sortOption.name = 1;
-          break;
-        case "nameDesc":
-          sortOption.name = -1;
-          break;
-        case "newArrivals":
-          sortOption.createdAt = -1;
-          break;
-      }
-    }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const products = await Product.find(filters)
-      .populate("category")
-      .sort(sortOption)
-      .skip(skip)
-      .limit(parseInt(limit));
-    const totalProducts = await Product.countDocuments(filters);
-    return res.status(STATUS_CODES.OK).json({
-      status: "success",
-      products,
-      totalProducts,
-      totalPages: Math.ceil(totalProducts / limit),
-      currentPage: parseInt(page),
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
+  if (search) {
+    filters.name = { $regex: search, $options: "i" };
   }
-};
+
+
+  if (category) {
+    const categoriesArray = Array.isArray(category) ? category : [category];
+    filters.category = { $in: categoriesArray };
+  }
+
+
+  if (minPrice || maxPrice) {
+    filters.price = {};
+    if (minPrice) filters.price.$gte = parseInt(minPrice);
+    if (maxPrice) filters.price.$lte = parseInt(maxPrice);
+  }
+
+  if (color) {
+    const colorsArray = Array.isArray(color) ? color : [color];
+    filters.color = { $in: colorsArray.map((c) => new RegExp(c, "i")) };
+  }
+
+  let sortOption = {};
+  if (sortBy) {
+    switch (sortBy) {
+      case "priceLowHigh":
+        sortOption.price = 1;
+        break;
+      case "priceHighLow":
+        sortOption.price = -1;
+        break;
+      case "nameAsc":
+        sortOption.name = 1;
+        break;
+      case "nameDesc":
+        sortOption.name = -1;
+        break;
+      case "newArrivals":
+        sortOption.createdAt = -1;
+        break;
+    }
+  }
+
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const products = await Product.find(filters)
+    .populate("category")
+    .sort(sortOption)
+    .skip(skip)
+    .limit(parseInt(limit));
+  const totalProducts = await Product.countDocuments(filters);
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    products,
+    totalProducts,
+    totalPages: Math.ceil(totalProducts / limit),
+    currentPage: parseInt(page),
+  });
+});
 
 //deleting product
 
-const deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { isExist: false },
-      { new: true }
-    );
+const deleteProduct = asyncHandler(async (req, res) => {
 
-    if (!product) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        status: "error",
-        message: PRODUCT_NOT_FOUND
-      });
+  const product = await Product.findByIdAndUpdate(
+    req.params.id,
+    { isExist: false },
+    { new: true }
+  );
 
-    }
-    return res.status(STATUS_CODES.OK).json({
-      status: "SUCCESS",
-      message: PRODUCT_DELETED,
-      product
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: error.message
-    });
+  if (!product) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(PRODUCT_NOT_FOUND)
   }
-};
+  return res.status(STATUS_CODES.OK).json({
+    status: "SUCCESS",
+    message: PRODUCT_DELETED,
+    product
+  });
+});
 
 //addto wishlist
-const updateWishlist = async (req, res) => {
+const updateWishlist = asyncHandler(async (req, res) => {
   const { productId, color } = req.body;
   const user = await User.findOne({ _id: req.user._id });
   if (!user) {
-    return res.status(STATUS_CODES.NOT_FOUND).json({
-      status: 'error',
-      message: USER_NOT_MSG
-    });
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(USER_NOT_MSG)
   }
 
   const wishlist = await Wishlist.findOne({ productId });
@@ -434,79 +363,57 @@ const updateWishlist = async (req, res) => {
       message: "Product removed from wishlist successfully"
     });
   }
-};
+});
 
 //load wishlist
-const fetchWishlist = async (req, res) => {
+const fetchWishlist = asyncHandler(async (req, res) => {
 
-  try {
-    const userId = req.user._id
+  const userId = req.user._id
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message: USER_NOT_MSG
-      })
-    }
-    const wishlist = await Wishlist.find({ userId })
-      .populate({
-        path: "productId",
-        populate: {
-          path: "category",
-          model: "Category",
-        },
-      });
-    if (!wishlist) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message: "wishlist not found"
-      });
-    }
-    return res.status(STATUS_CODES.OK).json({
-      status: "sucess",
-      message: "",
-      wishlist
-    });
-  } catch (error) {
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: "Server error", error
-    });
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error(USER_NOT_MSG)
   }
-};
+  const wishlist = await Wishlist.find({ userId })
+    .populate({
+      path: "productId",
+      populate: {
+        path: "category",
+        model: "Category",
+      },
+    });
+  if (!wishlist) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("wishlist not found")
+  }
+  return res.status(STATUS_CODES.OK).json({
+    status: "sucess",
+    message: "",
+    wishlist
+  });
+});
 
 //remove from wishlist
-const removeFromWishlist = async (req, res) => {
+const removeFromWishlist = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { productId } = req.body;
+  const wishlist = await Wishlist.findOne({ userId });
 
-  try {
-
-    const wishlist = await Wishlist.findOne({ userId });
-
-    if (!wishlist) {
-      res.status(STATUS_CODES.BAD_REQUEST).json({
-        status: "error",
-        message: "wishlist not found"
-      });
-    }
-
-    wishlist.products = wishlist?.productId?.filter(
-      (id) => id.toString() != productId
-    );
-    await wishlist.save();
-    res.status(STATUS_CODES.OK).json({
-      status: "success",
-      message: "",
-      wishlist
-    });
-  } catch (error) {
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: "Server error", error
-    });
+  if (!wishlist) {
+    res.status(STATUS_CODES.BAD_REQUEST)
+    throw new Error("wishlist not found")
   }
-};
+
+  wishlist.products = wishlist?.productId?.filter(
+    (id) => id.toString() != productId
+  );
+  await wishlist.save();
+  res.status(STATUS_CODES.OK).json({
+    status: "success",
+    message: "",
+    wishlist
+  });
+});
 
 module.exports = {
   addProduct,

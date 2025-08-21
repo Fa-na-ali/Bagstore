@@ -1,21 +1,20 @@
 const User = require("../models/userModel");
+const STATUS_CODES = require("../statusCodes");
+const asyncHandler = require("./asyncHandler");
 
-const generaterefreshToken = async (req, res) => {
+const generaterefreshToken = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
-  try {
 
-    const user = await User.findOne(refreshToken);
+  const user = await User.findOne(refreshToken);
 
-    if (!user || user.refreshToken !== refreshToken) {
-      return res.status(403).json({ message: "Invalid refresh token" });
-    }
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.ACCESS_EXPIRY,
-    });
-
-    res.status(200).json({ token });
-  } catch (error) {
-    res.status(403).json({ message: "Invalid refresh token" });
+  if (!user || user.refreshToken !== refreshToken) {
+    res.status(STATUS_CODES.UNAUTHORIZED)
+    throw new Error("Invalid refresh token")
   }
-}
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.ACCESS_EXPIRY,
+  });
+
+  return res.status(STATUS_CODES.OK).json({ token });
+});
 module.exports = generaterefreshToken

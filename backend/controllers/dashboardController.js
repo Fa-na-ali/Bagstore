@@ -1,3 +1,4 @@
+const asyncHandler = require("../middlewares/asyncHandler");
 const Order = require("../models/orderModel");
 const Payment = require("../models/paymentModel");
 const User = require("../models/userModel");
@@ -67,9 +68,7 @@ const getSalesReportData = async (filter, startDate, endDate) => {
   const orders = await Order.find({
     "items.status": "Delivered"
   });
-
   try {
-
     const orderCount = await Order.countDocuments(matchConditions);
     if (orderCount === 0) {
       return {
@@ -256,7 +255,7 @@ const getSalesReportData = async (filter, startDate, endDate) => {
     console.error('Error in getSalesReportData:', error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       status: "error",
-      message: "Internal server error"
+      message: "internal server error"
     })
   }
 };
@@ -267,7 +266,7 @@ const getSalesReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
     const reportData = await getSalesReportData(filter, startDate, endDate);
-    res.status(STATUS_CODES.OK).json({ status: "success", reportData });
+    return res.status(STATUS_CODES.OK).json({ status: "success", reportData });
   } catch (error) {
     console.error('Error generating sales report:', error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -275,7 +274,7 @@ const getSalesReport = async (req, res) => {
       message: 'Failed to generate report'
     });
   }
-};
+}
 
 //load sles report
 const loadSalesReport = async (req, res) => {
@@ -301,11 +300,11 @@ const loadSalesReport = async (req, res) => {
     });
   }
 };
+
 ///////////////////////////////////////////////////////////////////////
 
 const loadDashboard = async (req, res) => {
   try {
-
     let { filter, startDate, endDate } = req.query;
     startDate = parseInt(startDate);
     endDate = endDate ? new Date(endDate) : null;
@@ -553,16 +552,14 @@ const loadDashboard = async (req, res) => {
       orderData,
       userData
     });
-
   } catch (error) {
     console.error('Error loading dashboard:', error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: 'error',
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).render('error', {
       message: 'Failed to load dashboard data',
-
+      error
     });
   }
-};
+}
 
 
 

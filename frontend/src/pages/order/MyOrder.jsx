@@ -10,7 +10,7 @@ import debounce from 'lodash.debounce';
 const MyOrder = () => {
   const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: orders, refetch, isLoading, error } = useGetMyOrdersQuery(searchTerm);
+  const { data: result, refetch, isLoading, error } = useGetMyOrdersQuery(searchTerm);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -20,7 +20,7 @@ const MyOrder = () => {
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
   const navigate = useNavigate()
-
+  const orders = result?.orders
   useEffect(() => {
 
     const debouncedResults = debounce(() => {

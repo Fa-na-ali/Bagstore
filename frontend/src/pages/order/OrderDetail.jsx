@@ -12,7 +12,7 @@ pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
 
 const OrderDetail = () => {
   const { id } = useParams();
-  const { data: order, refetch, isLoading, isError } = useGetOrderByIdQuery(id);
+  const { data, refetch, isLoading, isError } = useGetOrderByIdQuery(id);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -21,7 +21,7 @@ const OrderDetail = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
-
+  const order = data?.order
   if (isLoading) return <p>Loading...</p>;
   if (isError || !order) return <p>Error fetching order details.</p>;
 

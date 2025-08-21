@@ -12,19 +12,18 @@ const OrderDetails = () => {
   const { id } = useParams();
   const { data: order, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
   const [itemStatuses, setItemStatuses] = useState({});
-
-  const [orderStatus, setOrderStatus] = useState(order?.status);
+  const [orderStatus, setOrderStatus] = useState(order?.order?.status);
   const [setItemStatus] = useSetItemStatusMutation();
 
   useEffect(() => {
-    if (order?.items) {
-      const initialStatuses = order.items.reduce((acc, item) => {
+    if (order?.order?.items) {
+      const initialStatuses = order?.order?.items?.reduce((acc, item) => {
         acc[item._id] = item.status;
         return acc;
       }, {});
       setItemStatuses(initialStatuses);
     }
-  }, [order?.items]);
+  }, [order]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) {
@@ -63,7 +62,7 @@ const OrderDetails = () => {
     }
   };
 
-  const address = order?.shippingAddress
+  const address = order?.order?.shippingAddress
 
   return (
     <>
@@ -80,47 +79,47 @@ const OrderDetails = () => {
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Customer</h6>
-                  <p className="text-muted">{order?.userId.name}</p>
+                  <p className="text-muted">{order?.order?.userId?.name}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Order Date</h6>
-                  <p className="text-muted">{order?.createdAt}</p>
+                  <p className="text-muted">{order?.order?.createdAt}</p>
                 </Col>
               </Row>
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Email</h6>
-                  <p className="text-muted">{order?.userId.email}</p>
+                  <p className="text-muted">{order?.order?.userId?.email}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Shipping Price</h6>
-                  <p className="text-muted">{order?.shippingPrice}</p>
+                  <p className="text-muted">{order?.order?.shippingPrice}</p>
                 </Col>
               </Row>
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Phone</h6>
-                  <p className="text-muted">{order?.userId.phone}</p>
+                  <p className="text-muted">{order?.order?.userId?.phone}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Payment Method</h6>
-                  <p className="text-muted">{order?.paymentMethod}</p>
+                  <p className="text-muted">{order?.order?.paymentMethod}</p>
                 </Col>
               </Row>
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Address</h6>
-                  <p className="text-muted">{address.houseName},{address.town},{address.street},
-                    {address.state}, {address.zipcode}, {address.country}</p>
+                  <p className="text-muted">{address?.houseName},{address?.town},{address?.street},
+                    {address?.state}, {address?.zipcode}, {address?.country}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Total Price</h6>
-                  <p className="text-muted">{order?.totalPrice.toFixed(2)}</p>
+                  <p className="text-muted">{order?.order?.totalPrice?.toFixed(2)}</p>
                 </Col>
               </Row>
               <hr className="mt-0 mb-4" />
             </Card.Body>
-
+  
             <div className="table-responsive">
               <Table>
                 <thead>
@@ -134,19 +133,19 @@ const OrderDetails = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {order.items.map((item) => (
+                  {order?.order?.items?.map((item) => (
                     <tr key={item._id}>
                       <td>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={`${IMG_URL}${item.product.pdImage[0]}`}
+                            src={`${IMG_URL}${item?.product?.pdImage[0]}`}
                             className="img-fluid rounded-3"
                             style={{ width: "120px" }}
                             alt="Book"
                           />
                           <div className="flex-column ms-4">
-                            <p className="mb-2">{item.product.name}</p>
-                            <p className="mb-0">{item.product.color}</p>
+                            <p className="mb-2">{item?.product?.name}</p>
+                            <p className="mb-0">{item?.product?.color}</p>
                           </div>
                         </div>
                       </td>
@@ -155,13 +154,13 @@ const OrderDetails = () => {
                       </td>
 
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item.product.price}</p>
+                        <p className="mb-0 fw-bold">{item?.product?.price}</p>
                       </td>
                       <td className="align-middle">
                         <p className="mb-0 fw-bold">{item.discount.toFixed(2)}</p>
                       </td>
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{(item.product.price - item.discount) * item.qty.toFixed(2)}</p>
+                        <p className="mb-0 fw-bold">{(item?.product?.price - item.discount) * item.qty.toFixed(2)}</p>
                       </td>
                       <td className="align-middle">
                         {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (
@@ -174,7 +173,7 @@ const OrderDetails = () => {
                               className="me-2"
                               variant="success"
                               size="sm"
-                              onClick={() => handleSaveChanges("Returned", item, order._id)}
+                              onClick={() => handleSaveChanges("Returned", item, order?.order._id)}
                             >
                               Approve
                             </Button>
@@ -199,7 +198,7 @@ const OrderDetails = () => {
                       </td>
                       <td className="align-middle">
                         {item.status !== "Cancelled" && item.status !== "Returned" && item.status !== "Delivered" && (
-                          <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order._id)}>
+                          <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order?.order._id)}>
                             Save Changes
                           </Button>
                         )}
@@ -217,9 +216,9 @@ const OrderDetails = () => {
                     <Button
                       className='mt-1'
                       size="sm"
-                      variant={order.status === "Completed" ? "success" : "danger"}
+                      variant={order?.order.status === "Completed" ? "success" : "danger"}
                     >
-                      {order.status}
+                      {order?.order.status}
                     </Button>
                   </Col>
                 </Row>
