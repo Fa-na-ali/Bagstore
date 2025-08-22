@@ -545,7 +545,7 @@ const uploadImage = asyncHandler(async (req, res) => {
         res.status(STATUS_CODES.BAD_REQUEST)
         throw new Error("No files uploaded")
     }
-    const imageUrls = req.files.map((file) => file.filename)
+    const imageUrls = req.files.map((file) => file.path)
     if (!mongoose.Types.ObjectId.isValid(id)) {
         res.status(STATUS_CODES.BAD_REQUEST)
         throw new Error(USER_ID_MSG)

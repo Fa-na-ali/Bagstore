@@ -97,7 +97,7 @@ const Wishlist = () => {
           <Row>
             {products?.map((product) => {
               const productImages = product?.productId?.pdImage?.length
-                ? product?.productId?.pdImage.map((img) => `${IMG_URL}${img}`)
+                ? product?.productId?.pdImage.map((img) => `${img}`)
                 : [`${PLACEHOLDER_URL}`];
               return (
                 <Col key={product?.productId?._id} lg={4} md={4} className='mb-4'>

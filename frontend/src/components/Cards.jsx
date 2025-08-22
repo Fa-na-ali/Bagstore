@@ -116,7 +116,7 @@ const Cards = ({ products }) => {
       <Row>
         {products?.map((product) => {
           const productImages = product.pdImage?.length
-            ? product.pdImage.map((img) => `${IMG_URL}${img}`)
+            ? product.pdImage.map((img) => `${img}`)
             : [`${PLACEHOLDER_URL}`];
 
           return (

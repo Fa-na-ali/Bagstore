@@ -63,7 +63,7 @@ const Cart = () => {
                       <Col lg={5}>
                         <div className="d-flex">
                           <Image
-                            src={`${IMG_URL}${item.pdImage[0]}`}
+                            src={`${item.pdImage[0]}`}
                             className="border rounded me-3"
                             style={{ width: "96px", height: "96px" }}
                           />

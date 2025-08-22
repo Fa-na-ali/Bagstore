@@ -251,7 +251,8 @@ const Checkout = () => {
 
       // }
     } catch (error) {
-      toast.error(error.message || "Failed to place order");
+      console.log(error)
+      toast.error(error.data?.message || "Failed to place order");
     }
   };
 
@@ -289,7 +290,7 @@ const Checkout = () => {
                               <div className="d-flex flex-row align-items-center">
                                 <div>
                                   <Image
-                                    src={`${IMG_URL}${item.pdImage[0]}`}
+                                    src={`${item.pdImage[0]}`}
                                     className="img-fluid rounded-3"
                                     alt="Shopping item"
                                     style={{ width: "65px" }}

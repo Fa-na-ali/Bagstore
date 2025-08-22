@@ -52,7 +52,7 @@ const addProduct = asyncHandler(async (req, res) => {
     throw new Error("At least three images are required");
   }
 
-  const imageUrls = files.map((file) => file.filename);
+  const imageUrls = files.map((file) => file.path);
   const product = await Product.create({
     name,
     description,
@@ -99,7 +99,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     { ...req.body },
     { new: true }
   );
-  const imageUrls = files.map((file) => file.filename);
+  const imageUrls = files.map((file) => file.path);
   product.pdImage = [...imageUrls]
 
   if (!product) {

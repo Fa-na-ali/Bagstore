@@ -159,7 +159,7 @@ const OrderDetail = () => {
                       <Row className="align-items-center">
                         <Col md={1}>
                           <Image
-                            src={`${IMG_URL}${item?.product?.pdImage[0]}`}
+                            src={`${item?.product?.pdImage[0]}`}
                             className="img-fluid"
                             alt={item?.product?.name}
                           />

@@ -15,125 +15,144 @@ async function generateOrderId() {
 }
 
 const generateOrderNumber = async () => Math.random().toString(36).substring(2, 12).toUpperCase();
+
 //create order
 const createOrder = asyncHandler(async (req, res) => {
 
-  const orderId = await generateOrderId();
-  const orderNumber = await generateOrderNumber()
-  let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
-  if (!items || items.length === 0) {
-    res.status(STATUS_CODES.NOT_FOUND)
-    throw new Error("No items in the order");
-  }
-
-  const user = await User.findById(userId);
-
-  if (!user) {
-    res.status(STATUS_CODES.NOT_FOUND)
-    throw new Error("User not found");
-  }
-
-  const validatedItems = [];
-  for (const item of items) {
-    if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
-      res.status(STATUS_CODES.BAD_REQUEST)
-      throw new Error("Invalid product ID");
-    }
-    if (!item.qty || item.qty < 1) {
-      res.status(STATUS_CODES.BAD_REQUEST)
-      throw new Error(`Invalid quantity for product ${item.product}`);
-    }
-    validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
-  }
-
-  if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
-    res.status(STATUS_CODES.BAD_REQUEST)
-    throw new Error("COD payment is not available for orders above ₹ 1000");
-  }
-  if (paymentMethod === "Wallet") {
-    const wallet = await Wallet.findOne({ userId: user._id });
-    if (!wallet || wallet.balance < totalPrice) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const orderId = await generateOrderId();
+    const orderNumber = await generateOrderNumber()
+    let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
+    if (!items || items.length === 0) {
       res.status(STATUS_CODES.NOT_FOUND)
-      throw new Error("Insufficient balance in wallet");
-    }
-    wallet.balance -= totalPrice;
-    wallet.transactions.push({
-      amount: totalPrice,
-      type: "Debit",
-      description: `Order Payment - ${orderNumber}`,
-    });
-    await wallet.save();
-  }
-
-  let payment = new Payment({
-    userId: user._id,
-    method: paymentMethod,
-    amount: totalPrice,
-
-  });
-
-  if (paymentMethod === "Razorpay" && razorpay_order_id !== "") {
-    payment.razorpay_order_id = razorpay_order_id;
-    payment.status = paymentStatus;
-  }
-  if (paymentMethod == "Wallet") {
-    payment.status = "Success";
-    paymentStatus = "Success"
-  }
-  if (!isNaN(couponDiscount)) {
-    payment.couponDiscount = couponDiscount;
-  }
-  await payment.save()
-
-  const order = new Order({
-    orderId,
-    orderNumber,
-    userId,
-    items: validatedItems,
-    shippingAddress,
-    paymentMethod,
-    paymentStatus: paymentMethod === "Cash On Delivery" ? "Success" : paymentStatus,
-    paymentId: payment._id,
-    shippingPrice,
-    status: "Not completed",
-    totalPrice,
-    couponId,
-    couponDiscount,
-    totalDiscount,
-    tax
-  });
-
-  const createdOrder = await order.save();
-
-  if (user.coupon) {
-    const coupon = await Coupon.findById(user.coupon);
-    if (coupon && !coupon.usedUsers.includes(user._id)) {
-      coupon.usedUsers.push(user._id);
-      coupon.limit -= 1;
-      await coupon.save();
+      throw new Error("No items in the order");
     }
 
-    user.coupon = null;
-    await user.save();
-  }
+    const user = await User.findById(userId).session(session)
 
-  await Promise.all(
-    createdOrder.items.map(async (item) => {
-      const product = await Product.findById(item.product);
-      if (product) {
-        product.quantity -= item.qty;
-        await product.save();
+    if (!user) {
+      res.status(STATUS_CODES.NOT_FOUND)
+      throw new Error("User not found");
+    }
+
+    const validatedItems = [];
+    for (const item of items) {
+      if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+        res.status(STATUS_CODES.BAD_REQUEST)
+        throw new Error("Invalid product ID");
       }
-    })
-  );
+      if (!item.qty || item.qty < 1) {
+        res.status(STATUS_CODES.BAD_REQUEST)
+        throw new Error(`Invalid quantity for product ${item.product}`);
+      }
+      const product = await Product.findById(item.product).session(session);
+      if (!product || product.quantity < item.qty) {
+        throw new Error(`Insufficient stock for product: ${product.name}`);
+      }
 
-  await Payment.updateOne(
-    { _id: payment._id },
-    { $set: { orderId: createdOrder._id } }
-  )
+      product.quantity -= item.qty;
+      await product.save({ session });
 
-  await user.save();
-  return res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
+      validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
+    }
+
+    if (paymentMethod === "Cash On Delivery" && totalPrice > 1000) {
+      res.status(STATUS_CODES.BAD_REQUEST)
+      throw new Error("COD payment is not available for orders above ₹ 1000");
+    }
+    if (paymentMethod === "Wallet") {
+      const wallet = await Wallet.findOne({ userId: user._id });
+      if (!wallet || wallet.balance < totalPrice) {
+        res.status(STATUS_CODES.NOT_FOUND)
+        throw new Error("Insufficient balance in wallet");
+      }
+      wallet.balance -= totalPrice;
+      wallet.transactions.push({
+        amount: totalPrice,
+        type: "Debit",
+        description: `Order Payment - ${orderNumber}`,
+      });
+      await wallet.save({ session });
+    }
+
+    let payment = new Payment({
+      userId: user._id,
+      method: paymentMethod,
+      amount: totalPrice,
+
+    });
+
+    if (paymentMethod === "Razorpay" && razorpay_order_id !== "") {
+      payment.razorpay_order_id = razorpay_order_id;
+      payment.status = paymentStatus;
+    }
+    if (paymentMethod == "Wallet") {
+      payment.status = "Success";
+      paymentStatus = "Success"
+    }
+    if (!isNaN(couponDiscount)) {
+      payment.couponDiscount = couponDiscount;
+    }
+    await payment.save()
+
+    const order = new Order({
+      orderId,
+      orderNumber,
+      userId,
+      items: validatedItems,
+      shippingAddress,
+      paymentMethod,
+      paymentStatus: paymentMethod === "Cash On Delivery" ? "Success" : paymentStatus,
+      paymentId: payment._id,
+      shippingPrice,
+      status: "Not completed",
+      totalPrice,
+      couponId,
+      couponDiscount,
+      totalDiscount,
+      tax
+    });
+
+    const createdOrder = await order.save({ session });
+
+    if (user.coupon) {
+      const coupon = await Coupon.findById(user.coupon);
+      if (coupon && !coupon.usedUsers.includes(user._id)) {
+        coupon.usedUsers.push(user._id);
+        coupon.limit -= 1;
+        await coupon.save({ session });
+      }
+
+      user.coupon = null;
+      await user.save({ session });
+    }
+
+    // await Promise.all(
+    //   createdOrder.items.map(async (item) => {
+    //     const product = await Product.findById(item.product);
+    //     if (product) {
+    //       product.quantity -= item.qty;
+    //       await product.save();
+    //     }
+    //   })
+    // );
+
+    await Payment.updateOne(
+      { _id: payment._id },
+      { $set: { orderId: createdOrder._id } },
+      { session }
+    )
+    await session.commitTransaction();
+    session.endSession();
+    return res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
+  } catch (error) {
+
+    await session.abortTransaction();
+    session.endSession();
+    res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: error.message });
+  }
 });
 
 
@@ -189,12 +208,12 @@ const cancelOrder = asyncHandler(async (req, res) => {
   orderItem.cancel_reason = cancelReason || "Not specified";
 
   await order.save();
-   req.io.emit('orderStatusUpdated', {
-        orderId: order._id,
-        item:orderItem,
-        newStatus: 'Cancelled',
-        message: `Order ${order.orderId} was cancelled.`
-    });
+  req.io.emit('orderStatusUpdated', {
+    orderId: order._id,
+    item: orderItem,
+    newStatus: 'Cancelled',
+    message: `Order ${order.orderId} was cancelled.`
+  });
   const payment = await Payment.findOne({ orderId: order._id });
   if (!payment) {
     res.status(STATUS_CODES.NOT_FOUND)

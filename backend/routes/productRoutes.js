@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlewares/authMiddleware')
 const { addProduct, deleteProduct, readProduct, deleteImage, updateProduct, fetchProducts, newProducts, fetchRelatedProducts, filterProducts,getQuantity, updateWishlist, fetchWishlist, removeFromWishlist } = require('../controllers/productController')
-const imageUpload = require('../imageUpload')
+const { imageUpload } = require('../config/cloudConfig')
+
 
 //product routes
 router.route('/new').get(newProducts)

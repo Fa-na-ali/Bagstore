@@ -348,7 +348,7 @@ const AdminDashboard = () => {
                         {dashboardData.topSellingProducts.map((product, index) => (
                           <ListGroup.Item key={index} className="d-flex align-items-center">
                             <img
-                              src={`${IMG_URL}${product.productInfo?.pdImage[0]}`}
+                              src={`${product.productInfo?.pdImage[0]}`}
                               alt={product.productInfo?.name}
                               width={50}
                               height={50}

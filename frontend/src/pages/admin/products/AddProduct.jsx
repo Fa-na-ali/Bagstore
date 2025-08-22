@@ -39,7 +39,7 @@ const AddProduct = () => {
     const newErrors = {};
     if (!name || name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
     if (!category) newErrors.category = 'Category is required';
-    if (!description || description.length > 50) newErrors.description = 'Description should be of atmost 50 characters long';
+    if (!description || description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
     if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
     if (!color) newErrors.color = 'Color is required';
     if (!brand || brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
@@ -102,6 +102,7 @@ const AddProduct = () => {
       toast.success('Product added successfully!');
       navigate('/admin/products')
     } catch (error) {
+      console.log(error)
       toast.error(error?.data?.message || 'Failed to add product');
     }
   };

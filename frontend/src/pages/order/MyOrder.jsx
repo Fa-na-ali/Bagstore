@@ -152,7 +152,7 @@ const MyOrder = () => {
                                     <div className="d-flex justify-content-between align-items-center">
                                       <div className="d-flex align-items-center" style={{ flex: "2" }}>
                                         <Image
-                                          src={`${IMG_URL}${item?.product?.pdImage[0] || "placeholder.jpg"}`}
+                                          src={`${item?.product?.pdImage[0] || "placeholder.jpg"}`}
                                           className="img-fluid rounded-3"
                                           alt="Shopping item"
                                           style={{ width: "80px", height: "80px", objectFit: "cover" }}

@@ -28,7 +28,7 @@ const Account = () => {
 
     useEffect(() => {
         if (user?.image) {
-            setFiles(user.image.map((img) => `${IMG_URL}${img}`));
+            setFiles(user.image.map((img) => `${img}`));
         }
         refetch();
     }, [refetch, user]);

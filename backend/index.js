@@ -24,6 +24,10 @@ app.use(cors({
   origin: ORIGIN,
   credentials: true,
 }));
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  next();
+});
 const userRouter = require('./routes/userRoutes')
 const productRouter = require('./routes/productRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')

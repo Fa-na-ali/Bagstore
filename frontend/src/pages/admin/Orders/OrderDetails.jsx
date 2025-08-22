@@ -154,7 +154,7 @@ const OrderDetails = () => {
                       <td>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={`${IMG_URL}${item?.product?.pdImage[0]}`}
+                            src={`${item?.product?.pdImage[0]}`}
                             className="img-fluid rounded-3"
                             style={{ width: "120px" }}
                             alt="Book"
