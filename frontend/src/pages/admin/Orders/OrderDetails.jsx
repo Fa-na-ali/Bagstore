@@ -4,8 +4,8 @@ import { Container, Row, Col, Card, Button, Table, Image, Form } from "react-boo
 import { useGetOrderDetailsQuery, useSetItemStatusMutation } from '../../../redux/api/ordersApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar'
 import { toast } from 'react-toastify'
-import { IMG_URL } from '../../../redux/constants';
 import { io } from 'socket.io-client';
+import { ORDER_MESSAGES } from '../../../constants/messageConstants';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
@@ -22,7 +22,7 @@ const OrderDetails = () => {
   useEffect(() => {
     socket.on('orderStatusUpdated', (updatedOrder) => {
       if (updatedOrder.orderId === id) {
-        toast.success("Order status updated");
+        toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS);
         refetch();
       }
     });
@@ -72,9 +72,9 @@ const OrderDetails = () => {
     try {
       await setItemStatus({ status, item, id });
       refetch()
-      toast.success("Item status updated successfully")
+      toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS)
     } catch (error) {
-      console.error("Error updating item status:", error);
+      toast.error(ORDER_MESSAGES.ORDER_STATUS_UPDATE_FAILURE);
     }
   };
 

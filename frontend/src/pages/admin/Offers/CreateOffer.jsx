@@ -5,6 +5,8 @@ import "flatpickr/dist/flatpickr.min.css";
 import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddOfferMutation } from "../../../redux/api/usersApiSlice";
 import { useNavigate } from "react-router";
+import { OFFER_MESSAGES } from "../../../constants/messageConstants";
+import {toast} from "react-toastify";
 
 const CreateOffer = () => {
     const [formData, setFormData] = useState({
@@ -63,7 +65,7 @@ const CreateOffer = () => {
             navigate('/admin/offers')
             toast.success(response.message);
         } catch (err) {
-            toast.error(err.data?.message || "Failed to add coupon");
+            toast.error(err.data?.message || `${OFFER_MESSAGES.OFFER_ADD_FAILURE}`);
         }
 
     };

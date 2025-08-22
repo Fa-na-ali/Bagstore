@@ -5,6 +5,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import AdminSidebar from "../../../components/AdminSidebar";
 import { useGetCouponByIdQuery, useUpdateCouponMutation } from "../../../redux/api/usersApiSlice";
 import { useNavigate, useParams } from "react-router";
+import { COUPON_MESSAGES } from "../../../constants/messageConstants";
 
 const EditCoupon = () => {
     const { id } = useParams();
@@ -74,10 +75,10 @@ const EditCoupon = () => {
         try {
             await update({ id, ...formData }).unwrap()
             navigate("/admin/coupons");
-            toast.success('Coupon Edited successfully!');
+            toast.success(COUPON_MESSAGES.COUPON_UPDATE_SUCCESS);
 
         } catch (error) {
-            console.error("Error updating coupon:", error);
+            toast.error(COUPON_MESSAGES.COUPON_UPDATE_FAILURE);
         }
     };
 

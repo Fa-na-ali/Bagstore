@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
 import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
-import { IMG_URL, PLACEHOLDER_URL } from '../redux/constants';
+import { CART_MESSAGES, WISHLIST_MESSAGES } from '../constants/messageConstants';
 
 const Cards = ({ products }) => {
   const { data: off } = useGetAllOffersToAddQuery()
@@ -39,7 +39,7 @@ const Cards = ({ products }) => {
       discountedPrice: finalPrice,
       discount: (product.price - finalPrice), qty: 1
     }));
-    toast.success('Item added to cart');
+    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
 
   };
 
@@ -93,20 +93,18 @@ const Cards = ({ products }) => {
       if (isLiked) {
 
         const res = await update({ productId, color }).unwrap();
-        console.log("res", res)
         if (res.status === 'success')
-          toast.success("Added to Wishlist")
+          toast.success(WISHLIST_MESSAGES.ADD_SUCCESS)
       } else {
 
         const res = await update({ productId, color }).unwrap();
         console.log("res", res)
-        toast.success("Removed from Wishlist")
+        toast.success(WISHLIST_MESSAGES.REMOVE_SUCCESS)
 
       }
 
     } catch (error) {
-      console.error('Error updating wishlist:', error);
-      toast.error('Failed to update wishlist');
+      toast.error(WISHLIST_MESSAGES.UPDATE_FAILURE);
       setLikedProducts((prev) => ({ ...prev, [productId]: !isLiked }));
     }
   };
@@ -210,5 +208,7 @@ const Cards = ({ products }) => {
     </>
   );
 };
+
+
 
 export default Cards;

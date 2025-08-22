@@ -5,6 +5,7 @@ import Ttable from '../../../components/Ttable'
 import { useDeleteUserMutation, useFetchUsersQuery } from '../../../redux/api/usersApiSlice'
 import { toast } from 'react-toastify'
 import debounce from 'lodash.debounce'
+import { USER_MESSAGES } from '../../../constants/messageConstants'
 
 
 const UserManagement = () => {
@@ -57,10 +58,10 @@ const UserManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteUser(id);
-        toast.success(" Deleted Successfully")
+        toast.success(USER_MESSAGES.USER_DLT_SUCCESS)
 
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${USER_MESSAGES.USER_DLT_FAILURE}`);
       }
     }
   };

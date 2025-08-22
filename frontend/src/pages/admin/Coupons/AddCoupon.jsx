@@ -6,6 +6,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddCouponMutation } from "../../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
+import { COUPON_MESSAGES } from "../../../constants/messageConstants";
 
 const AddCoupon = () => {
     const [formData, setFormData] = useState({
@@ -56,7 +57,7 @@ const AddCoupon = () => {
             toast.success(response.message);
             navigate('/admin/coupons')
         } catch (err) {
-            toast.error(err.data?.message || "Failed to add coupon");
+            toast.error(err.data?.message || `${COUPON_MESSAGES.COUPON_ADD_FAILURE}`);
         }
     };
 

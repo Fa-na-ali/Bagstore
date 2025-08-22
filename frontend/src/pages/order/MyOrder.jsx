@@ -3,9 +3,9 @@ import { Container, Row, Col, Card, Button, Form, Image, Modal, InputGroup, Form
 import { useCancelOrderMutation, useGetMyOrdersQuery, useReturnOrderMutation } from '../../redux/api/ordersApiSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router';
-import { IMG_URL } from '../../redux/constants';
 import RetryButton from '../../components/RetryButton';
 import debounce from 'lodash.debounce';
+import { ORDER_MESSAGES } from '../../constants/messageConstants';
 
 const MyOrder = () => {
   const [inputValue, setInputValue] = useState('');
@@ -54,7 +54,6 @@ const MyOrder = () => {
   const handleCancelOrder = async (orderId, item) => {
     try {
       setShowReasonModal(false);
-
       const response = await cancelOrder({
         orderId: selectedOrder,
         item: selectedProduct,
@@ -62,7 +61,7 @@ const MyOrder = () => {
       }).unwrap();
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to cancel order. Please try again.");
+      toast.error(error?.data?.message ||ORDER_MESSAGES.ORDER_CANCEL_FAILURE);
     }
 
   };
@@ -83,10 +82,10 @@ const MyOrder = () => {
         returnReason: selectedReason,
       }).unwrap();
       if (response)
-        toast.success("Return request sent")
+        toast.success(ORDER_MESSAGES.ORDER_RETURN_MSG)
       refetch();
     } catch (error) {
-      toast.error(error)
+      toast.error(error||`${ORDER_MESSAGES.ORDER_RETURN_FAILURE}`)
 
     }
   };

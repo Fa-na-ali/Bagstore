@@ -16,6 +16,7 @@ import {
   useGetReferralDetailsQuery,
 
 } from '../../redux/api/usersApiSlice';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const Referrals = () => {
   const { data: referralData, isLoading, error, refetch } = useGetReferralDetailsQuery();
@@ -33,7 +34,7 @@ const Referrals = () => {
       refetch(); // Refresh the referral data
 
     } catch (err) {
-      toast.error("Failed to generate code");
+      toast.error(USER_MESSAGES.USER_REFERRAL_CODE_ERROR);
     }
   };
 

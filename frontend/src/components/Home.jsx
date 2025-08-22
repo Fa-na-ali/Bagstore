@@ -7,7 +7,6 @@ import handbag from '../assets/images/handbag.webp'
 import wallet from '../assets/images/wallet.webp'
 import { useGetNewProductsQuery } from '../redux/api/productApiSlice';
 import { useSelector } from 'react-redux';
-import { IMG_URL } from '../redux/constants';
 
 const Cards = lazy(() => import('./Cards'));
 
@@ -22,9 +21,6 @@ const Home = () => {
     { src: handbag, modalId: 2 },
     { src: wallet, modalId: 3 },
   ];
-
-  const productImages = products?.pdImage?.map((img) => `${IMG_URL}${img}`);
-  const { refreshToken } = useSelector(state => state.auth)
 
   return (
     <>

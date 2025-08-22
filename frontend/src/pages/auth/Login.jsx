@@ -11,6 +11,7 @@ import { useLoginMutation } from "../../redux/api/usersApiSlice";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
 import { GoogleWrapper } from "../../App";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 //Validation schema
 const validationSchema = yup.object().shape({
@@ -41,13 +42,13 @@ const Login = () => {
           navigate("/");
         }
         if (!res.user.isExist)
-          toast.error("You are blocked");
+          toast.error(USER_MESSAGES.USER_BLOCK_MSG);
 
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error(USER_MESSAGES.USER_LOGIN_ERROR);
       }
     } catch (err) {
-      toast.error(err.data?.message || "Login failed. Please check your credentials.");
+      toast.error(err.data?.message || `${USER_MESSAGES.USER_LOGIN_FAILURE}`);
     }
   };
 

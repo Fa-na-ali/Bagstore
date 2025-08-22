@@ -7,6 +7,7 @@ import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import debounce from 'lodash.debounce';
+import { CATEGORY_MESSAGES } from '../../../constants/messageConstants';
 
 const CategoryManagement = () => {
 
@@ -54,10 +55,10 @@ const CategoryManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteCategory(id);
-        toast.success(" Deleted Successfully")
+        toast.success(CATEGORY_MESSAGES.CATEGORY_DLT_SUCCESS)
         load();
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${CATEGORY_MESSAGES.CATEGORY_DLT_FAILURE}`);
       }
     }
   };

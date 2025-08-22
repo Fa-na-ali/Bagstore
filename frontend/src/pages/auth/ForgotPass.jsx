@@ -3,6 +3,7 @@ import { Card, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useForgotPasswordMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const ForgotPass = () => {
 
@@ -14,15 +15,15 @@ const ForgotPass = () => {
   const handleClick = async () => {
 
     if (!email) {
-      toast.error("Please enter your email.");
+      toast.error(USER_MESSAGES.USER_VALIDATION_MSG);
       return;
     }
     try {
       const { data } = await forgotPassword({ email }).unwrap();
-      toast.success(data?.message || "OTP sent to your email!");
+      toast.success(data?.message || `${USER_MESSAGES.USER_OTP_SENT}`);
       navigate(`/verify-otp-password?email=${email}`);
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to send OTP.");
+      toast.error(error?.data?.message || `${USER_MESSAGES.USER_OTP_SENT_FAILURE}`);
     }
   }
 

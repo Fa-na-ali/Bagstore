@@ -5,7 +5,7 @@ import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import { useCreateOrderWalletMutation, useGetMyWalletQuery, useGetRazorpayKeyQuery, useUpdateWalletMutation } from '../../redux/api/walletApiSlice';
-import { LOGO_URL, WALLET_IMG_URL } from '../../redux/constants';
+import { LOGO_URL, WALLET_IMG_URL } from '../../constants/constants';
 
 const Wallet = () => {
   const { userInfo } = useSelector((state) => state.auth);

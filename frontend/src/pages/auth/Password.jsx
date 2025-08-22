@@ -3,6 +3,7 @@ import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { useLocation, useNavigate } from 'react-router';
 import { useResetPasswordMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 
 const Password = () => {
@@ -49,7 +50,7 @@ const Password = () => {
             toast.success(response.message);
             navigate("/login");
         } catch (error) {
-            toast.error(error?.data?.message || "Something went wrong");
+            toast.error(error?.data?.message || `${USER_MESSAGES.USER_PASSWD_RESET_FAILURE}`);
         }
     };
 

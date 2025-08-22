@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap'
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify'
 import { useGetAddressQuery, useUpdateAddressMutation } from '../../redux/api/usersApiSlice';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const EditAddress = () => {
     const { id } = useParams();
@@ -45,10 +46,10 @@ const EditAddress = () => {
         e.preventDefault();
         try {
             await updateAddress({ id, ...formData }).unwrap();
-            toast.success("User Edited successfully!");
+            toast.success(USER_MESSAGES.USER_ADDRESS_EDIT_SUCCESS);
             navigate(-1);
         } catch (error) {
-            toast.error("Failed to update address");
+            toast.error(USER_MESSAGES.USER_ADDRESS_EDIT_FAILURE);
         }
     };
 

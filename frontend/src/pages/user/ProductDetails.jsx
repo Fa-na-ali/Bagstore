@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/features/cart/cartSlice';
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice';
-import { IMG_URL } from '../../redux/constants';
+import { CART_MESSAGES } from '../../constants/messageConstants';
 
 const Cards = lazy(() => import('../../components/Cards'));
 
@@ -74,7 +74,7 @@ const ProductDetails = () => {
       discountedPrice: salesPrices,
       discount: (product.price - salesPrices), qty: 1
     }));
-    toast.success("Item added successfully");
+    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
   };
 
   return (
@@ -101,11 +101,11 @@ const ProductDetails = () => {
                 {product.pdImage.slice(0, 5).map((image, index) => (
                   <Image
                     key={index}
-                    src={`${IMG_URL}${image}`}
+                    src={`${image}`}
                     alt={`Thumbnail ${index + 1}`}
                     rounded
                     className="thumbnail active"
-                    onClick={() => document.getElementById('mainImage').src = `${IMG_URL}${image}`}
+                    onClick={() => document.getElementById('mainImage').src = `${image}`}
                     style={{ width: "80px", height: "80px", objectFit: "cover", cursor: "pointer" }}
                   />
                 ))}
@@ -182,9 +182,9 @@ const ProductDetails = () => {
                 disabled={product?.quantity <= 0 || !product?.category?.isExist}>
                 <i className="bi bi-cart-plus"></i> Add to Cart
               </Button>
-              <Button variant="outline-secondary" size="lg" className="mb-3">
+              {/* <Button variant="outline-secondary" size="lg" className="mb-3">
                 <i className="bi bi-heart"></i> Add to Wishlist
-              </Button>
+              </Button> */}
 
             </Col>
           </Row>

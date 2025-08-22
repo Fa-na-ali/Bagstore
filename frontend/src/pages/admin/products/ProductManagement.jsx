@@ -7,6 +7,7 @@ import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { useDeleteProductMutation, useGetProductsQuery, } from '../../../redux/api/productApiSlice';
 import debounce from 'lodash.debounce';
+import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
 
 const ProductManagement = () => {
 
@@ -58,11 +59,11 @@ const ProductManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteProduct(id);
-        toast.success(" Deleted Successfully")
+        toast.success(PRODUCT_MESSAGES.PRODUCT_DLT_SUCCESS)
         load();
 
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_DLT_FAILURE}`);
       }
     }
   };

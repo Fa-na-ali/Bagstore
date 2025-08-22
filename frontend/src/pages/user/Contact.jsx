@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
-import { CONTACT_URL } from '../../redux/constants';
+import { CONTACT_URL } from '../../constants/constants';
 
 const Contact = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { ERROR_MESSAGE } from "./constants/messageConstants";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -13,7 +14,7 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        toast.error("Error caught by ErrorBoundary:");
+        toast.error(ERROR_MESSAGE);
     }
 
     render() {

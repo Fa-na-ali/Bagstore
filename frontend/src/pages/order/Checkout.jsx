@@ -11,7 +11,7 @@ import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
 import { useRef } from "react";
-import { IMG_URL } from "../../redux/constants";
+import { CART_MESSAGES, COUPON_MESSAGES, ORDER_MESSAGES, PAYMENT_MESSAGES } from "../../constants/messageConstants";
 
 const CouponModal = lazy(() => import("./CouponModal"));
 
@@ -105,7 +105,7 @@ const Checkout = () => {
           toast.error(res.message);
         }
       } catch (error) {
-        toast.error("Failed to apply coupon.");
+        toast.error(COUPON_MESSAGES.COUPON_APPLY_FAILURE);
       }
     }
   };
@@ -133,7 +133,7 @@ const Checkout = () => {
           toast.error(res.message)
       }
     } catch (error) {
-      toast.error("Failed to remove coupon.");
+      toast.error(COUPON_MESSAGES.COUPON_REMOVE_FAILURE);
     }
   };
 
@@ -184,7 +184,7 @@ const Checkout = () => {
       });
 
     } catch (error) {
-      toast.error("Payment initialization failed");
+      toast.error(PAYMENT_MESSAGES.PAYMENT_INITIALIZATION_FAILURE);
     }
   };
 
@@ -193,7 +193,7 @@ const Checkout = () => {
 
     setShowModal(false);
     if (!cartItems || cartItems.length === 0) {
-      toast.error("Your cart is empty. Please add items before placing an order.");
+      toast.error(CART_MESSAGES.CART_EMPTY_MSG);
       return;
     }
     if (selectedPayment === "Razorpay" && razorpay_order_id === "") {
@@ -217,7 +217,7 @@ const Checkout = () => {
       const id = res?.createdOrder?._id
       if (id) {
         dispatch(clearCartItems());
-        toast.success("Order Placed successfully");
+        toast.success(ORDER_MESSAGES.ORDER_SUCCESS);
 
         navigate(`/order-success?id=${id}`);
       }

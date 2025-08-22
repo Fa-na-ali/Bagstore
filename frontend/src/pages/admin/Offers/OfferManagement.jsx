@@ -7,6 +7,7 @@ import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { useDeleteOfferMutation, useGetAllOffersQuery } from '../../../redux/api/usersApiSlice';
 import debounce from 'lodash.debounce';
+import { OFFER_MESSAGES } from '../../../constants/messageConstants';
 
 const OfferManagement = () => {
 
@@ -59,11 +60,11 @@ const OfferManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteOffer(id);
-        toast.success(" Deleted Successfully")
+        toast.success(OFFER_MESSAGES.OFFER_DLT_SUCCESS)
         load();
 
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${OFFER_MESSAGES.OFFER_DLT_FAILURE}`);
       }
     }
   };

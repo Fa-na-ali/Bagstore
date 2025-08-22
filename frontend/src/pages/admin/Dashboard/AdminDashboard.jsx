@@ -16,7 +16,6 @@ import {
 } from 'react-bootstrap';
 import { Chart } from 'chart.js/auto';
 import { useGetDashboardDataQuery } from '../../../redux/api/dashboardApiSlice';
-import { IMG_URL } from '../../../redux/constants';
 
 //to get months
 const getMonthName = (monthIndex) => {

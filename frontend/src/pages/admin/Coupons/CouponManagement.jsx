@@ -7,6 +7,7 @@ import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { useDeleteCouponMutation, useGetAllCouponsQuery } from '../../../redux/api/usersApiSlice';
 import debounce from 'lodash.debounce';
+import { COUPON_MESSAGES } from '../../../constants/messageConstants';
 
 const CouponManagement = () => {
 
@@ -59,11 +60,11 @@ const CouponManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteCoupon(id);
-        toast.success(" Deleted Successfully")
+        toast.success(COUPON_MESSAGES.COUPON_DLT_SUCCESS)
         load();
 
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message ||`${COUPON_MESSAGES.COUPON_DLT_FAILURE}` );
       }
     }
   };

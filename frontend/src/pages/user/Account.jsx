@@ -7,8 +7,8 @@ import { useDeleteAddressMutation, useDeleteUserImageMutation, useProfileQuery, 
 import { toast } from "react-toastify";
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import { IMG_URL } from "../../redux/constants";
-
+import { USERS_URL } from "../../constants/constants";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 const Account = () => {
 
@@ -38,10 +38,10 @@ const Account = () => {
         if (window.confirm("Are you sure you want to delete this address?")) {
             try {
                 await deleteAddress(id).unwrap();
-                toast.success("Address deleted successfully!");
+                toast.success(USER_MESSAGES.USER_ADDRESS_DLT_SUCCESS);
                 refetch();
             } catch (error) {
-                toast.error("Error deleting address.");
+                toast.error(USER_MESSAGES.USER_ADDRESS_DLT_FAILURE);
             }
         }
     };
@@ -103,10 +103,10 @@ const Account = () => {
         convertedFiles.forEach((file) => userData.append("image", file));
         try {
             const { data } = await upload({ id: user?._id, userData }).unwrap()
-            toast.success('Profile pic added successfully!');
+            toast.success(USER_MESSAGES.USER_PIC_SUCCESS);
             refetch();
         } catch (error) {
-            toast.error(error?.data?.message || 'Failed to edit product');
+            toast.error(error?.data?.message || USER_MESSAGES.USER_PIC_EDIT_FAILURE);
         }
     };
 
@@ -121,7 +121,7 @@ const Account = () => {
             setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
 
         } catch (error) {
-            toast.error("Error deleting image:");
+            toast.error(USER_MESSAGES.USER_PIC_DLT_FAILURE);
         }
     };
 

@@ -7,7 +7,8 @@ import { useDispatch } from 'react-redux'
 import { addToCart } from '../../redux/features/cart/cartSlice'
 import { toast } from 'react-toastify'
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice'
-import { IMG_URL, PLACEHOLDER_URL } from '../../redux/constants'
+import { PLACEHOLDER_URL } from '../../constants/constants'
+import { CART_MESSAGES, WISHLIST_MESSAGES } from '../../constants/messageConstants'
 
 const Wishlist = () => {
   const [discounts, setDiscounts] = useState({});
@@ -73,7 +74,7 @@ const Wishlist = () => {
       discountedPrice: finalPrice,
       discount: (product.price - finalPrice), qty: 1
     }));
-    toast.success('Item added to cart');
+    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
     removeHandler(product)
 
   };
@@ -84,7 +85,7 @@ const Wishlist = () => {
       const res = await update({ productId, }).unwrap();
       refetch();
     } catch (error) {
-      toast.error("Error removing product:");
+      toast.error(WISHLIST_MESSAGES.REMOVE_FAILURE);
     }
 
   }

@@ -6,6 +6,7 @@ import { useAddCategoryMutation } from "../../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { useGetAllOffersToAddQuery } from "../../../redux/api/usersApiSlice";
+import { CATEGORY_MESSAGES } from "../../../constants/messageConstants";
 
 const AddCategory = () => {
     const { data: off } = useGetAllOffersToAddQuery()
@@ -19,7 +20,7 @@ const AddCategory = () => {
         e.preventDefault();
 
         if (!name.trim() || name.length > 15) {
-            toast.error("Category must be of atmost 15 characters long");
+            toast.error(CATEGORY_MESSAGES.VALIDATION_MSG);
             return;
         }
 
@@ -27,12 +28,12 @@ const AddCategory = () => {
             const result = await createCategory({ name, offer }).unwrap();
             setName("");
             if (result?.category?.name) {
-                toast.success(`${result?.category?.name} category created successfully.`);
+                toast.success(`${result?.category?.name} ${CATEGORY_MESSAGES.CATEGORY_ADD_SUCCESS}`);
                 navigate('/admin/category')
             } else if (result.message) {
                 toast.error(result.message);
             } else {
-                toast.error("Unexpected response, try again.");
+                toast.error(CATEGORY_MESSAGES.CATEGORY_ADD_FAILURE);
             }
         } catch (error) {
             toast.error(error?.data.message);

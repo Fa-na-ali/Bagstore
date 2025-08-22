@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 import { useNavigate } from 'react-router';
 import { useAddAddressMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const AddAddress = () => {
     const [name, setName] = useState("")
@@ -25,11 +26,11 @@ const AddAddress = () => {
                 name, houseName, town, street, state, zipcode, country, phone
             }).unwrap();
 
-            toast.success('Address added successfully!');
+            toast.success(USER_MESSAGES.USER_ADDRESS_ADD_SUCCESS);
             navigate(-1);
 
         } catch (error) {
-            toast.error(error?.data?.message || 'Failed to add address');
+            toast.error(error?.data?.message || `${USER_MESSAGES.USER_ADDRESS_ADD_FAILURE}`);
         }
     };
 

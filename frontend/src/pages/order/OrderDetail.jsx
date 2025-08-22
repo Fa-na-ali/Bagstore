@@ -5,8 +5,8 @@ import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-boo
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { toast } from "react-toastify";
-import { IMG_URL } from "../../redux/constants";
 import RetryButton from "../../components/RetryButton";
+import { ORDER_MESSAGES } from "../../constants/messageConstants";
 
 pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
 
@@ -43,7 +43,7 @@ const OrderDetail = () => {
       }).unwrap();
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to cancel order. Please try again.");
+      toast.error(error?.data?.message || `${ORDER_MESSAGES.ORDER_CANCEL_FAILURE}`);
     }
 
   };
@@ -64,10 +64,10 @@ const OrderDetail = () => {
         returnReason: selectedReason,
       }).unwrap();
       if (response)
-        toast.success("Return request sent")
+        toast.success(ORDER_MESSAGES.ORDER_RETURN_MSG)
       refetch();
     } catch (error) {
-      toast.error(error)
+      toast.error(error || `${ORDER_MESSAGES.ORDER_RETURN_FAILURE}`)
     }
   };
 

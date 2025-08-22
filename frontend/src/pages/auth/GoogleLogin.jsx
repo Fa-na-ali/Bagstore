@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { Button } from "react-bootstrap";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 const GoolgeLogin = (props) => {
     const [user, setUser] = useState(null);
@@ -28,16 +29,16 @@ const GoolgeLogin = (props) => {
                 }
                 else if (!isExist) {
 
-                    toast.error("You are blocked");
+                    toast.error(USER_MESSAGES.USER_BLOCK_MSG);
                     return;
                 }
 
             } else {
-                toast.error("Login Error")
+                toast.error(USER_MESSAGES.USER_LOGIN_ERROR)
             }
         } catch (e) {
            if (e.response?.data?.message) {
-           toast.error(e.response.data.message);
+           toast.error(e.response.data.message||`${USER_MESSAGES.USER_LOGIN_ERROR}`);
     }
         }
     };

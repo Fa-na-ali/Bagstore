@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useRegisterMutation } from "../../redux/api/usersApiSlice";
 import { GoogleWrapper } from "../../App";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 
 //  Yup validation schema
@@ -62,12 +63,12 @@ const Register = () => {
         confirmPassword: data.confirmPassword,
         referCode: data.referCode
       }).unwrap();
-      toast.success("User successfully registered");
+      toast.success(USER_MESSAGES.USER_REGISTER_SUCCESS);
       navigate(`/verify-otp?email=${data.email}`);
-      toast.success("OTP has been sent to your email.");
+      toast.success(USER_MESSAGES.USER_OTP_SENT);
 
     } catch (err) {
-      toast.error(err.data?.message || "Registration failed");
+      toast.error(err.data?.message || `${USER_MESSAGES.USER_REGISTER_FAILURE}`);
     }
   };
 

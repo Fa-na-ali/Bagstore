@@ -5,7 +5,6 @@ export const PRODUCT_URL = "/api/products";
 export const UPLOAD_URL = "/api/upload";
 export const ORDERS_URL = "/api/orders";
 export const WALLET_URL = "/api/wallet";
-export const IMG_URL = "http://localhost:5004/uploads/"
 export const PLACEHOLDER_URL = 'https://via.placeholder.com/300'
 export const NORMAL_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf'
 export const BOLD_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf'

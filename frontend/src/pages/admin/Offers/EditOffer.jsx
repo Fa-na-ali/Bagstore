@@ -6,6 +6,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useGetOfferByIdQuery, useUpdateOfferMutation } from "../../../redux/api/usersApiSlice";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
+import { OFFER_MESSAGES } from "../../../constants/messageConstants";
 
 const EditOffer = () => {
     const { id } = useParams();
@@ -78,10 +79,10 @@ const EditOffer = () => {
         try {
             await update({ id, ...formData }).unwrap()
             navigate("/admin/offers");
-            toast.success('Offer Edited successfully!');
+            toast.success(OFFER_MESSAGES.OFFER_UPDATE_SUCCESS);
 
         } catch (error) {
-            console.error("Error updating coupon:", error);
+            toast.error(OFFER_MESSAGES.OFFER_UPDATE_FAILURE);
         }
     };
 

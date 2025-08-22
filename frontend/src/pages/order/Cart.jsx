@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { removeFromCart, syncCartWithDatabase, updateCartItemQuantity, } from "../../redux/features/cart/cartSlice";
 import { useGetProductsByIdsQuery } from "../../redux/api/productApiSlice";
-import { IMG_URL } from "../../redux/constants";
+import {toast} from 'react-toastify'
 
 const Cart = () => {
 

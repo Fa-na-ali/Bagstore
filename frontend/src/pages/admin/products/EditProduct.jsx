@@ -12,7 +12,7 @@ import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
-import { IMG_URL } from '../../../redux/constants';
+import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
 
 
 const EditProduct = () => {
@@ -172,12 +172,12 @@ const EditProduct = () => {
 
     try {
       const { data } = await update({ id: product?._id, formData: productData }).unwrap()
-      toast.success('Product Edited successfully!');
+      toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
       refetch();
       navigate('/admin/products')
       
     } catch (error) {
-      toast.error(error?.data?.message || 'Failed to edit product');
+      toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_UPDATE_FAILURE}`);
     }
   };
 

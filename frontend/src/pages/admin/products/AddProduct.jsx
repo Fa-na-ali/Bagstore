@@ -10,6 +10,7 @@ import AdminSidebar from '../../../components/AdminSidebar';
 import { toast } from 'react-toastify';
 import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
+import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
 
 
 const AddProduct = () => {
@@ -92,18 +93,17 @@ const AddProduct = () => {
       productData.append("color", color);
       productData.append("size", size);
       if (croppedImages.length === 0) {
-        toast.error("Please upload at least one image.");
+        toast.error(PRODUCT_MESSAGES.IMG_UPLOAD_MSG);
         return;
       }
       croppedImages.forEach((file) => {
         productData.append('pdImage', file);
       });
       const { data } = await addProduct(productData).unwrap()
-      toast.success('Product added successfully!');
+      toast.success(PRODUCT_MESSAGES.PRODUCT_ADD_SUCCESS);
       navigate('/admin/products')
     } catch (error) {
-      console.log(error)
-      toast.error(error?.data?.message || 'Failed to add product');
+      toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_ADD_FAILURE}`);
     }
   };
 

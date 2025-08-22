@@ -1,5 +1,5 @@
 import { fetchBaseQuery, createApi } from "@reduxjs/toolkit/query/react";
-import { BASE_URL, USERS_URL } from "../constants";
+import { BASE_URL, USERS_URL } from "../../constants/constants";
 import { logout, updateAccessToken } from "../features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({

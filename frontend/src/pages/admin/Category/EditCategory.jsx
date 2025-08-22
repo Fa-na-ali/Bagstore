@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSpecificCategoriesQuery, useUpdateCategoryMutation } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+import { CATEGORY_MESSAGES } from '../../../constants/messageConstants';
 
 const EditCategory = () => {
     const { id } = useParams();
@@ -30,7 +31,7 @@ const EditCategory = () => {
         e.preventDefault();
 
         if (!updatingName.trim() || updatingName.length > 15) {
-            toast.error("Category must be of atmost 15 characters long");
+            toast.error(CATEGORY_MESSAGES.VALIDATION_MSG);
             return;
         }
 
@@ -40,11 +41,11 @@ const EditCategory = () => {
                 name: updatingName,
                 offer: offer,
             }).unwrap();
-            toast.success("Category updated successfully!");
+            toast.success(CATEGORY_MESSAGES.CATEGORY_UPDATE_SUCCESS);
             navigate("/admin/category");
             refetch();
         } catch (err) {
-            toast.error(err?.data?.message || "Failed to update the category.");
+            toast.error(err?.data?.message || `${CATEGORY_MESSAGES.CATEGORY_UPDATE_FAILURE}`);
         }
     };
     return (
