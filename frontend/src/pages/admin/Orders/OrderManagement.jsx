@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import AdminSidebar from '../../../components/AdminSidebar';
 import { useGetAllOrdersQuery } from '../../../redux/api/ordersApiSlice';
-import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
+import { Row, Col, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
 import Ttable from '../../../components/Ttable';
 import debounce from 'lodash.debounce';
 
@@ -12,7 +12,7 @@ const OrderManagement = () => {
   const [selectedSort, setSelectedSort] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading, error, refetch } = useGetAllOrdersQuery({
+  const { data } = useGetAllOrdersQuery({
     searchTerm: searchTerm || "",
     status: selectedSort || "",
     page: currentPage,

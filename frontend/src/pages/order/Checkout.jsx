@@ -5,7 +5,7 @@ import { FaTrash, } from "react-icons/fa";
 import { SiRazorpay } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation, useVerifyPaymentMutation } from "../../redux/api/usersApiSlice";
+import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation } from "../../redux/api/usersApiSlice";
 import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
@@ -35,10 +35,8 @@ const Checkout = () => {
   }));
 
   const [initiatePayment] = useInitiatePaymentMutation();
-  const [verifyPayment, { data }] = useVerifyPaymentMutation();
-  const [createOrder, { isLoading, error }] = useCreateOrderMutation();
+  const [createOrder] = useCreateOrderMutation();
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [saveShipping, setSaveShipping] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(0)
@@ -46,8 +44,8 @@ const Checkout = () => {
   const [cModal, setCModal] = useState(false);
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState(false);
-  const [applyCoupon, { isLoading: applyingCoupon }] = useApplyCouponMutation();
-  const [removeCoupon, { isLoading: removingCoupon }] = useRemoveCouponMutation();
+  const [applyCoupon] = useApplyCouponMutation();
+  const [removeCoupon] = useRemoveCouponMutation();
 
   useEffect(() => {
     refetch();
@@ -105,7 +103,7 @@ const Checkout = () => {
           toast.error(res.message);
         }
       } catch (error) {
-        toast.error(COUPON_MESSAGES.COUPON_APPLY_FAILURE);
+        toast.error(error?.data?.mesage || COUPON_MESSAGES.COUPON_APPLY_FAILURE);
       }
     }
   };
@@ -133,7 +131,7 @@ const Checkout = () => {
           toast.error(res.message)
       }
     } catch (error) {
-      toast.error(COUPON_MESSAGES.COUPON_REMOVE_FAILURE);
+      toast.error(error?.data?.message || COUPON_MESSAGES.COUPON_REMOVE_FAILURE);
     }
   };
 
@@ -172,7 +170,7 @@ const Checkout = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
       let paymentFailedHandled = false;
-      rzp.on('payment.failed', async function (response) {
+      rzp.on('payment.failed', async function () {
         if (paymentFailedHandled) return;
         paymentFailedHandled = true;
         await handlePlaceOrder(
@@ -184,7 +182,7 @@ const Checkout = () => {
       });
 
     } catch (error) {
-      toast.error(PAYMENT_MESSAGES.PAYMENT_INITIALIZATION_FAILURE);
+      toast.error(error?.data?.message || PAYMENT_MESSAGES.PAYMENT_INITIALIZATION_FAILURE);
     }
   };
 
@@ -376,7 +374,7 @@ const Checkout = () => {
 
                           <Row className="mb-3">
                             {address && address.length > 0 ? (
-                              address.map((address, index) => (
+                              address.map((address) => (
                                 <Col lg={4} key={address._id} className="mb-3">
                                   <Form.Check
                                     type="radio"

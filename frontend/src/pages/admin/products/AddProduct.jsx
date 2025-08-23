@@ -100,8 +100,10 @@ const AddProduct = () => {
         productData.append('pdImage', file);
       });
       const { data } = await addProduct(productData).unwrap()
-      toast.success(PRODUCT_MESSAGES.PRODUCT_ADD_SUCCESS);
-      navigate('/admin/products')
+      if (data) {
+        toast.success(PRODUCT_MESSAGES.PRODUCT_ADD_SUCCESS);
+        navigate('/admin/products')
+      }
     } catch (error) {
       toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_ADD_FAILURE}`);
     }

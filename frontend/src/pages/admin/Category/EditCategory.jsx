@@ -10,8 +10,8 @@ import { CATEGORY_MESSAGES } from '../../../constants/messageConstants';
 const EditCategory = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data, refetch, isLoading, isError } = useSpecificCategoriesQuery(id);
-    const [update, { isLoading: isUpdating }] = useUpdateCategoryMutation();
+    const { data, refetch } = useSpecificCategoriesQuery(id);
+    const [update] = useUpdateCategoryMutation();
     const { data: off } = useGetAllOffersToAddQuery()
     const offers = off?.offers
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Col, Container, Row, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
+import { Col, Container, Row, InputGroup, Form, FormControl } from 'react-bootstrap'
 import AdminSidebar from '../../../components/AdminSidebar'
 import Ttable from '../../../components/Ttable'
 import { useDeleteUserMutation, useFetchUsersQuery } from '../../../redux/api/usersApiSlice'
@@ -13,7 +13,7 @@ const UserManagement = () => {
   const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  let { data, refetch: load, error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
+  let { data,error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
   const user = data?.user || [];
   const [deleteUser] = useDeleteUserMutation();
 

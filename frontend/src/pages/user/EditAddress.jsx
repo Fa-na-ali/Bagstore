@@ -8,7 +8,7 @@ import { USER_MESSAGES } from '../../constants/messageConstants';
 const EditAddress = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data, refetch, isLoading } = useGetAddressQuery(id)
+    const { data} = useGetAddressQuery(id)
     const address = data?.address
     const [updateAddress] = useUpdateAddressMutation()
     const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ const EditAddress = () => {
             await updateAddress({ id, ...formData }).unwrap();
             toast.success(USER_MESSAGES.USER_ADDRESS_EDIT_SUCCESS);
             navigate(-1);
-        } catch (error) {
+        } catch {
             toast.error(USER_MESSAGES.USER_ADDRESS_EDIT_FAILURE);
         }
     };
@@ -201,7 +201,7 @@ const EditAddress = () => {
                                                 <option value="CW">Curaçao</option>
                                                 <option value="CY">Cyprus</option>
                                                 <option value="CZ">Czech Republic</option>
-                                                <option value="CI">Côte d'Ivoire</option>
+                                                <option value="CI">Côte d&apos;Ivoire</option>
                                                 <option value="DK">Denmark</option>
                                                 <option value="DJ">Djibouti</option>
                                                 <option value="DM">Dominica</option>
@@ -264,7 +264,7 @@ const EditAddress = () => {
                                                 <option value="XK">Kosovo</option>
                                                 <option value="KW">Kuwait</option>
                                                 <option value="KG">Kyrgyzstan</option>
-                                                <option value="LA">Lao People's Democratic Republic</option>
+                                                <option value="LA">Lao People&apos;s Democratic Republic</option>
                                                 <option value="LV">Latvia</option>
                                                 <option value="LB">Lebanon</option>
                                                 <option value="LS">Lesotho</option>

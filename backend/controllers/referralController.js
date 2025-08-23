@@ -4,7 +4,8 @@ const User = require("../models/userModel");
 const { generateReferralCode } = require("./userController");
 const mongoose = require('mongoose');
 const asyncHandler = require("../middlewares/asyncHandler");
-
+const { USER_ID_MSG } = require("../messageConstants");
+require('dotenv').config()
 
 const getReferralCode = asyncHandler(async (req, res) => {
 

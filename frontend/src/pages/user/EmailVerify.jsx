@@ -19,7 +19,7 @@ const EmailVerify = () => {
 
   const [verifyOtp, { isLoading }] = useVerifyOtpPassMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
-  const { data: user, refetch } = useProfileQuery()
+  const { refetch } = useProfileQuery()
   const [update] = useUpdateUserMutation()
   const { updatedUser } = useSelector((state) => state.auth);
 
@@ -94,7 +94,7 @@ const EmailVerify = () => {
       setOtp(new Array(6).fill(""));
       inputRefs.current[0]?.focus();
       setTimer(180);
-    } catch (err) {
+    } catch {
       toast.error(USER_MESSAGES.USER_OTP_RESEND_FAIL);
     }
   };

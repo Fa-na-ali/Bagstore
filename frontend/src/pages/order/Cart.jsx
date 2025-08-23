@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect} from "react";
 import { Container, Row, Col, Card, Button, Form, Image } from "react-bootstrap";
 import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";

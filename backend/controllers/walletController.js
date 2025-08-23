@@ -4,7 +4,7 @@ const Razorpay = require("razorpay");
 const User = require('../models/userModel');
 const STATUS_CODES = require("../statusCodes");
 const asyncHandler = require("../middlewares/asyncHandler");
-
+require('dotenv').config()
 
 const getWallets = asyncHandler(async (req, res) => {
 

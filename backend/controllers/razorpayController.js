@@ -1,13 +1,12 @@
 const razorpay = require('../utils/razorpay');
 const Razorpay = require('razorpay');
 const Order = require('../models/orderModel');
-const dotenv = require('dotenv');
 const crypto = require('crypto');
 const Payment = require('../models/paymentModel');
 const STATUS_CODES = require("../statusCodes");
 const asyncHandler = require('../middlewares/asyncHandler');
 
-dotenv.config();
+require('dotenv').config()
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 
 const instance = new Razorpay({
@@ -96,7 +95,7 @@ const retryPayment = asyncHandler(async (req, res) => {
 
 const setPaymentStatus = asyncHandler(async (req, res) => {
   const { id, status } = req.body;
-  const payment = await Payment.updateOne({ _id: id }, { status: status });
+  await Payment.updateOne({ _id: id }, { status: status });
   return res.status(STATUS_CODES.OK).json({
     status: "success",
     message: "Payment status updated", order_id: id

@@ -12,7 +12,7 @@ const createOffer = asyncHandler(async (req, res) => {
         throw new Error("Offer already exists")
 
     }
-    const offers = await Offer.create(req.body);
+    await Offer.create(req.body);
     return res.status(STATUS_CODES.OK).json({
         status: "success",
         message: "Offer added successfully"

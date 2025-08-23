@@ -1,4 +1,3 @@
-const express = require('express')
 const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const STATUS_CODES = require('../statusCodes');
@@ -6,8 +5,6 @@ const { PRODUCT_ADDED, PRODUCT_NOT_FOUND, PRODUCT_DELETED, PRODUCT_INVALID, PROD
 const User = require('../models/userModel');
 const { USER_NOT_MSG } = require('../messageConstants');
 const Wishlist = require('../models/wishlistModel');
-const Offer = require('../models/offerModel');
-const Category = require('../models/categoryModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 
 //add Product
@@ -87,7 +84,6 @@ const newProducts = asyncHandler(async (req, res) => {
 //update product
 const updateProduct = asyncHandler(async (req, res) => {
 
-  const { name, description, price, category, quantity, brand, size, color } = req.body;
   const files = req.files;
   const id = req.params.id
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -185,27 +181,6 @@ const fetchProducts = asyncHandler(async (req, res) => {
     page,
     pages: Math.ceil(count / pageSize),
     hasMore: page < Math.ceil(count / pageSize),
-  });
-});
-
-//fetch all products
-const fetchAllProducts = asyncHandler(async (req, res) => {
-
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 3;
-  const skip = (page - 1) * limit;
-  const products = await Product.find({})
-    .populate("category")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-  const totalProducts = await Product.countDocuments({});
-  return res.status(STATUS_CODES.OK).json({
-    status: "success",
-    products,
-    totalProducts,
-    totalPages: Math.ceil(totalProducts / limit),
-    currentPage: page
   });
 });
 
@@ -347,7 +322,7 @@ const updateWishlist = asyncHandler(async (req, res) => {
 
   const wishlist = await Wishlist.findOne({ productId });
   if (!wishlist) {
-    const new_wishlist = await Wishlist.create({
+    await Wishlist.create({
       userId: user._id,
       productId,
       color,

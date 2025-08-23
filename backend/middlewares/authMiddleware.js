@@ -1,4 +1,3 @@
-const express = require('express')
 const jwt = require("jsonwebtoken")
 const User = require("../models/userModel.js");
 const STATUS_CODES = require('../statusCodes.js');

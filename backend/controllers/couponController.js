@@ -1,6 +1,5 @@
 const STATUS_CODES = require("../statusCodes");
 const Coupon = require("../models/couponModel");
-const Order = require('../models/orderModel');
 const User = require('../models/userModel');
 const asyncHandler = require("../middlewares/asyncHandler");
 

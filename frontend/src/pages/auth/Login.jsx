@@ -98,7 +98,7 @@ const Login = () => {
 
                       <Link to="/forgot-password" className="text-decoration-none">Forgot Password?</Link>
                       <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link to="/register" className="text-decoration-none">Register here</Link>
                       </p>
                       <p className="text-center" style={{ color: "#393f81" }}>or</p>

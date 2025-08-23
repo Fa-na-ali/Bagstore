@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --ext js,jsx,ts,tsx --fix",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "keep-react": "^1.6.1",
     "lodash.debounce": "^4.0.8",
     "pdfmake": "^0.2.18",
+    "prop-types": "^15.8.1",
     "razorpay": "^2.9.6",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.9",

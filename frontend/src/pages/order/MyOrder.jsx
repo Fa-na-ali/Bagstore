@@ -37,7 +37,6 @@ const MyOrder = () => {
 
   const handleChange = (e) => {
     setInputValue(e.target.value);
-    setCurrentPage(1);
   };
 
   if (isLoading) return <p>Loading...</p>;
@@ -51,10 +50,10 @@ const MyOrder = () => {
   };
 
   //cancel order
-  const handleCancelOrder = async (orderId, item) => {
+  const handleCancelOrder = async () => {
     try {
       setShowReasonModal(false);
-      const response = await cancelOrder({
+      await cancelOrder({
         orderId: selectedOrder,
         item: selectedProduct,
         cancelReason: selectedReason,

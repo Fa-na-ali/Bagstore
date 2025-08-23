@@ -58,7 +58,7 @@ const Wallet = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch (error) {
+    } catch  {
       Swal.fire('Error', 'Something went wrong during payment.', 'error');
     }
   };

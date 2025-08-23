@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ERROR_MESSAGE } from "./constants/messageConstants";
+import { PropTypes } from "prop-types";
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -9,11 +10,11 @@ class ErrorBoundary extends React.Component {
         this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error) {
+    static getDerivedStateFromError() {
         return { hasError: true };
     }
 
-    componentDidCatch(error, errorInfo) {
+    componentDidCatch() {
         toast.error(ERROR_MESSAGE);
     }
 
@@ -41,5 +42,9 @@ class ErrorBoundary extends React.Component {
         return this.props.children;
     }
 }
+
+ErrorBoundary.propTypes = {
+    children: PropTypes.node.isRequired,
+};
 
 export default ErrorBoundary;

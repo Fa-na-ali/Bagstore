@@ -8,13 +8,13 @@ import { updateProfile } from '../../redux/features/auth/authSlice';
 import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const EditProfile = () => {
-    const { data, refetch } = useProfileQuery()
+    const { data} = useProfileQuery()
     const user = data?.user
     const navigate = useNavigate()
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+    const [resendOtp] = useResendOtpMutation();
     const dispatch = useDispatch()
 
     useEffect(() => {

@@ -16,7 +16,6 @@ const OrderDetails = () => {
   const { data, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
   const order = data?.order
   const [itemStatuses, setItemStatuses] = useState({});
-  const [orderStatus, setOrderStatus] = useState(order?.status);
   const [setItemStatus] = useSetItemStatusMutation();
 
   useEffect(() => {
@@ -57,10 +56,6 @@ const OrderDetails = () => {
     );
   }
 
-  const handleOrderStatusChange = (newStatus) => {
-    setOrderStatus(newStatus);
-  };
-
   const handleItemStatusChange = (itemId, newStatus) => {
     setItemStatuses((prevStatuses) => ({
       ...prevStatuses,
@@ -74,7 +69,7 @@ const OrderDetails = () => {
       refetch()
       toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS)
     } catch (error) {
-      toast.error(ORDER_MESSAGES.ORDER_STATUS_UPDATE_FAILURE);
+      toast.error(error?.data?.message || ORDER_MESSAGES.ORDER_STATUS_UPDATE_FAILURE);
     }
   };
 

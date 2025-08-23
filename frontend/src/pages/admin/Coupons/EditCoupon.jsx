@@ -6,12 +6,13 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useGetCouponByIdQuery, useUpdateCouponMutation } from "../../../redux/api/usersApiSlice";
 import { useNavigate, useParams } from "react-router";
 import { COUPON_MESSAGES } from "../../../constants/messageConstants";
+import { toast } from 'react-toastify'
 
 const EditCoupon = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data, refetch, isLoading, isError } = useGetCouponByIdQuery(id);
+    const { data } = useGetCouponByIdQuery(id);
     const coupon = data?.coupon
     const [update] = useUpdateCouponMutation();
     const [errors, setErrors] = useState({});
@@ -78,7 +79,7 @@ const EditCoupon = () => {
             toast.success(COUPON_MESSAGES.COUPON_UPDATE_SUCCESS);
 
         } catch (error) {
-            toast.error(COUPON_MESSAGES.COUPON_UPDATE_FAILURE);
+            toast.error(error?.data?.message || COUPON_MESSAGES.COUPON_UPDATE_FAILURE);
         }
     };
 

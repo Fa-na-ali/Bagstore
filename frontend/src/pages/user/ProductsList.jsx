@@ -18,7 +18,7 @@ const ProductsList = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading } = useFilterProductsQuery({
+  const { data} = useFilterProductsQuery({
     search: searchTerm,
     categories: selectedCategories,
     colors: selectedColors,

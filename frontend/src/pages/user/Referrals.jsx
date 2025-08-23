@@ -25,15 +25,15 @@ const Referrals = () => {
   useEffect(() => {
     if (referralData)
       refetch()
-  }, [refetch])
+  }, [refetch,referralData])
 
 
   const handleGetReferral = async () => {
     try {
-      const { data } = await generateCode().unwrap();
-      refetch(); // Refresh the referral data
+      await generateCode().unwrap();
+      refetch(); 
 
-    } catch (err) {
+    } catch {
       toast.error(USER_MESSAGES.USER_REFERRAL_CODE_ERROR);
     }
   };
@@ -42,7 +42,7 @@ const Referrals = () => {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
       .then(() => alert('Copied to clipboard!'))
-      .catch(err => toast.error('Copy failed'));
+      .catch(() => toast.error('Copy failed'));
   };
 
   if (isLoading) return <Spinner animation="border" />;

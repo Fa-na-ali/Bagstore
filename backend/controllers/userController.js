@@ -3,18 +3,17 @@ const bcrypt = require("bcryptjs")
 const crypto = require('crypto');
 const { generateToken } = require('../middlewares/generateToken')
 const transporter = require('../middlewares/otpMiddleware')
-const nodemailer = require("nodemailer");
 const { oauth2Client } = require('../utils/googleClient');
 const axios = require('axios');
 require("dotenv").config();
 const mongoose = require('mongoose')
 const Address = require('../models/addressModel')
-const responseHandler = require('./../middlewares/responseHandler');
 const { USER_VALIDATION_MSG, USER_EXT_MSG, USER_PASS_VALIDATION, USER_REG_MSG, USER_NOT_MSG, USER_LOGIN_MSG, USER_INVALID_MSG, USER_EMAIL_MSG, USER_OTP_MSG, USER_GOOGLE_MSG, USER_LOGOUT_MSG, USER_DELETE_MSG, USER_PASS_RESET_MSG, USER_ID_MSG, ADDRESS_EXIST_MSG, ADDRESS_ADD_MSG, ADDRESS_INVALID_MSG, ADDRESS_NOT_MSG, ADDRESS_UPDATE_MSG, ADDRESS_DELETE_MSG, USER_VALIDATION_MSG2 } = require("../messageConstants");
 const STATUS_CODES = require("../statusCodes");
 const Referral = require("../models/referralModel");
 const Wallet = require('../models/wallet');
 const asyncHandler = require("../middlewares/asyncHandler");
+require('dotenv').config()
 
 const otpStore = new Map();
 
@@ -211,7 +210,7 @@ const googleLogin = asyncHandler(async (req, res) => {
             email,
         });
     }
-    const { _id, isAdmin } = user;
+
     if (user.isExist) {
         const { token, refreshToken } = generateToken(user)
         user.refreshToken = refreshToken;
@@ -391,7 +390,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
 const updateUser = asyncHandler(async (req, res) => {
 
     const id = req.user._id
-    const { name, email, phone, } = req.body;
+    const { name } = req.body;
 
     if (name.lenght > 25) {
         res.status(STATUS_CODES.BAD_REQUEST)
@@ -475,7 +474,6 @@ const getAddress = asyncHandler(async (req, res) => {
 const updateAddress = asyncHandler(async (req, res) => {
 
     const id = req.params.id
-    const { name, houseName, town, street, zipcode, state, country, phone } = req.body;
     const address = await Address.findByIdAndUpdate(id, { ...req.body }, { new: true });
 
     if (!address) {

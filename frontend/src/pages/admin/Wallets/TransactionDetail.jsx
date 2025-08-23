@@ -11,7 +11,7 @@ const TransactionDetail = () => {
   if (!transactions || !transactions.transaction) return <p>Transaction not found</p>;
 
 
-  const { transaction: trxs, transactionType, orderButton } = transactions;
+  const { transaction: trxs} = transactions;
   const trx = trxs.transaction
   const { user } = transactions;
 

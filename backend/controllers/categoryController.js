@@ -1,8 +1,6 @@
-const mongoose = require('mongoose')
 const Category = require("../models/categoryModel.js");
-const Product = require('../models/productModel.js');
 const STATUS_CODES = require('../statusCodes.js');
-const { USR_ID_MISSING, USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_NOT_FOUND } = require('../categoryMsgConstants.js');
+const { USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_NOT_FOUND } = require('../categoryMsgConstants.js');
 const asyncHandler = require('../middlewares/asyncHandler.js');
 
 //add category
@@ -57,8 +55,8 @@ const deleteCategory = asyncHandler(async (req, res) => {
   const category = await Category.findById(req.params.id);
 
   if (!category) {
-    return res.status(STATUS_CODES.NOT_FOUND)
-    throw new Erro(CATEGORY_NOT_FOUND)
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(CATEGORY_NOT_FOUND)
   }
   category.isExist = false;
   await category.save();

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { lazy, Suspense } from 'react';
 import { useFetchRelatedProductsQuery, useGetProductByIdQuery } from '../../redux/api/productApiSlice';
-import { useNavigate, useParams } from 'react-router';
-import { Row, Col, Container, Button, Card, Modal, Image } from 'react-bootstrap'
+import { useParams } from 'react-router';
+import { Row, Col, Container, Button, Image } from 'react-bootstrap'
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/features/cart/cartSlice';
@@ -13,9 +13,8 @@ const Cards = lazy(() => import('../../components/Cards'));
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  const { data, isLoading, isError } = useGetProductByIdQuery(id);
   const product = data?.product
   const [quantity, setQuantity] = useState(1);
   const [discounts, setDiscounts] = useState(0);
@@ -23,6 +22,8 @@ const ProductDetails = () => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
   const { data: products } = useFetchRelatedProductsQuery(id)
+  console.log(data)
+  console.log(products)
 
   useEffect(() => {
     if (product && offers) {
@@ -88,7 +89,7 @@ const ProductDetails = () => {
 
               <Image
                 id="mainImage"
-                src={`${IMG_URL}${product.pdImage[0]}`}
+                src={`${product.pdImage[0]}`}
                 alt="Product"
                 fluid
                 rounded

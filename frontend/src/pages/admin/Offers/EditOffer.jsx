@@ -21,7 +21,7 @@ const EditOffer = () => {
         minAmount: "",
     });
     const [errors, setErrors] = useState({});
-    const { data, refetch, isLoading, isError } = useGetOfferByIdQuery(id);
+    const { data} = useGetOfferByIdQuery(id);
     const offer = data?.offer
     const [update] = useUpdateOfferMutation();
 
@@ -82,7 +82,7 @@ const EditOffer = () => {
             toast.success(OFFER_MESSAGES.OFFER_UPDATE_SUCCESS);
 
         } catch (error) {
-            toast.error(OFFER_MESSAGES.OFFER_UPDATE_FAILURE);
+            toast.error(error?.data?.message || OFFER_MESSAGES.OFFER_UPDATE_FAILURE);
         }
     };
 

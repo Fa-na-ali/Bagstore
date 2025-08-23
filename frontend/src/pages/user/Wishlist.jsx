@@ -61,7 +61,7 @@ const Wishlist = () => {
 
     setDiscounts(newDiscounts);
     setSalesPrices(newSalesPrices);
-  }, [products, offers]);
+  }, [products, offers,refetch]);
 
 
   //ADD TO CART 
@@ -82,9 +82,9 @@ const Wishlist = () => {
   //remove from wishlist
   const removeHandler = async (productId) => {
     try {
-      const res = await update({ productId, }).unwrap();
+       await update({ productId, }).unwrap();
       refetch();
-    } catch (error) {
+    } catch {
       toast.error(WISHLIST_MESSAGES.REMOVE_FAILURE);
     }
 

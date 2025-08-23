@@ -80,7 +80,7 @@ const Coupon = mongoose.model("Coupon", Schema);
 cron.schedule('0 * * * *', async () => {
     try {
         const now = new Date();
-        const updated = await Coupon.updateMany(
+        await Coupon.updateMany(
             { expiry: { $lt: now }, status: true },
             { $set: { status: false } }
         );

@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { updateCart } from "../../../utils/cartUtils";
+import {toast} from 'react-toastify'
 
 const initialState = localStorage.getItem("cart")
   ? JSON.parse(localStorage.getItem("cart"))
@@ -81,12 +82,12 @@ const cartSlice = createSlice({
       localStorage.setItem("cart", JSON.stringify(state));
     },
 
-    clearCartItems: (state, action) => {
+    clearCartItems: (state) => {
       state.cartItems = [];
       localStorage.removeItem("cart");
     },
 
-    resetCart: (state) => (state = initialState),
+    resetCart: () => {return initialState}
   },
 });
 

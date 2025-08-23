@@ -9,7 +9,7 @@ const ForgotPass = () => {
 
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+  const [forgotPassword] = useForgotPasswordMutation();
 
   //reset password
   const handleClick = async () => {
@@ -34,7 +34,7 @@ const ForgotPass = () => {
           <Card.Header className="h5 text-white background-two">Password Reset</Card.Header>
           <Card.Body className="px-4">
             <Card.Text className="py-2">
-              Enter your email address and we'll send you an email with an OTP to reset your password.
+              Enter your email address and we&apos;ll send you an email with an OTP to reset your password.
             </Card.Text>
             <Form>
               <Form.Group controlId="typeEmail">

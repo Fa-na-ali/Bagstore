@@ -22,9 +22,9 @@ const EditProduct = () => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
 
-  const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  const { data, refetch } = useGetProductByIdQuery(id);
   const product = data?.product
-  const [update, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [update,{ isLoading}] = useUpdateProductMutation();
   const { data: datas } = useFetchCategoriesQuery();
   const categories = datas?.all
   const [deleteImage] = useDeleteImageMutation();
@@ -39,14 +39,11 @@ const EditProduct = () => {
   const [size, setSize] = useState("");
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
-  const [upload, setUpload] = useState([])
   const [croppedImages, setCroppedImages] = useState([]);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const cropperRef = useRef(null);
   const [croppingIndex, setCroppingIndex] = useState(null);
-
-  const productImages = product?.pdImage.map((img) => `${IMG_URL}${img}`);
 
   const validate = () => {
     const newErrors = {};
@@ -172,10 +169,11 @@ const EditProduct = () => {
 
     try {
       const { data } = await update({ id: product?._id, formData: productData }).unwrap()
-      toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
-      refetch();
-      navigate('/admin/products')
-      
+      if (data) {
+        toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
+        refetch();
+        navigate('/admin/products')
+      }
     } catch (error) {
       toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_UPDATE_FAILURE}`);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
 import {
@@ -7,11 +7,8 @@ import {
   Col,
   Card,
   ListGroup,
-  ProgressBar,
   Spinner,
   Button,
-  Dropdown,
-  Badge,
   Form
 } from 'react-bootstrap';
 import { Chart } from 'chart.js/auto';

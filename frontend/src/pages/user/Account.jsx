@@ -2,12 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Card, Button, Image as BootstrapImage, Form, Modal } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useDeleteAddressMutation, useDeleteUserImageMutation, useProfileQuery, useUploadImageMutation } from "../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import { USERS_URL } from "../../constants/constants";
 import { USER_MESSAGES } from "../../constants/messageConstants";
 
 const Account = () => {
@@ -41,7 +40,7 @@ const Account = () => {
                 toast.success(USER_MESSAGES.USER_ADDRESS_DLT_SUCCESS);
                 refetch();
             } catch (error) {
-                toast.error(USER_MESSAGES.USER_ADDRESS_DLT_FAILURE);
+                toast.error(error?.data?.message || USER_MESSAGES.USER_ADDRESS_DLT_FAILURE);
             }
         }
     };
@@ -103,8 +102,10 @@ const Account = () => {
         convertedFiles.forEach((file) => userData.append("image", file));
         try {
             const { data } = await upload({ id: user?._id, userData }).unwrap()
-            toast.success(USER_MESSAGES.USER_PIC_SUCCESS);
-            refetch();
+            if (data) {
+                toast.success(USER_MESSAGES.USER_PIC_SUCCESS);
+                refetch();
+            }
         } catch (error) {
             toast.error(error?.data?.message || USER_MESSAGES.USER_PIC_EDIT_FAILURE);
         }
@@ -120,7 +121,7 @@ const Account = () => {
 
             setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
 
-        } catch (error) {
+        } catch {
             toast.error(USER_MESSAGES.USER_PIC_DLT_FAILURE);
         }
     };

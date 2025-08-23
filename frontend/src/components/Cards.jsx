@@ -2,23 +2,23 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/features/cart/cartSlice';
 import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
 import { CART_MESSAGES, WISHLIST_MESSAGES } from '../constants/messageConstants';
+import { PropTypes } from "prop-types";
+import { PLACEHOLDER_URL } from '../constants/constants';
 
 const Cards = ({ products }) => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const items = products || products?.all
   const [likedProducts, setLikedProducts] = useState({});
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
-  const { data: wishlistData, refetch } = useGetWishlistQuery()
+  const { data: wishlistData } = useGetWishlistQuery()
   const [update] = useUpdateWishlistMutation()
 
   useEffect(() => {
@@ -104,7 +104,7 @@ const Cards = ({ products }) => {
       }
 
     } catch (error) {
-      toast.error(WISHLIST_MESSAGES.UPDATE_FAILURE);
+      toast.error(error.message || `${WISHLIST_MESSAGES.UPDATE_FAILURE}`);
       setLikedProducts((prev) => ({ ...prev, [productId]: !isLiked }));
     }
   };
@@ -209,6 +209,24 @@ const Cards = ({ products }) => {
   );
 };
 
+Cards.propTypes = {
+  products: PropTypes.arrayOf(
+    PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      price: PropTypes.number.isRequired,
+      pdImage: PropTypes.arrayOf(PropTypes.string),
+      quantity: PropTypes.number.isRequired,
+      color: PropTypes.string.isRequired,
+      category: PropTypes.shape({
+        _id: PropTypes.string,
+        name: PropTypes.string,
+        offer: PropTypes.string,
+        isExist: PropTypes.bool
+      }),
+    })
+  ).isRequired,
+};
 
 
 export default Cards;

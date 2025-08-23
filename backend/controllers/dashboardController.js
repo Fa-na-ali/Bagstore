@@ -1,4 +1,3 @@
-const asyncHandler = require("../middlewares/asyncHandler");
 const Order = require("../models/orderModel");
 const Payment = require("../models/paymentModel");
 const User = require("../models/userModel");
@@ -23,7 +22,7 @@ const getSalesReportData = async (filter, startDate, endDate) => {
         $lte: new Date(new Date().setHours(23, 59, 59, 999)),
       };
       break;
-    case 'weekly':
+    case 'weekly': {
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - now.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
@@ -37,6 +36,7 @@ const getSalesReportData = async (filter, startDate, endDate) => {
         $lte: endOfWeek
       };
       break;
+    }
     case 'monthly':
       dateRange = {
         $gte: new Date(now.getFullYear(), now.getMonth(), 1),
@@ -65,199 +65,187 @@ const getSalesReportData = async (filter, startDate, endDate) => {
     matchConditions.createdAt = dateRange;
   }
 
-  const orders = await Order.find({
-    "items.status": "Delivered"
-  });
-  try {
-    const orderCount = await Order.countDocuments(matchConditions);
-    if (orderCount === 0) {
-      return {
-        orders: [],
-        offerDiscounts: 0,
-        couponDiscounts: 0,
-        overallSalesCount: 0,
-        orderCount: 0,
-        returnedOrderCount: 0,
-        overallDiscount: 0,
-        netRevenue: 0,
-        grossRevenue: 0
-      };
-    }
-
-    const result = await Order.aggregate([
-      { $match: matchConditions },
-      { $unwind: "$items" },
-      {
-        $match: {
-          $or: [
-            { "items.status": "Delivered" },
-            { "items.status": "Returned" }
-          ]
-        }
-      },
-      {
-        $group: {
-          _id: {
-            productId: "$items.product",
-            name: "$items.name",
-            category: "$items.category"
-          },
-          productName: { $first: "$items.name" },
-          category: { $first: "$items.category" },
-          soldCount: {
-            $sum: {
-              $cond: [
-                { $eq: ["$items.status", "Delivered"] },
-                "$items.qty",
-                0
-              ]
-            }
-          },
-          returnedCount: {
-            $sum: {
-              $cond: [
-                { $eq: ["$items.status", "Returned"] },
-                "$items.qty",
-                0
-              ]
-            }
-          },
-          productDiscounts: {
-            $sum: {
-              $cond: [
-                { $eq: ["$items.status", "Delivered"] },
-                { $multiply: ["$items.discount", "$items.qty"] },
-                0
-              ]
-            }
-          },
-          revenue: {
-            $sum: {
-              $cond: [
-                { $eq: ["$items.status", "Delivered"] },
-                {
-                  $subtract: [
-                    { $multiply: ["$items.price", "$items.qty"] },
-                    { $multiply: ["$items.discount", "$items.qty"] }
-                  ]
-                },
-                0
-              ]
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          productName: 1,
-          category: 1,
-          soldCount: 1,
-          returnedCount: 1,
-          productDiscounts: 1,
-          revenue: 1
-        }
-      }
-    ]);
-
-
-    const couponStats = await Order.aggregate([
-      { $match: matchConditions },
-      {
-        $group: {
-          _id: null,
-          totalCouponDiscount: {
-            $sum: {
-              $cond: [
-                { $eq: ["$paymentStatus", "Success"] },
-                "$couponDiscount",
-                0
-              ]
-            }
-          },
-          totalOrders: { $sum: 1 },
-          returnedOrders: {
-            $sum: {
-              $cond: [
-                { $eq: ["$status", "Returned"] },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
-
-    //detailed orders
-    const detailedOrders = await Order.aggregate([
-      { $match: matchConditions },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $lookup: {
-          from: 'addresses',
-          localField: 'shippingAddress',
-          foreignField: '_id',
-          as: 'address'
-        }
-      },
-      {
-        $unwind: "$user"
-      },
-      {
-        $unwind: "$address"
-      },
-      {
-        $project: {
-          orderDate: "$createdAt",
-          orderNumber: 1,
-          userName: "$user.name",
-          userEmail: "$user.email",
-          shippingAddress: "$address",
-          paymentMethod: 1,
-          couponDiscount: 1,
-          shippingPrice: 1,
-          tax: 1,
-          totalDiscount: 1,
-          totalPrice: 1,
-          items: 1
-        }
-      }
-    ]);
-
-
-    const totalCouponDiscount = couponStats[0]?.totalCouponDiscount || 0;
-    const totalProductDiscounts = result.reduce((sum, item) => sum + item.productDiscounts, 0);
-    const totalRevenue = result.reduce((sum, item) => sum + item.revenue, 0);
-    const totalSold = result.reduce((sum, item) => sum + item.soldCount, 0);
-    const totalReturns = result.reduce((sum, item) => sum + item.returnedCount, 0);
-
+  const orderCount = await Order.countDocuments(matchConditions);
+  if (orderCount === 0) {
     return {
-      orders: result,
-      offerDiscounts: totalProductDiscounts.toFixed(2),
-      couponDiscounts: totalCouponDiscount,
-      overallSalesCount: totalSold,
-      orderCount: couponStats[0]?.totalOrders || 0,
-      returnedOrderCount: couponStats[0]?.returnedOrders || 0,
-      overallDiscount: totalProductDiscounts + totalCouponDiscount,
-      netRevenue: totalRevenue,
-      grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount,
-      detailedOrders
+      orders: [],
+      offerDiscounts: 0,
+      couponDiscounts: 0,
+      overallSalesCount: 0,
+      orderCount: 0,
+      returnedOrderCount: 0,
+      overallDiscount: 0,
+      netRevenue: 0,
+      grossRevenue: 0
     };
-  } catch (error) {
-    console.error('Error in getSalesReportData:', error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      status: "error",
-      message: "internal server error"
-    })
   }
+
+  const result = await Order.aggregate([
+    { $match: matchConditions },
+    { $unwind: "$items" },
+    {
+      $match: {
+        $or: [
+          { "items.status": "Delivered" },
+          { "items.status": "Returned" }
+        ]
+      }
+    },
+    {
+      $group: {
+        _id: {
+          productId: "$items.product",
+          name: "$items.name",
+          category: "$items.category"
+        },
+        productName: { $first: "$items.name" },
+        category: { $first: "$items.category" },
+        soldCount: {
+          $sum: {
+            $cond: [
+              { $eq: ["$items.status", "Delivered"] },
+              "$items.qty",
+              0
+            ]
+          }
+        },
+        returnedCount: {
+          $sum: {
+            $cond: [
+              { $eq: ["$items.status", "Returned"] },
+              "$items.qty",
+              0
+            ]
+          }
+        },
+        productDiscounts: {
+          $sum: {
+            $cond: [
+              { $eq: ["$items.status", "Delivered"] },
+              { $multiply: ["$items.discount", "$items.qty"] },
+              0
+            ]
+          }
+        },
+        revenue: {
+          $sum: {
+            $cond: [
+              { $eq: ["$items.status", "Delivered"] },
+              {
+                $subtract: [
+                  { $multiply: ["$items.price", "$items.qty"] },
+                  { $multiply: ["$items.discount", "$items.qty"] }
+                ]
+              },
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        productName: 1,
+        category: 1,
+        soldCount: 1,
+        returnedCount: 1,
+        productDiscounts: 1,
+        revenue: 1
+      }
+    }
+  ]);
+
+
+  const couponStats = await Order.aggregate([
+    { $match: matchConditions },
+    {
+      $group: {
+        _id: null,
+        totalCouponDiscount: {
+          $sum: {
+            $cond: [
+              { $eq: ["$paymentStatus", "Success"] },
+              "$couponDiscount",
+              0
+            ]
+          }
+        },
+        totalOrders: { $sum: 1 },
+        returnedOrders: {
+          $sum: {
+            $cond: [
+              { $eq: ["$status", "Returned"] },
+              1,
+              0
+            ]
+          }
+        }
+      }
+    }
+  ]);
+
+  //detailed orders
+  const detailedOrders = await Order.aggregate([
+    { $match: matchConditions },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    {
+      $lookup: {
+        from: 'addresses',
+        localField: 'shippingAddress',
+        foreignField: '_id',
+        as: 'address'
+      }
+    },
+    {
+      $unwind: "$user"
+    },
+    {
+      $unwind: "$address"
+    },
+    {
+      $project: {
+        orderDate: "$createdAt",
+        orderNumber: 1,
+        userName: "$user.name",
+        userEmail: "$user.email",
+        shippingAddress: "$address",
+        paymentMethod: 1,
+        couponDiscount: 1,
+        shippingPrice: 1,
+        tax: 1,
+        totalDiscount: 1,
+        totalPrice: 1,
+        items: 1
+      }
+    }
+  ]);
+
+
+  const totalCouponDiscount = couponStats[0]?.totalCouponDiscount || 0;
+  const totalProductDiscounts = result.reduce((sum, item) => sum + item.productDiscounts, 0);
+  const totalRevenue = result.reduce((sum, item) => sum + item.revenue, 0);
+  const totalSold = result.reduce((sum, item) => sum + item.soldCount, 0);
+
+  return {
+    orders: result,
+    offerDiscounts: totalProductDiscounts.toFixed(2),
+    couponDiscounts: totalCouponDiscount,
+    overallSalesCount: totalSold,
+    orderCount: couponStats[0]?.totalOrders || 0,
+    returnedOrderCount: couponStats[0]?.returnedOrders || 0,
+    overallDiscount: totalProductDiscounts + totalCouponDiscount,
+    netRevenue: totalRevenue,
+    grossRevenue: totalRevenue + totalProductDiscounts + totalCouponDiscount,
+    detailedOrders
+  };
 };
 
 
@@ -318,7 +306,7 @@ const loadDashboard = async (req, res) => {
           $lte: new Date(new Date().setHours(23, 59, 59, 999)),
         };
         break;
-      case 'weekly':
+      case 'weekly': {
 
         const day = now.getDay();
         const startOfWeek = new Date(now);
@@ -334,7 +322,8 @@ const loadDashboard = async (req, res) => {
           $lte: endOfWeek
         };
         break;
-      case 'monthly':
+      }
+      case 'monthly': {
         const month = parseInt(startDate);
         const yearl = now.getFullYear();
 
@@ -346,14 +335,16 @@ const loadDashboard = async (req, res) => {
           $lte: endOfMonth
         };
         break;
-      case 'yearly':
+      }
+      case 'yearly': {
         const year = !isNaN(startDate) ? startDate : now.getFullYear();
         dateRange = {
           $gte: new Date(year, 0, 1),
           $lte: new Date(year, 11, 31, 23, 59, 59, 999)
         };
         break;
-      case 'custom':
+      }
+      case 'custom': {
         if (startDate && endDate) {
           const endDateTime = new Date(endDate);
           endDateTime.setHours(23, 59, 59, 999);
@@ -363,8 +354,8 @@ const loadDashboard = async (req, res) => {
           };
         }
         break;
+      }
     }
-
     //user data
     const userData = await User.aggregate([
       {

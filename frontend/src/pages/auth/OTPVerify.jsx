@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useVerifyOtpMutation, useResendOtpMutation } from "../../redux/api/usersApiSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { USER_MESSAGES } from "../../constants/messageConstants";
 
@@ -19,8 +19,6 @@ const OTPVerify = () => {
 
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
-
-  const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (timer > 0) {
@@ -92,7 +90,7 @@ const OTPVerify = () => {
       inputRefs.current[0]?.focus();
       setTimer(90);
     } catch (err) {
-      toast.error(USER_MESSAGES.USER_OTP_RESEND_FAIL);
+      toast.error(err?.data?.message || USER_MESSAGES.USER_OTP_RESEND_FAIL);
     }
   };
 

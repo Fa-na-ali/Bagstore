@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
-import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
+import { Row, Col,Container } from 'react-bootstrap'
 import { useGetAllWalletsQuery } from '../../../redux/api/walletApiSlice'
 
 const WalletManagement = () => {
@@ -21,12 +21,7 @@ const WalletManagement = () => {
   useEffect(() => {
     if (wallets)
       load()
-  }, [load]);
-
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
-  };
+  }, [load,wallets]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

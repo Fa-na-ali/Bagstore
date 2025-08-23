@@ -16,7 +16,7 @@ const Password = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState({});
 
-    const [resetPassword, { isLoading }] = useResetPasswordMutation();
+    const [resetPassword] = useResetPasswordMutation();
 
     const validatePassword = (password, confirmPassword) => {
         const errors = {};

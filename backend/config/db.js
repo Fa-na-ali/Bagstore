@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
 const URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bags';
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 //database connectio
 

@@ -25,10 +25,10 @@ const AddAddress = () => {
             const { data } = await addAddress({
                 name, houseName, town, street, state, zipcode, country, phone
             }).unwrap();
-
-            toast.success(USER_MESSAGES.USER_ADDRESS_ADD_SUCCESS);
-            navigate(-1);
-
+            if (data) {
+                toast.success(USER_MESSAGES.USER_ADDRESS_ADD_SUCCESS);
+                navigate(-1);
+            }
         } catch (error) {
             toast.error(error?.data?.message || `${USER_MESSAGES.USER_ADDRESS_ADD_FAILURE}`);
         }
@@ -182,7 +182,7 @@ const AddAddress = () => {
                                                 <option value="CW">Curaçao</option>
                                                 <option value="CY">Cyprus</option>
                                                 <option value="CZ">Czech Republic</option>
-                                                <option value="CI">Côte d'Ivoire</option>
+                                                <option value="CI">Côte d&apos;Ivoire</option>
                                                 <option value="DK">Denmark</option>
                                                 <option value="DJ">Djibouti</option>
                                                 <option value="DM">Dominica</option>
@@ -245,7 +245,7 @@ const AddAddress = () => {
                                                 <option value="XK">Kosovo</option>
                                                 <option value="KW">Kuwait</option>
                                                 <option value="KG">Kyrgyzstan</option>
-                                                <option value="LA">Lao People's Democratic Republic</option>
+                                                <option value="LA">Lao People&apos;s Democratic Republic</option>
                                                 <option value="LV">Latvia</option>
                                                 <option value="LB">Lebanon</option>
                                                 <option value="LS">Lesotho</option>

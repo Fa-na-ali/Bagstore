@@ -33,10 +33,10 @@ const OrderDetail = () => {
   };
 
   //cancel order
-  const handleCancelOrder = async (orderId, item) => {
+  const handleCancelOrder = async () => {
     try {
       setShowReasonModal(false);
-      const response = await cancelOrder({
+       await cancelOrder({
         orderId: selectedOrder,
         item: selectedProduct,
         cancelReason: selectedReason,
