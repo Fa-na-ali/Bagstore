@@ -23,7 +23,7 @@ const getWallets = asyncHandler(async (req, res) => {
                 user: `${wallet.userId.name}`,
                 email: wallet.userId.email,
                 type: transaction.type,
-                amount: transaction.amount,
+                amount: transaction.amount.toFixed(2),
                 description: transaction.description
             });
         });

@@ -95,7 +95,7 @@ const createOrder = asyncHandler(async (req, res) => {
     if (!isNaN(couponDiscount)) {
       payment.couponDiscount = couponDiscount;
     }
-    await payment.save()
+    await payment.save({session})
 
     const order = new Order({
       orderId,
@@ -108,7 +108,7 @@ const createOrder = asyncHandler(async (req, res) => {
       paymentId: payment._id,
       shippingPrice,
       status: "Not completed",
-      totalPrice,
+      totalPrice:totalPrice+shippingPrice,
       couponId,
       couponDiscount,
       totalDiscount,
@@ -144,6 +144,7 @@ const createOrder = asyncHandler(async (req, res) => {
       { $set: { orderId: createdOrder._id } },
       { session }
     )
+  
     await session.commitTransaction();
     session.endSession();
     return res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });

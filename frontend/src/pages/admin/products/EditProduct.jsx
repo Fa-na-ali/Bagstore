@@ -168,12 +168,10 @@ const EditProduct = () => {
     convertedFiles.forEach((file) => productData.append("pdImage", file));
 
     try {
-      const { data } = await update({ id: product?._id, formData: productData }).unwrap()
-      if (data) {
+      await update({ id: product?._id, formData: productData }).unwrap()
         toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
         refetch();
         navigate('/admin/products')
-      }
     } catch (error) {
       toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_UPDATE_FAILURE}`);
     }

@@ -64,7 +64,7 @@ const TransactionDetail = () => {
                   <p><Badge bg="info" text="dark">{trxs.transactionType}</Badge></p>
                   <p className={`${trx.amount > 0 ? 'text-success' : 'text-danger'} fw-bold`}>
                     <i className={`bi ${trx.amount > 0 ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle'} me-1`}></i>
-                    Rs. {trx.amount}
+                    Rs. {trx.amount.toFixed(2)}
                   </p>
                   <p className="text-muted small">{trx.description}</p>
                 </div>

@@ -1,14 +1,15 @@
+const logger = require('../config/loggerConfig');
 const STATUS_CODES = require('../statusCodes');
 
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch((error) => {
         let statusCode
-         console.error('An error occurred:', error);
+         logger.error(error); 
         if (error.name === "TokenExpiredError") {
             statusCode = STATUS_CODES.UNAUTHORIZED;
         }
-        else if (res.statusCode && (res.statusCode !== STATUS_CODES.OK) && (res.statusCode !== STATUS_CODES.CREATED)) {
-            statusCode = res.statusCode
+        else if (error.status) {
+            statusCode = error.status;
         }
         else
             statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR
