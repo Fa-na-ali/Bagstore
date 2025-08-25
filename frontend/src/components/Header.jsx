@@ -28,6 +28,7 @@ const Header = () => {
             dispatch(logout());
             navigate("/login");
         } catch (error) {
+            dispatch(logout());
             console.error(error);
         }
     };

@@ -37,34 +37,33 @@ const WalletManagement = () => {
 
   return (
     <>
-      <Container fluid>
-        <Row className="g-0">
-          <Col lg={2} className="d-none d-lg-block">
-            <AdminSidebar />
-          </Col>
+      <div className="d-flex">
+        <AdminSidebar />
+        <div className="main-content-wrapper background-one flex-grow-1">
+          <Container fluid className="mt-4 p-4">
+            <Row className="g-0">
+              <Col lg={9} >
+                <h2 className='text-center my-5 heading'>WALLETS</h2>
+                {(wallets) && (wallets.length > 0) ? (
+                  <Ttable
+                    naming="wallets"
+                    data={wallets}
+                    columns={columns}
+                    onDelete={handleDelete}
+                    onPage={handlePageChange}
+                    pageData={data}
+                    currentPage={currentPage}
+                  />
+                ) : (
+                  <p>No wallets found</p>
+                )}
 
-          <Col lg={9} className="p-4 background-one vw-75">
-            <h2 className='text-center my-5 heading'>WALLETS</h2>
-            {(wallets) && (wallets.length > 0) ? (
-              <Ttable
-                naming="wallets"
-                data={wallets}
-                columns={columns}
-                onDelete={handleDelete}
-                onPage={handlePageChange}
-                pageData={data}
-                currentPage={currentPage}
-
-
-              />
-            ) : (
-              <p>No wallets found</p>
-            )}
-
-          </Col>
-          <Col lg={1} className=" background-one"></Col>
-        </Row>
-      </Container>
+              </Col>
+              <Col lg={1} className=" background-one"></Col>
+            </Row>
+          </Container>
+        </div>
+      </div>
     </>
   );
 };

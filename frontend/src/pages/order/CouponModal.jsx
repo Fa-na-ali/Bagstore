@@ -35,7 +35,7 @@ const CouponModal = ({ show, handleClose }) => {
         ) : (
           data?.coupons?.map((coupon) => (
             <div key={coupon._id} className="p-3 border rounded mb-2 d-flex justify-content-between align-items-center">
-              <div>a
+              <div>
                 <strong>{coupon.name}</strong> - {coupon.discount}% off
                 <p className="text-muted">{coupon.description}</p>
               </div>

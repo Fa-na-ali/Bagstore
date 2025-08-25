@@ -152,14 +152,21 @@ body {
   border-top: 1px solid #e9e9eb;
   padding-top: 20px;
 }
-
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  overflow-y: auto;
-  z-index: 1000;
+.main-content-wrapper {
+  
+  width: 100%; 
+  padding-left: 1rem; 
+  flex-grow: 1;
 }
+
+/* For responsive design, you may need a media query */
+@media (max-width: 992px) { /* On small screens, hide the sidebar and remove margin */
+  .main-content-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 
 @media (max-width: 991px) {
   .footer-container {

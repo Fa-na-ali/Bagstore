@@ -65,57 +65,59 @@ const CategoryManagement = () => {
 
   return (
     <>
-      <Container fluid>
-        <Row className="g-0">
-          <Col lg={2} className="d-none d-lg-block">
-            <AdminSidebar />
-          </Col>
-          <Col lg={9} className="p-4 background-one vw-75">
-            <h2 className='text-center my-5 heading'>CATEGORIES</h2>
-            <div className="table-title my-5">
-              <Row className="align-items-center">
-                <Col lg={6}>
-                  <Link to="/admin/category/add">
-                    <Button className="me-2 button-custom">
-                      <MdOutlineAdd /> <span>Add New</span>
-                    </Button>
-                  </Link>
-                </Col>
-                <Col lg={3}></Col>
-                <Col lg={3} className="d-flex justify-content-end gap-3">
-                  <InputGroup className="mb-3">
-                    <Form className="d-flex">
-                      <FormControl
-                        type="search"
-                        placeholder="Search"
-                        aria-label="Search"
-                        aria-describedby="search-addon"
-                        value={inputValue}
-                        onChange={handleChange}
-                      />
-                    </Form>
-                  </InputGroup>
-                </Col>
-              </Row>
-            </div>
-            {(categories) && (categories.length > 0) ? (
-              <Ttable
-                naming="category"
-                data={categories}
-                columns={columns}
-                onDelete={handleDelete}
-                onPage={handlePageChange}
-                pageData={data}
-                currentPage={currentPage}
-              />
-            ) : (
-              <p>No categories found</p>
-            )}
+      <div className="d-flex">
+        <AdminSidebar />
+        <div className="main-content-wrapper background-one flex-grow-1">
+          <Container fluid className="mt-4 p-4">
+            <Row className="g-0">
+              <Col lg={12} >
+                <h2 className='text-center my-5 heading'>CATEGORIES</h2>
+                <div className="table-title my-5">
+                  <Row className="align-items-center">
+                    <Col lg={6}>
+                      <Link to="/admin/category/add">
+                        <Button className="me-2 button-custom">
+                          <MdOutlineAdd /> <span>Add New</span>
+                        </Button>
+                      </Link>
+                    </Col>
+                    <Col lg={3}></Col>
+                    <Col lg={3} className="d-flex justify-content-end gap-3">
+                      <InputGroup className="mb-3">
+                        <Form className="d-flex">
+                          <FormControl
+                            type="search"
+                            placeholder="Search"
+                            aria-label="Search"
+                            aria-describedby="search-addon"
+                            value={inputValue}
+                            onChange={handleChange}
+                          />
+                        </Form>
+                      </InputGroup>
+                    </Col>
+                  </Row>
+                </div>
+                {(categories) && (categories.length > 0) ? (
+                  <Ttable
+                    naming="category"
+                    data={categories}
+                    columns={columns}
+                    onDelete={handleDelete}
+                    onPage={handlePageChange}
+                    pageData={data}
+                    currentPage={currentPage}
+                  />
+                ) : (
+                  <p>No categories found</p>
+                )}
 
-          </Col>
-          <Col lg={1} className=" background-one"></Col>
-        </Row>
-      </Container>
+              </Col>
+              <Col lg={1} className=" background-one"></Col>
+            </Row>
+          </Container>
+        </div>
+      </div>
     </>
   );
 };
