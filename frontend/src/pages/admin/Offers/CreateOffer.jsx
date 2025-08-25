@@ -103,141 +103,143 @@ const CreateOffer = () => {
 
 
     return (
-        <Container fluid>
-            <Row className="g-0 background-one">
-                <Col lg={2} className="d-none d-lg-block">
-                    <AdminSidebar />
-                </Col>
-                <Col md={9}>
-                    <h2 className="ms-5 my-5 heading text-center">ADD OFFER</h2>
-                    <Form id="offer-form" onSubmit={handleSubmit} encType="multipart/form-data" className="ms-5 .
+        <div className="d-flex">
+            <AdminSidebar />
+            <div className="main-content-wrapper background-one flex-grow-1">
+                <Container fluid className="mt-4 p-4">
+                    <Row className="g-0">
+                        <Col md={9}>
+                            <h2 className="ms-5 my-5 heading text-center">ADD OFFER</h2>
+                            <Form id="offer-form" onSubmit={handleSubmit} encType="multipart/form-data" className="ms-5 .
                     23">
-                        <Form.Group className="mb-3">
-                            <Form.Label>Offer Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                id="name"
-                                name="name"
-                                placeholder="Enter offer name (e.g., Dhamaka2024)"
-                                value={formData.name}
-                                onChange={handleChange}
-                                isInvalid={!!errors.name}
-                                style={{ width: "100%" }}
-                            />
-                            <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Offer Applicable</Form.Label>
-                            <Form.Select
-                                id="type"
-                                name="type"
-                                value={formData.type}
-                                onChange={handleChange}
-
-                                style={{ width: "100%" }}
-                            >
-                                <option value="products">Products</option>
-                                <option value="category">Category</option>
-                            </Form.Select>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Description</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                id="description"
-                                name="description"
-                                placeholder="Type here"
-                                value={formData.description}
-                                onChange={handleChange}
-                                isInvalid={!!errors.description}
-                                style={{ width: "100%", height: "95px" }}
-                            />
-                            <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
-                        </Form.Group>
-
-                        <Row className="mb-3">
-                            <Col>
-                                <Form.Group>
-                                    <Form.Label>Activation Date</Form.Label>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Offer Name</Form.Label>
                                     <Form.Control
-                                        type="date"
-                                        id="activation"
-                                        name="activation"
-                                        placeholder="dd-mm-yyyy"
-                                        value={formData.activation}
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        placeholder="Enter offer name (e.g., Dhamaka2024)"
+                                        value={formData.name}
                                         onChange={handleChange}
-                                        isInvalid={!!errors.activation}
+                                        isInvalid={!!errors.name}
                                         style={{ width: "100%" }}
                                     />
-                                    <Form.Control.Feedback type="invalid">{errors.activation}</Form.Control.Feedback>
+                                    <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
                                 </Form.Group>
-                            </Col>
-                            <Col>
-                                <Form.Group>
-                                    <Form.Label>Expiry Date</Form.Label>
-                                    <Form.Control
-                                        type="date"
-                                        id="expiry"
-                                        name="expiry"
-                                        placeholder="dd-mm-yyyy"
-                                        value={formData.expiry}
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Offer Applicable</Form.Label>
+                                    <Form.Select
+                                        id="type"
+                                        name="type"
+                                        value={formData.type}
                                         onChange={handleChange}
-                                        isInvalid={!!errors.expiry}
-                                        style={{ width: "100%" }}
-                                    />
-                                    <Form.Control.Feedback type="invalid">{errors.expiry}</Form.Control.Feedback>
-                                </Form.Group>
-                            </Col>
-                        </Row>
 
-                        <Row className="mb-3">
-                            <Col>
-                                <Form.Group>
-                                    <Form.Label>Discount Rate</Form.Label>
+                                        style={{ width: "100%" }}
+                                    >
+                                        <option value="products">Products</option>
+                                        <option value="category">Category</option>
+                                    </Form.Select>
+                                </Form.Group>
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Description</Form.Label>
                                     <Form.Control
-                                        type="number"
-                                        id="discount"
-                                        name="discount"
-                                        value={formData.discount}
+                                        as="textarea"
+                                        id="description"
+                                        name="description"
+                                        placeholder="Type here"
+                                        value={formData.description}
                                         onChange={handleChange}
-                                        isInvalid={!!errors.discount}
-                                        style={{ width: "100%" }}
+                                        isInvalid={!!errors.description}
+                                        style={{ width: "100%", height: "95px" }}
                                     />
-                                    <Form.Control.Feedback type="invalid">{errors.discount}</Form.Control.Feedback>
+                                    <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
                                 </Form.Group>
-                            </Col>
-                            <Col>
-                                <Form.Group>
-                                    <Form.Label>Criteria Amount in &#8377;</Form.Label>
-                                    <div className="currency-input">
 
-                                        <Form.Control
-                                            type="number"
-                                            id="min_amount"
-                                            name="minAmount"
-                                            placeholder="Minimum purchase amount"
-                                            value={formData.minAmount}
-                                            onChange={handleChange}
-                                            isInvalid={!!errors.minAmount}
-                                            style={{ width: "100%" }}
-                                        />
-                                        <Form.Control.Feedback type="invalid">{errors.minAmount}</Form.Control.Feedback>
-                                    </div>
-                                </Form.Group>
-                            </Col>
-                        </Row>
+                                <Row className="mb-3">
+                                    <Col>
+                                        <Form.Group>
+                                            <Form.Label>Activation Date</Form.Label>
+                                            <Form.Control
+                                                type="date"
+                                                id="activation"
+                                                name="activation"
+                                                placeholder="dd-mm-yyyy"
+                                                value={formData.activation}
+                                                onChange={handleChange}
+                                                isInvalid={!!errors.activation}
+                                                style={{ width: "100%" }}
+                                            />
+                                            <Form.Control.Feedback type="invalid">{errors.activation}</Form.Control.Feedback>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col>
+                                        <Form.Group>
+                                            <Form.Label>Expiry Date</Form.Label>
+                                            <Form.Control
+                                                type="date"
+                                                id="expiry"
+                                                name="expiry"
+                                                placeholder="dd-mm-yyyy"
+                                                value={formData.expiry}
+                                                onChange={handleChange}
+                                                isInvalid={!!errors.expiry}
+                                                style={{ width: "100%" }}
+                                            />
+                                            <Form.Control.Feedback type="invalid">{errors.expiry}</Form.Control.Feedback>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
 
-                        <div className="gap-3 mt-4 text-center">
-                            <Button className="button-custom " type="submit">
-                                Create Offer
-                            </Button>
-                        </div>
-                    </Form>
-                </Col>
-            </Row>
-        </Container>
+                                <Row className="mb-3">
+                                    <Col>
+                                        <Form.Group>
+                                            <Form.Label>Discount Rate</Form.Label>
+                                            <Form.Control
+                                                type="number"
+                                                id="discount"
+                                                name="discount"
+                                                value={formData.discount}
+                                                onChange={handleChange}
+                                                isInvalid={!!errors.discount}
+                                                style={{ width: "100%" }}
+                                            />
+                                            <Form.Control.Feedback type="invalid">{errors.discount}</Form.Control.Feedback>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col>
+                                        <Form.Group>
+                                            <Form.Label>Criteria Amount in &#8377;</Form.Label>
+                                            <div className="currency-input">
+
+                                                <Form.Control
+                                                    type="number"
+                                                    id="min_amount"
+                                                    name="minAmount"
+                                                    placeholder="Minimum purchase amount"
+                                                    value={formData.minAmount}
+                                                    onChange={handleChange}
+                                                    isInvalid={!!errors.minAmount}
+                                                    style={{ width: "100%" }}
+                                                />
+                                                <Form.Control.Feedback type="invalid">{errors.minAmount}</Form.Control.Feedback>
+                                            </div>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+
+                                <div className="gap-3 mt-4 text-center">
+                                    <Button className="button-custom " type="submit">
+                                        Create Offer
+                                    </Button>
+                                </div>
+                            </Form>
+                        </Col>
+                    </Row>
+                </Container>
+            </div>
+        </div>
     );
 };
 

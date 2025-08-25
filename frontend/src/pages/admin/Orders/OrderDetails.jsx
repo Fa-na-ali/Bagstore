@@ -77,168 +77,168 @@ const OrderDetails = () => {
 
   return (
     <>
-      <Container fluid>
-        <Row className="g-0">
-          <Col lg={2} className="d-none d-lg-block">
-            <AdminSidebar />
-          </Col>
+      <div className="d-flex">
+        <AdminSidebar />
+        <div className="main-content-wrapper flex-grow-1">
+          <Container fluid className="mt-4 p-4">
+            <Row className="g-0">
+              <Col md={10}>
+                <Card.Body className="p-4">
+                  <h6>Order Details</h6>
+                  <hr className="mt-0 mb-4" />
+                  <Row className="pt-1">
+                    <Col xs={6} className="mb-3">
+                      <h6>Customer</h6>
+                      <p className="text-muted">{order?.userId?.name}</p>
+                    </Col>
+                    <Col xs={6} className="mb-3">
+                      <h6>Order Date</h6>
+                      <p className="text-muted">{order?.createdAt}</p>
+                    </Col>
+                  </Row>
+                  <Row className="pt-1">
+                    <Col xs={6} className="mb-3">
+                      <h6>Email</h6>
+                      <p className="text-muted">{order?.userId?.email}</p>
+                    </Col>
+                    <Col xs={6} className="mb-3">
+                      <h6>Shipping Price</h6>
+                      <p className="text-muted">{order?.shippingPrice}</p>
+                    </Col>
+                  </Row>
+                  <Row className="pt-1">
+                    <Col xs={6} className="mb-3">
+                      <h6>Phone</h6>
+                      <p className="text-muted">{order?.userId?.phone}</p>
+                    </Col>
+                    <Col xs={6} className="mb-3">
+                      <h6>Payment Method</h6>
+                      <p className="text-muted">{order?.paymentMethod}</p>
+                    </Col>
+                  </Row>
+                  <Row className="pt-1">
+                    <Col xs={6} className="mb-3">
+                      <h6>Address</h6>
+                      <p className="text-muted">{address?.houseName},{address?.town},{address?.street},
+                        {address?.state}, {address?.zipcode}, {address?.country}</p>
+                    </Col>
+                    <Col xs={6} className="mb-3">
+                      <h6>Total Price</h6>
+                      <p className="text-muted">{order?.totalPrice?.toFixed(2)}</p>
+                    </Col>
+                  </Row>
+                  <hr className="mt-0 mb-4" />
+                </Card.Body>
 
-          <Col md={8}>
-            <Card.Body className="p-4">
-              <h6>Order Details</h6>
-              <hr className="mt-0 mb-4" />
-              <Row className="pt-1">
-                <Col xs={6} className="mb-3">
-                  <h6>Customer</h6>
-                  <p className="text-muted">{order?.userId?.name}</p>
-                </Col>
-                <Col xs={6} className="mb-3">
-                  <h6>Order Date</h6>
-                  <p className="text-muted">{order?.createdAt}</p>
-                </Col>
-              </Row>
-              <Row className="pt-1">
-                <Col xs={6} className="mb-3">
-                  <h6>Email</h6>
-                  <p className="text-muted">{order?.userId?.email}</p>
-                </Col>
-                <Col xs={6} className="mb-3">
-                  <h6>Shipping Price</h6>
-                  <p className="text-muted">{order?.shippingPrice}</p>
-                </Col>
-              </Row>
-              <Row className="pt-1">
-                <Col xs={6} className="mb-3">
-                  <h6>Phone</h6>
-                  <p className="text-muted">{order?.userId?.phone}</p>
-                </Col>
-                <Col xs={6} className="mb-3">
-                  <h6>Payment Method</h6>
-                  <p className="text-muted">{order?.paymentMethod}</p>
-                </Col>
-              </Row>
-              <Row className="pt-1">
-                <Col xs={6} className="mb-3">
-                  <h6>Address</h6>
-                  <p className="text-muted">{address?.houseName},{address?.town},{address?.street},
-                    {address?.state}, {address?.zipcode}, {address?.country}</p>
-                </Col>
-                <Col xs={6} className="mb-3">
-                  <h6>Total Price</h6>
-                  <p className="text-muted">{order?.totalPrice?.toFixed(2)}</p>
-                </Col>
-              </Row>
-              <hr className="mt-0 mb-4" />
-            </Card.Body>
+                <div className="table-responsive">
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th className="h5">Product Details</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order?.items?.map((item) => (
+                        <tr key={item._id}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <Image
+                                src={`${item?.product?.pdImage[0]}`}
+                                className="img-fluid rounded-3"
+                                style={{ width: "120px" }}
+                                alt="Book"
+                              />
+                              <div className="flex-column ms-4">
+                                <p className="mb-2">{item?.product?.name}</p>
+                                <p className="mb-0">{item?.product?.color}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="align-middle">
+                            <p className="mb-0 fw-bold">{item.qty}</p>
+                          </td>
 
-            <div className="table-responsive">
-              <Table>
-                <thead>
-                  <tr>
-                    <th className="h5">Product Details</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Discount</th>
-                    <th>Total Price</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order?.items?.map((item) => (
-                    <tr key={item._id}>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <Image
-                            src={`${item?.product?.pdImage[0]}`}
-                            className="img-fluid rounded-3"
-                            style={{ width: "120px" }}
-                            alt="Book"
-                          />
-                          <div className="flex-column ms-4">
-                            <p className="mb-2">{item?.product?.name}</p>
-                            <p className="mb-0">{item?.product?.color}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item.qty}</p>
-                      </td>
-
-                      <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item?.product?.price}</p>
-                      </td>
-                      <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item.discount.toFixed(2)}</p>
-                      </td>
-                      <td className="align-middle">
-                        <p className="mb-0 fw-bold">{((item?.product?.price - item.discount) * item.qty).toFixed(2)}</p>
-                      </td>
-                      <td className="align-middle">
-                        {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (
-                          <p className="mb-0 fw-bold text-danger">{item.status}</p>
-                        ) : item.status === "Return requested" ? (
-                          <div>
-                            <p className="mb-0 fw-bold text-warning">Return Request</p>
-                            <p className="mb-0"><strong>Reason:</strong> {item.returnReason}</p>
-                            <Button
-                              className="me-2"
-                              variant="success"
-                              size="sm"
-                              onClick={() => handleSaveChanges("Returned", item, order._id)}
-                            >
-                              Approve
-                            </Button>
-                            {/* <Button
+                          <td className="align-middle">
+                            <p className="mb-0 fw-bold">{item?.product?.price}</p>
+                          </td>
+                          <td className="align-middle">
+                            <p className="mb-0 fw-bold">{item.discount.toFixed(2)}</p>
+                          </td>
+                          <td className="align-middle">
+                            <p className="mb-0 fw-bold">{((item?.product?.price - item.discount) * item.qty).toFixed(2)}</p>
+                          </td>
+                          <td className="align-middle">
+                            {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (
+                              <p className="mb-0 fw-bold text-danger">{item.status}</p>
+                            ) : item.status === "Return requested" ? (
+                              <div>
+                                <p className="mb-0 fw-bold text-warning">Return Request</p>
+                                <p className="mb-0"><strong>Reason:</strong> {item.returnReason}</p>
+                                <Button
+                                  className="me-2"
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => handleSaveChanges("Returned", item, order._id)}
+                                >
+                                  Approve
+                                </Button>
+                                {/* <Button
                               variant="danger"
                               size="sm"
                               onClick={() => handleReturnAction(item._id, "rejected")}
                             >
                               Reject
                             </Button> */}
-                          </div>
-                        ) : (
-                          <Form.Select
-                            value={itemStatuses[item._id]}
-                            onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
-                          >
-                            <option value={item.status}>{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</option>
-                            {item.status === "Pending" && <option value="Shipped">Shipped</option>}
-                            {item.status === "Shipped" && <option value="Delivered">Delivered</option>}
-                          </Form.Select>
-                        )}
-                      </td>
-                      <td className="align-middle">
-                        {item.status !== "Cancelled" && item.status !== "Returned" && item.status !== "Delivered" && (
-                          <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order._id)}>
-                            Save Changes
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-            <Col md={12}>
-              <div className='ms-2'>
-                <h5>Order Status</h5>
-                <Row>
-                  <Col md={5}>
-                    <Button
-                      className='mt-1'
-                      size="sm"
-                      variant={order.status === "Completed" ? "success" : "danger"}
-                    >
-                      {order.status}
-                    </Button>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-          </Col>
-        </Row>
-      </Container >
-
+                              </div>
+                            ) : (
+                              <Form.Select
+                                value={itemStatuses[item._id]}
+                                onChange={(e) => handleItemStatusChange(item._id, e.target.value)}
+                              >
+                                <option value={item.status}>{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</option>
+                                {item.status === "Pending" && <option value="Shipped">Shipped</option>}
+                                {item.status === "Shipped" && <option value="Delivered">Delivered</option>}
+                              </Form.Select>
+                            )}
+                          </td>
+                          <td className="align-middle">
+                            {item.status !== "Cancelled" && item.status !== "Returned" && item.status !== "Delivered" && (
+                              <Button className='button-custom' size="sm" onClick={() => handleSaveChanges(itemStatuses[item._id], item, order._id)}>
+                                Save Changes
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+                <Col md={12}>
+                  <div className='ms-2'>
+                    <h5>Order Status</h5>
+                    <Row>
+                      <Col md={5}>
+                        <Button
+                          className='mt-1'
+                          size="sm"
+                          variant={order.status === "Completed" ? "success" : "danger"}
+                        >
+                          {order.status}
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+              </Col>
+            </Row>
+          </Container >
+        </div>
+      </div>
     </>
   )
 }

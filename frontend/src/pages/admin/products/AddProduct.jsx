@@ -108,202 +108,204 @@ const AddProduct = () => {
   };
 
   return (
-    <Container fluid>
-      <Row className="g-0">
-        <Col lg={2} className="d-none d-lg-block">
-          <AdminSidebar />
-        </Col>
-        <Col lg={9} className="p-4 background-one vw-75">
-          <h2 className='text-center my-5 heading'>ADD PRODUCT</h2>
-          <Form onSubmit={handleSubmit}>
-            <Row className="mb-3 my-5">
-              <Form.Group as={Col} controlId="formName">
-                <Form.Label className='caption'>Name of Product</Form.Label>
-                <Form.Control type="text" placeholder="Enter Product name" value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  isInvalid={!!errors.name} />
-                <Form.Control.Feedback type="invalid">
-                  {errors.name}
-                </Form.Control.Feedback>
-              </Form.Group>
+    <div className="d-flex">
+      <AdminSidebar />
+      <div className="main-content-wrapper background-one flex-grow-1">
+        <Container fluid className="mt-4 p-4">
+          <Row className="g-0">
+            <Col lg={10} >
+              <h2 className='text-center my-5 heading'>ADD PRODUCT</h2>
+              <Form onSubmit={handleSubmit}>
+                <Row className="mb-3 my-5">
+                  <Form.Group as={Col} controlId="formName">
+                    <Form.Label className='caption'>Name of Product</Form.Label>
+                    <Form.Control type="text" placeholder="Enter Product name" value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      isInvalid={!!errors.name} />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.name}
+                    </Form.Control.Feedback>
+                  </Form.Group>
 
-              <Form.Group as={Col} controlId="formGridCategory">
-                <Form.Label className="caption">Category</Form.Label>
-                <Form.Select className="text-secondary"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  isInvalid={!!errors.category}>
-                  <option value="">Choose...</option>
-                  {categories?.map((c) => (
-                    <option key={c._id} value={c._id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  {errors.category}
-                </Form.Control.Feedback>
-              </Form.Group>
+                  <Form.Group as={Col} controlId="formGridCategory">
+                    <Form.Label className="caption">Category</Form.Label>
+                    <Form.Select className="text-secondary"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      isInvalid={!!errors.category}>
+                      <option value="">Choose...</option>
+                      {categories?.map((c) => (
+                        <option key={c._id} value={c._id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.category}
+                    </Form.Control.Feedback>
+                  </Form.Group>
 
-              <Form.Group as={Col} controlId="formGridPrice">
-                <Form.Label className='caption'>Price</Form.Label>
-                <Form.Control type="number" placeholder="Enter Price" value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  isInvalid={!!errors.price} />
-                <Form.Control.Feedback type="invalid">
-                  {errors.price}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Row>
+                  <Form.Group as={Col} controlId="formGridPrice">
+                    <Form.Label className='caption'>Price</Form.Label>
+                    <Form.Control type="number" placeholder="Enter Price" value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      isInvalid={!!errors.price} />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.price}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
 
-            <Form.Group className="mb-3" controlId="formDesc">
-              <Form.Label className='caption'>Description</Form.Label>
-              <Form.Control type="text" placeholder="Enter Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                isInvalid={!!errors.description}
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors.description}
-              </Form.Control.Feedback>
-            </Form.Group>
-
-            <Row className="mb-3">
-
-              <Form.Group as={Col} controlId="offer">
-                <Form.Label className="caption">Offer</Form.Label>
-                <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
-                  <option value="none">None</option>
-                  {offers
-                    ?.filter((offer) => offer.type === "products")
-                    .map((offer) => (
-                      <option key={offer.name} value={offer.name}>
-                        {offer.name}
-                      </option>
-                    ))}
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group as={Col} controlId="formGridColor">
-                <Form.Label className='caption'>Color</Form.Label>
-                <Form.Select className='text-secondary' value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  isInvalid={!!errors.color}>
-                  <option value="">Choose...</option>
-                  <option value="Beige">Beige</option>
-                  <option value="Brown">Brown</option>
-                  <option value="White">White</option>
-                  <option value="Black">Black</option>
-                  <option value="Pink">Pink</option>
-                  <option value="Green">Green</option>
-                  <option value="Red">Red</option>
-                  <option value="Orange">Orange</option>
-                  <option value="Violet">Violet</option>
-                  <option value="Blue">Blue</option>
-                  <option value="Yellow">Yellow</option>
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  {errors.color}
-                </Form.Control.Feedback>
-              </Form.Group>
-
-              <Form.Group as={Col} controlId="formGridBrand">
-                <Form.Label className='caption'>Brand</Form.Label>
-                <Form.Control type="text" placeholder="Enter Brand" value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  isInvalid={!!errors.brand} />
-                <Form.Control.Feedback type="invalid">
-                  {errors.brand}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Row>
-
-            <Row>
-              <div style={{ maxWidth: '300px' }}>
-                <Form.Label className="mb-2 caption" >Quantity</Form.Label>
-                <div className="d-flex align-items-center">
-                  <Button className="px-3 me-2 button-custom" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                    <MdOutlineRemove />
-                  </Button>
-
-                  <Form.Control
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    className="text-center"
-                    style={{ width: '70px' }}
-                    isInvalid={!!errors.quantity}
+                <Form.Group className="mb-3" controlId="formDesc">
+                  <Form.Label className='caption'>Description</Form.Label>
+                  <Form.Control type="text" placeholder="Enter Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    isInvalid={!!errors.description}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.description}
+                  </Form.Control.Feedback>
+                </Form.Group>
 
-                  <Button className="px-3 ms-2 button-custom" onClick={() => setQuantity(quantity + 1)}>
-                    <MdOutlineAdd />
-                  </Button>
-                </div>
-                <Form.Control.Feedback type="invalid">
-                  {errors.quantity}
-                </Form.Control.Feedback>
-              </div>
+                <Row className="mb-3">
 
-              <Form.Group as={Col} controlId="formGridsize">
-                <Form.Label className='caption'>Size</Form.Label>
-                <Form.Control type="string" placeholder="Enter size" value={size}
-                  onChange={(e) => setSize(e.target.value)}
-                  isInvalid={!!errors.size} />
-                <Form.Control.Feedback type="invalid">
-                  {errors.size}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Row>
-            <Form.Group className="mb-3 my-4">
-              <Form.Label className='caption'>Upload Images</Form.Label>
-              <Form.Control type="file" multiple onChange={handleFileChange} />
-              <p className="text-muted">You can upload multiple images.</p>
-            </Form.Group>
-            {croppedImages.length > 0 && (
-              <Container className="mt-3 d-flex">
-                {croppedImages.map((image, index) => (
-                  <Card key={index} style={{ width: "70px", height: "70px", margin: "5px" }}>
-                    <Card.Img variant="top" src={URL.createObjectURL(image)} />
-                  </Card>
-                ))}
-              </Container>
-            )}
-            <Button className='button-custom w-100 my-5' type="submit" disabled={isLoading}>
-              {isLoading ? 'Uploading...' : 'Submit'}
-            </Button>
-          </Form>
-        </Col>
-      </Row>
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Body>
-          <Cropper
-            ref={cropperRef}
-            style={{ height: 400, width: "100%" }}
-            zoomTo={0.5}
-            initialAspectRatio={1}
-            preview=".img-preview"
-            src={imageToCrop}
-            viewMode={1}
-            minCropBoxHeight={10}
-            minCropBoxWidth={10}
-            background={false}
-            responsive={true}
-            autoCropArea={1}
-            checkOrientation={false}
-            guides={true}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleCrop}>
-            Crop & Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+                  <Form.Group as={Col} controlId="offer">
+                    <Form.Label className="caption">Offer</Form.Label>
+                    <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
+                      <option value="none">None</option>
+                      {offers
+                        ?.filter((offer) => offer.type === "products")
+                        .map((offer) => (
+                          <option key={offer.name} value={offer.name}>
+                            {offer.name}
+                          </option>
+                        ))}
+                    </Form.Select>
+                  </Form.Group>
+
+                  <Form.Group as={Col} controlId="formGridColor">
+                    <Form.Label className='caption'>Color</Form.Label>
+                    <Form.Select className='text-secondary' value={color}
+                      onChange={(e) => setColor(e.target.value)}
+                      isInvalid={!!errors.color}>
+                      <option value="">Choose...</option>
+                      <option value="Beige">Beige</option>
+                      <option value="Brown">Brown</option>
+                      <option value="White">White</option>
+                      <option value="Black">Black</option>
+                      <option value="Pink">Pink</option>
+                      <option value="Green">Green</option>
+                      <option value="Red">Red</option>
+                      <option value="Orange">Orange</option>
+                      <option value="Violet">Violet</option>
+                      <option value="Blue">Blue</option>
+                      <option value="Yellow">Yellow</option>
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.color}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+
+                  <Form.Group as={Col} controlId="formGridBrand">
+                    <Form.Label className='caption'>Brand</Form.Label>
+                    <Form.Control type="text" placeholder="Enter Brand" value={brand}
+                      onChange={(e) => setBrand(e.target.value)}
+                      isInvalid={!!errors.brand} />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.brand}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
+
+                <Row>
+                  <div style={{ maxWidth: '300px' }}>
+                    <Form.Label className="mb-2 caption" >Quantity</Form.Label>
+                    <div className="d-flex align-items-center">
+                      <Button className="px-3 me-2 button-custom" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                        <MdOutlineRemove />
+                      </Button>
+
+                      <Form.Control
+                        type="number"
+                        min="1"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        className="text-center"
+                        style={{ width: '70px' }}
+                        isInvalid={!!errors.quantity}
+                      />
+
+                      <Button className="px-3 ms-2 button-custom" onClick={() => setQuantity(quantity + 1)}>
+                        <MdOutlineAdd />
+                      </Button>
+                    </div>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.quantity}
+                    </Form.Control.Feedback>
+                  </div>
+
+                  <Form.Group as={Col} controlId="formGridsize">
+                    <Form.Label className='caption'>Size</Form.Label>
+                    <Form.Control type="string" placeholder="Enter size" value={size}
+                      onChange={(e) => setSize(e.target.value)}
+                      isInvalid={!!errors.size} />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.size}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
+                <Form.Group className="mb-3 my-4">
+                  <Form.Label className='caption'>Upload Images</Form.Label>
+                  <Form.Control type="file" multiple onChange={handleFileChange} />
+                  <p className="text-muted">You can upload multiple images.</p>
+                </Form.Group>
+                {croppedImages.length > 0 && (
+                  <Container className="mt-3 d-flex">
+                    {croppedImages.map((image, index) => (
+                      <Card key={index} style={{ width: "70px", height: "70px", margin: "5px" }}>
+                        <Card.Img variant="top" src={URL.createObjectURL(image)} />
+                      </Card>
+                    ))}
+                  </Container>
+                )}
+                <Button className='button-custom w-100 my-5' type="submit" disabled={isLoading}>
+                  {isLoading ? 'Uploading...' : 'Submit'}
+                </Button>
+              </Form>
+            </Col>
+          </Row>
+          <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+            <Modal.Body>
+              <Cropper
+                ref={cropperRef}
+                style={{ height: 400, width: "100%" }}
+                zoomTo={0.5}
+                initialAspectRatio={1}
+                preview=".img-preview"
+                src={imageToCrop}
+                viewMode={1}
+                minCropBoxHeight={10}
+                minCropBoxWidth={10}
+                background={false}
+                responsive={true}
+                autoCropArea={1}
+                checkOrientation={false}
+                guides={true}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleCrop}>
+                Crop & Save
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </Container>
+      </div>
+    </div>
   );
 };
 

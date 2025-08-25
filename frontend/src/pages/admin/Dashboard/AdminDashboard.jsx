@@ -186,189 +186,190 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <Container fluid className='my-custom-min-height'>
-        <Row className="g-0">
-          <Col lg={2} className="d-none d-lg-block">
-            <AdminSidebar />
-          </Col>
+      <div className="d-flex">
+        <AdminSidebar />
+        <div className="main-content-wrapper background-one flex-grow-1">
+          <Container fluid className="mt-4 p-4">
+            <Row className="g-0">
+              <Col lg={11} >
+                <h2 className='text-center my-5 heading'>ADMIN DASHBOARD</h2>
+                <div className="table-title my-5">
+                  <Row className=" mb-4">
+                    <Col lg={4}>
+                      <Link to="/admin/sales-report">
+                        <Button className="me-2 button-custom">
+                          <span>View Sales Report</span>
+                        </Button>
+                      </Link>
+                    </Col>
+                    <Col lg={4} className="d-flex justify-content-space between align-items-center">
+                      <Form.Label htmlFor="filter">Filter:</Form.Label>
+                      <Form.Select
+                        id="filter"
+                        className="w-auto ms-3"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="custom">Custom Date</option>
+                      </Form.Select>
+                      {filter === 'monthly' && (
+                        <Form.Select
+                          className="ms-3"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                        >
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {getMonthName(i)}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      )}
 
-          <Col lg={9} className="p-4 background-one vw-75">
-            <h2 className='text-center my-5 heading'>ADMIN DASHBOARD</h2>
-            <div className="table-title my-5">
-              <Row className=" mb-4">
-                <Col lg={4}>
-                  <Link to="/admin/sales-report">
-                    <Button className="me-2 button-custom">
-                      <span>View Sales Report</span>
-                    </Button>
-                  </Link>
-                </Col>
-                <Col lg={4} className="d-flex justify-content-space between align-items-center">
-                  <Form.Label htmlFor="filter">Filter:</Form.Label>
-                  <Form.Select
-                    id="filter"
-                    className="w-auto ms-3"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="custom">Custom Date</option>
-                  </Form.Select>
-                  {filter === 'monthly' && (
-                    <Form.Select
-                      className="ms-3"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <option key={i} value={i}>
-                          {getMonthName(i)}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  )}
+                      {filter === 'yearly' && (
+                        <Form.Select
+                          className="ms-3"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                        >
+                          {[2023, 2024, 2025].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </Form.Select>
+                      )}
 
-                  {filter === 'yearly' && (
-                    <Form.Select
-                      className="ms-3"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    >
-                      {[2023, 2024, 2025].map((year) => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </Form.Select>
-                  )}
-
-                </Col>
-                {showDateInputs && (
-                  <Col xs={12} lg={4} className="date-inputs d-flex gap-2">
-                    <Form.Control
-                      type="date"
-                      id="startDate"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                    <Form.Control
-                      type="date"
-                      id="endDate"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </Col>
-                )}
-              </Row>
-
-
-              {/* Summary Cards */}
-              <Row className="mb-4">
-                {/* Sales Summary */}
-                <Col md={4}>
-                  <Card className="h-100">
-                    <Card.Body>
-                      <Card.Title>Total Sales</Card.Title>
-                      <Card.Text>₹{totalSales.toLocaleString()}</Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-
-                {/* Users Summary */}
-                <Col md={4}>
-                  <Card className="h-100">
-                    <Card.Body>
-                      <Card.Title>Users</Card.Title>
-                      <Card.Text>{totalUsers}</Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-
-                {/* Orders Summary */}
-                <Col md={4}>
-                  <Card className="h-100">
-                    <Card.Body>
-                      <Card.Title>Orders</Card.Title>
-                      <Card.Text>{totalOrders}</Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-
-              <Row>
-                <Col>
-                  <Card>
-                    <Card.Body>
-                      <canvas id="salesChart" height="100"></canvas>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-              <Col md={12} className="mt-5 mt-md-3">
-                <Card className="h-100">
-                  <Card.Body>
-                    <Row>
-                      <Col>
-                        <Card.Title className='caption'>Customers</Card.Title>
+                    </Col>
+                    {showDateInputs && (
+                      <Col xs={12} lg={4} className="date-inputs d-flex gap-2">
+                        <Form.Control
+                          type="date"
+                          id="startDate"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                        />
+                        <Form.Control
+                          type="date"
+                          id="endDate"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
                       </Col>
-                    </Row>
-                    <div className="chart-container mt-5" style={{ height: '200px' }}>
-                      <canvas id="customersChart"></canvas>
-                    </div>
-                  </Card.Body>
-                </Card>
+                    )}
+                  </Row>
+
+
+                  {/* Summary Cards */}
+                  <Row className="mb-4">
+                    {/* Sales Summary */}
+                    <Col md={4}>
+                      <Card className="h-100">
+                        <Card.Body>
+                          <Card.Title>Total Sales</Card.Title>
+                          <Card.Text>₹{totalSales.toLocaleString()}</Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* Users Summary */}
+                    <Col md={4}>
+                      <Card className="h-100">
+                        <Card.Body>
+                          <Card.Title>Users</Card.Title>
+                          <Card.Text>{totalUsers}</Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    {/* Orders Summary */}
+                    <Col md={4}>
+                      <Card className="h-100">
+                        <Card.Body>
+                          <Card.Title>Orders</Card.Title>
+                          <Card.Text>{totalOrders}</Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col>
+                      <Card>
+                        <Card.Body>
+                          <canvas id="salesChart" height="100"></canvas>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                  <Col md={12} className="mt-5 mt-md-3">
+                    <Card className="h-100">
+                      <Card.Body>
+                        <Row>
+                          <Col>
+                            <Card.Title className='caption'>Customers</Card.Title>
+                          </Col>
+                        </Row>
+                        <div className="chart-container mt-5" style={{ height: '200px' }}>
+                          <canvas id="customersChart"></canvas>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  {/* Category and Products Row */}
+                  <Row className='mt-5'>
+                    {/* Category Distribution */}
+                    <Col md={6}>
+                      <Card className="h-100">
+                        <Card.Body>
+                          <Card.Title>Top Selling Categories</Card.Title>
+                          <div className="chart-container" style={{ height: '300px' }}>
+                            <canvas id="categoryChart"></canvas>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+
+                    {/* Top Selling Products */}
+                    <Col md={6}>
+                      <Card className="h-100">
+                        <Card.Body>
+                          <Card.Title>Top Selling Products</Card.Title>
+                          <ListGroup variant="flush">
+                            {dashboardData.topSellingProducts.map((product, index) => (
+                              <ListGroup.Item key={index} className="d-flex align-items-center">
+                                <img
+                                  src={`${product.productInfo?.pdImage[0]}`}
+                                  alt={product.productInfo?.name}
+                                  width={50}
+                                  height={50}
+                                  className="me-3 rounded"
+                                  style={{ objectFit: 'cover' }}
+                                />
+                                <div>
+                                  <h6 className="mb-0">{product.productInfo?.name}</h6>
+                                  <small className="text-muted">Sold: {product.totalSold}</small>
+                                  <div className="text-success">
+                                    ₹{product.totalRevenue.toFixed(2)}
+                                  </div>
+                                </div>
+                              </ListGroup.Item>
+                            ))}
+                          </ListGroup>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                </div>
               </Col>
-
-              {/* Category and Products Row */}
-              <Row className='mt-5'>
-                {/* Category Distribution */}
-                <Col md={6}>
-                  <Card className="h-100">
-                    <Card.Body>
-                      <Card.Title>Top Selling Categories</Card.Title>
-                      <div className="chart-container" style={{ height: '300px' }}>
-                        <canvas id="categoryChart"></canvas>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-
-
-                {/* Top Selling Products */}
-                <Col md={6}>
-                  <Card className="h-100">
-                    <Card.Body>
-                      <Card.Title>Top Selling Products</Card.Title>
-                      <ListGroup variant="flush">
-                        {dashboardData.topSellingProducts.map((product, index) => (
-                          <ListGroup.Item key={index} className="d-flex align-items-center">
-                            <img
-                              src={`${product.productInfo?.pdImage[0]}`}
-                              alt={product.productInfo?.name}
-                              width={50}
-                              height={50}
-                              className="me-3 rounded"
-                              style={{ objectFit: 'cover' }}
-                            />
-                            <div>
-                              <h6 className="mb-0">{product.productInfo?.name}</h6>
-                              <small className="text-muted">Sold: {product.totalSold}</small>
-                              <div className="text-success">
-                                ₹{product.totalRevenue.toFixed(2)}
-                              </div>
-                            </div>
-                          </ListGroup.Item>
-                        ))}
-                      </ListGroup>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </div>
-          </Col>
-        </Row>
-      </Container>
+            </Row>
+          </Container>
+        </div>
+      </div>
     </>
   );
 };

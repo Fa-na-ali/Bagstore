@@ -10,8 +10,9 @@ import { Link } from "react-router";
 
 const AdminSidebar = () => {
   return (
-    <Navbar expand="lg" className="d-lg-block sidebar collapse vh-100 background-two postion-fixed">
-      <Container fluid className="position-sticky">
+    <Navbar expand="lg" className="d-lg-block sidebar collapse vh-100 background-two postion-fixed top-0 start-0"
+    style={{ width: "250px", zIndex: 1000 }}>
+      <Container fluid >
         <Nav className="flex-column  mt-5 ">
           <Nav.Link as={Link} to='/admin/dashboard' className="py-2 ripple text-white">
             <RxDashboard className="me-3" />
