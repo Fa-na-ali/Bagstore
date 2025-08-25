@@ -46,7 +46,6 @@ body {
 
 .zoom-image:hover {
   transform: scale(1.5);
-  /* Zoom effect */
 }
 
 .my-custom-min-height {
@@ -159,8 +158,7 @@ body {
   flex-grow: 1;
 }
 
-/* For responsive design, you may need a media query */
-@media (max-width: 992px) { /* On small screens, hide the sidebar and remove margin */
+@media (max-width: 992px) {
   .main-content-wrapper {
     margin-left: 0;
     width: 100%;
