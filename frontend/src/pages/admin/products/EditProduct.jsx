@@ -12,7 +12,7 @@ import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
-import { IMG_URL } from '../../../redux/constants';
+import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
 
 
 const EditProduct = () => {
@@ -22,9 +22,9 @@ const EditProduct = () => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
 
-  const { data, refetch, isLoading, isError } = useGetProductByIdQuery(id);
+  const { data, refetch } = useGetProductByIdQuery(id);
   const product = data?.product
-  const [update, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [update, { isLoading }] = useUpdateProductMutation();
   const { data: datas } = useFetchCategoriesQuery();
   const categories = datas?.all
   const [deleteImage] = useDeleteImageMutation();
@@ -38,14 +38,27 @@ const EditProduct = () => {
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [files, setFiles] = useState([]);
-  const [upload, setUpload] = useState([])
+  const [errors, setErrors] = useState({});
   const [croppedImages, setCroppedImages] = useState([]);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const cropperRef = useRef(null);
   const [croppingIndex, setCroppingIndex] = useState(null);
 
-  const productImages = product?.pdImage.map((img) => `${IMG_URL}${img}`);
+  const validate = () => {
+    const newErrors = {};
+    if (!name || name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
+    if (!category) newErrors.category = 'Category is required';
+    if (!description || description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
+    if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
+    if (!color) newErrors.color = 'Color is required';
+    if (!brand || brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
+    if (!size || size.length > 20) newErrors.size = "Size is required"
+    if (quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
+    if (files.length === 0) newErrors.files = 'At least one image is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   useEffect(() => {
     if (product) {
@@ -60,7 +73,7 @@ const EditProduct = () => {
       setSize(product.size || "");
 
       if (product?.pdImage) {
-        setFiles(product.pdImage.map((img) => `${IMG_URL}${img}`));
+        setFiles(product.pdImage);
       }
 
     }
@@ -127,6 +140,9 @@ const EditProduct = () => {
   //to update
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) {
+      return;
+    }
     const productData = new FormData();
     productData.append("name", name);
     productData.append("description", description);
@@ -152,12 +168,12 @@ const EditProduct = () => {
     convertedFiles.forEach((file) => productData.append("pdImage", file));
 
     try {
-      const { data } = await update({ id: product?._id, formData: productData }).unwrap()
-      toast.success('Product Edited successfully!');
-      navigate('/admin/products')
+      await update({ id: product?._id, formData: productData }).unwrap()
+      toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
       refetch();
+      navigate('/admin/products')
     } catch (error) {
-      toast.error(error?.data?.message || 'Failed to edit product');
+      toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_UPDATE_FAILURE}`);
     }
   };
 
@@ -177,13 +193,21 @@ const EditProduct = () => {
                   <Form.Label className='caption'>Name of Product</Form.Label>
                   <Form.Control type="text" value={name}
                     onChange={(e) => setName(e.target.value)}
-                  />
+                    isInvalid={!!errors.name} />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.name}
+                  </Form.Control.Feedback>
+
                 </Form.Group>
                 <Form.Group as={Col} controlId="formGridPrice">
                   <Form.Label className='caption'>Price</Form.Label>
                   <Form.Control type="number" value={price}
                     onChange={(e) => setPrice(e.target.value)}
+                    isInvalid={!!errors.price}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.price}
+                  </Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group as={Col} controlId="formGridCategory">
@@ -191,6 +215,7 @@ const EditProduct = () => {
                   <Form.Select className="text-secondary"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
+                    isInvalid={!!errors.category}
                   >
                     <option value=""></option>
                     {categories?.map((c) => (
@@ -199,7 +224,9 @@ const EditProduct = () => {
                       </option>
                     ))}
                   </Form.Select>
-
+                  <Form.Control.Feedback type="invalid">
+                    {errors.category}
+                  </Form.Control.Feedback>
                 </Form.Group>
 
               </Row>
@@ -208,8 +235,11 @@ const EditProduct = () => {
                 <Form.Control type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-
+                  isInvalid={!!errors.description}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {errors.description}
+                </Form.Control.Feedback>
 
               </Form.Group>
               <Row className="mb-3">
@@ -232,6 +262,7 @@ const EditProduct = () => {
                   <Form.Label className='caption'>Color</Form.Label>
                   <Form.Select className='text-secondary' value={color}
                     onChange={(e) => setColor(e.target.value)}
+                    isInvalid={!!errors.color}
                   >
                     <option value="">Choose...</option>
                     <option value="Beige">Beige</option>
@@ -246,14 +277,20 @@ const EditProduct = () => {
                     <option value="Blue">Blue</option>
                     <option value="Yellow">Yellow</option>
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.color}
+                  </Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group as={Col} controlId="formGridBrand">
                   <Form.Label className='caption'>Brand</Form.Label>
                   <Form.Control type="text" value={brand}
                     onChange={(e) => setBrand(e.target.value)}
+                    isInvalid={!!errors.brand}
                   />
-
+                  <Form.Control.Feedback type="invalid">
+                    {errors.brand}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Row>
 
@@ -272,22 +309,27 @@ const EditProduct = () => {
                       onChange={(e) => setQuantity(e.target.value)}
                       className="text-center"
                       style={{ width: '70px' }}
-
+                      isInvalid={!!errors.quantity}
                     />
 
                     <Button className="px-3 ms-2 button-custom" onClick={() => setQuantity(quantity + 1)}>
                       <MdOutlineAdd />
                     </Button>
                   </div>
-
+                  <Form.Control.Feedback type="invalid">
+                    {errors.quantity}
+                  </Form.Control.Feedback>
                 </div>
 
                 <Form.Group as={Col} controlId="formGridsize">
                   <Form.Label className='caption'>Size</Form.Label>
                   <Form.Control type="string" value={size}
                     onChange={(e) => setSize(e.target.value)}
+                    isInvalid={!!errors.size}
                   />
-
+                  <Form.Control.Feedback type="invalid">
+                    {errors.size}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Row>
               <Form.Group className="mb-3">

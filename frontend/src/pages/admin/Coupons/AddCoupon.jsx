@@ -6,6 +6,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddCouponMutation } from "../../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
+import { COUPON_MESSAGES } from "../../../constants/messageConstants";
 
 const AddCoupon = () => {
     const [formData, setFormData] = useState({
@@ -26,17 +27,17 @@ const AddCoupon = () => {
 
     const validateForm = () => {
         let newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Coupon name is required";
-        if (!formData.description.trim()) newErrors.description = "Description is required";
+        if (!formData.name.trim() || formData.name.length > 20) newErrors.name = "Coupon name must be atmost 20 characters long";
+        if (!formData.description.trim() || formData.description.length > 50) newErrors.description = "Description must be atmost 50 characters long";
         if (!formData.activation) newErrors.activation = "Activation date is required";
         if (!formData.expiry) newErrors.expiry = "Expiry date is required";
         if (formData.activation && formData.expiry && formData.expiry <= formData.activation) {
             newErrors.expiry = "Expiry date must be after activation date";
         }
-        if (!formData.discount || formData.discount <= 0) newErrors.discount = "Enter a valid discount";
-        if (!formData.minAmount || formData.minAmount <= 0) newErrors.minAmount = "Enter a valid minimum amount";
-        if (!formData.maxAmount || formData.maxAmount <= 0) newErrors.maxAmount = "Enter a valid maximum amount";
-        if (!formData.limit || formData.limit <= 0) newErrors.limit = "Enter a valid usage limit";
+        if (!formData.discount || formData.discount <= 0 || formData.discount > 100) newErrors.discount = "Enter a valid discount";
+        if (!formData.minAmount || formData.minAmount <= 0 || formData.minAmount > 100000) newErrors.minAmount = "Enter a valid minimum amount";
+        if (!formData.maxAmount || formData.maxAmount <= 0 || formData.maxAmount > 10000) newErrors.maxAmount = "Enter a valid maximum amount";
+        if (!formData.limit || formData.limit <= 0 || formData.limit > 100) newErrors.limit = "Enter a valid usage limit";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -56,7 +57,7 @@ const AddCoupon = () => {
             toast.success(response.message);
             navigate('/admin/coupons')
         } catch (err) {
-            toast.error(err.data?.message || "Failed to add coupon");
+            toast.error(err.data?.message || `${COUPON_MESSAGES.COUPON_ADD_FAILURE}`);
         }
     };
 

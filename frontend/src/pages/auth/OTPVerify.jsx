@@ -3,8 +3,9 @@ import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useVerifyOtpMutation, useResendOtpMutation } from "../../redux/api/usersApiSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setCredentials } from "../../redux/features/auth/authSlice";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 const OTPVerify = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -18,8 +19,6 @@ const OTPVerify = () => {
 
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
-
-  const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (timer > 0) {
@@ -62,14 +61,13 @@ const OTPVerify = () => {
     const otpCode = otp.join("");
 
     if (otpCode.length !== 6) {
-      toast.error("Please enter a 6-digit OTP.");
+      toast.error(USER_MESSAGES.USER_OTP_VALIDATION);
       return;
     }
 
     try {
       const res = await verifyOtp({ email, otp: otpCode }).unwrap();
-      toast.success("OTP Verified Successfully!");
-
+      toast.success(USER_MESSAGES.USER_OTP_SUCCESS);
       dispatch(setCredentials({ ...res }));
       if (res.user.isAdmin) {
         navigate("/admin/dashboard");
@@ -78,7 +76,7 @@ const OTPVerify = () => {
       }
 
     } catch (err) {
-      toast.error(err?.data?.message || "Invalid OTP. Please try again.");
+      toast.error(err?.data?.message || `${USER_MESSAGES.USER_OTP_FAILURE}`);
     }
   };
 
@@ -86,12 +84,12 @@ const OTPVerify = () => {
   const handleResendOtp = async () => {
     try {
       await resendOtp({ email }).unwrap();
-      toast.success("A new OTP has been sent to your email.");
+      toast.success(USER_MESSAGES.USER_OTP_SENT);
       setOtp(new Array(6).fill(""));
       inputRefs.current[0]?.focus();
       setTimer(90);
     } catch (err) {
-      toast.error("Failed to resend OTP. Try again later.");
+      toast.error(err?.data?.message || USER_MESSAGES.USER_OTP_RESEND_FAIL);
     }
   };
 

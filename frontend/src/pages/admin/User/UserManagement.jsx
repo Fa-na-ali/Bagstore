@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
-import { Col, Container, Row, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
+import { Col, Container, Row, InputGroup, Form, FormControl } from 'react-bootstrap'
 import AdminSidebar from '../../../components/AdminSidebar'
 import Ttable from '../../../components/Ttable'
 import { useDeleteUserMutation, useFetchUsersQuery } from '../../../redux/api/usersApiSlice'
 import { toast } from 'react-toastify'
+import debounce from 'lodash.debounce'
+import { USER_MESSAGES } from '../../../constants/messageConstants'
 
 
 const UserManagement = () => {
 
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  let { data, refetch: load, error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
+  let { data, error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
   const user = data?.user || [];
   const [deleteUser] = useDeleteUserMutation();
 
@@ -28,14 +31,24 @@ const UserManagement = () => {
   ];
 
   useEffect(() => {
-    if (user)
-      load()
-  }, [load]);
 
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
+    const debouncedResults = debounce(() => {
+      setSearchTerm(inputValue);
+    }, 500);
+
+    debouncedResults()
+
+    return () => {
+      debouncedResults.cancel();
+    };
+
+  }, [inputValue]);
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+    setCurrentPage(1);
   };
+
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -45,12 +58,10 @@ const UserManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteUser(id);
-        load();
-        toast.success(" Deleted Successfully")
-
+        toast.success(USER_MESSAGES.USER_DLT_SUCCESS)
 
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${USER_MESSAGES.USER_DLT_FAILURE}`);
       }
     }
   };
@@ -73,18 +84,15 @@ const UserManagement = () => {
                 <Col lg={3}></Col>
                 <Col lg={3} className="d-flex justify-content-end gap-3">
                   <InputGroup className="mb-3">
-                    <Form onSubmit={searchHandler} method="GET" className="d-flex">
+                    <Form className="d-flex">
                       <FormControl
                         type="search"
                         placeholder="Search"
                         aria-label="Search"
                         aria-describedby="search-addon"
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value) }}
+                        value={inputValue}
+                        onChange={handleChange}
                       />
-                      <Button type='submit' variant="outline-primary" id="search-addon">
-                        Search
-                      </Button>
                     </Form>
                   </InputGroup>
                 </Col>

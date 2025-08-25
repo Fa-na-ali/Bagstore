@@ -1,0 +1,16 @@
+export const BASE_URL = "";
+export const USERS_URL = "/api/user";
+export const CATEGORY_URL = "/api/category";
+export const PRODUCT_URL = "/api/products";
+export const UPLOAD_URL = "/api/upload";
+export const ORDERS_URL = "/api/orders";
+export const WALLET_URL = "/api/wallet";
+export const PLACEHOLDER_URL = 'https://via.placeholder.com/300'
+export const NORMAL_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf'
+export const BOLD_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf'
+export const ITALICS_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf'
+export const BOLDITALICS_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+export const LOGO_URL = 'https://your-logo-url.com/logo.png'
+export const  GOOGLE_API_URL = "http://localhost:5004/api/user"
+export const WALLET_IMG_URL = "https://www.svgrepo.com/show/362035/visa-3.svg"
+export const CONTACT_URL = 'https://formbold.com/s/9gXn4'

@@ -3,26 +3,27 @@ import { Card, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useForgotPasswordMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const ForgotPass = () => {
 
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+  const [forgotPassword] = useForgotPasswordMutation();
 
   //reset password
   const handleClick = async () => {
 
     if (!email) {
-      toast.error("Please enter your email.");
+      toast.error(USER_MESSAGES.USER_VALIDATION_MSG);
       return;
     }
     try {
       const { data } = await forgotPassword({ email }).unwrap();
-      toast.success(data?.message || "OTP sent to your email!");
+      toast.success(data?.message || `${USER_MESSAGES.USER_OTP_SENT}`);
       navigate(`/verify-otp-password?email=${email}`);
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to send OTP.");
+      toast.error(error?.data?.message || `${USER_MESSAGES.USER_OTP_SENT_FAILURE}`);
     }
   }
 
@@ -33,7 +34,7 @@ const ForgotPass = () => {
           <Card.Header className="h5 text-white background-two">Password Reset</Card.Header>
           <Card.Body className="px-4">
             <Card.Text className="py-2">
-              Enter your email address and we'll send you an email with an OTP to reset your password.
+              Enter your email address and we&apos;ll send you an email with an OTP to reset your password.
             </Card.Text>
             <Form>
               <Form.Group controlId="typeEmail">

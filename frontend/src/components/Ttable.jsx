@@ -2,6 +2,7 @@ import { FaEye } from "react-icons/fa";
 import { Table, Container, Button, Pagination, Badge } from "react-bootstrap";
 import { FaSort, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { PropTypes } from "prop-types";
 
 const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage }) => {
   const totalPages = pageData?.pages || 1;
@@ -78,7 +79,7 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                           </Link>
                         )
                       )}
-                      {naming !== "wallets" && (
+                      {(naming !== "wallets" && naming !== "orders") && (
                         <Button variant="link" className="text-danger p-0" title="Delete" onClick={() => onDelete(item._id)}>
                           <FaTrash />
                         </Button>
@@ -124,6 +125,24 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
       </div>
     </Container>
   );
+};
+
+Ttable.propTypes = {
+  naming: PropTypes.string.isRequired,
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onPage: PropTypes.func.isRequired,
+  pageData: PropTypes.shape({
+    pages: PropTypes.number,
+    count: PropTypes.number,
+  }),
+  currentPage: PropTypes.number.isRequired,
 };
 
 export default Ttable;

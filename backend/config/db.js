@@ -1,11 +1,13 @@
 const mongoose = require('mongoose')
 const URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bags';
+const dotenv = require('dotenv');
 
-//database connectio
+dotenv.config();
 
-const dbConnect = async() => {
+//database connection
+const dbConnect = async () => {
     try {
-        
+
         await mongoose.connect(URI)
         console.log("Connected to database")
 

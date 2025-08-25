@@ -5,12 +5,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSpecificCategoriesQuery, useUpdateCategoryMutation } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
+import { CATEGORY_MESSAGES } from '../../../constants/messageConstants';
 
 const EditCategory = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data, refetch, isLoading, isError } = useSpecificCategoriesQuery(id);
-    const [update, { isLoading: isUpdating }] = useUpdateCategoryMutation();
+    const { data, refetch } = useSpecificCategoriesQuery(id);
+    const [update] = useUpdateCategoryMutation();
     const { data: off } = useGetAllOffersToAddQuery()
     const offers = off?.offers
 
@@ -28,17 +29,23 @@ const EditCategory = () => {
     //onclicking update
     const updateHandler = async (e, id) => {
         e.preventDefault();
+
+        if (!updatingName.trim() || updatingName.length > 15) {
+            toast.error(CATEGORY_MESSAGES.VALIDATION_MSG);
+            return;
+        }
+
         try {
             await update({
                 id,
                 name: updatingName,
                 offer: offer,
             }).unwrap();
-            toast.success("Category updated successfully!");
+            toast.success(CATEGORY_MESSAGES.CATEGORY_UPDATE_SUCCESS);
             navigate("/admin/category");
             refetch();
         } catch (err) {
-            toast.error(err?.data?.message || "Failed to update the category.");
+            toast.error(err?.data?.message || `${CATEGORY_MESSAGES.CATEGORY_UPDATE_FAILURE}`);
         }
     };
     return (

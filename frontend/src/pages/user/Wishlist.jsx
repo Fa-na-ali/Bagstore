@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useGetWishlistQuery, useUpdateWishlistMutation } from '../../redux/api/productApiSlice'
+import { useAddToCartMutation, useGetWishlistQuery, useUpdateWishlistMutation } from '../../redux/api/productApiSlice'
 import { Badge, Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { FaTrash } from 'react-icons/fa'
 import { Link } from 'react-router'
-import { useDispatch } from 'react-redux'
-import { addToCart } from '../../redux/features/cart/cartSlice'
 import { toast } from 'react-toastify'
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice'
-import { IMG_URL, PLACEHOLDER_URL } from '../../redux/constants'
+import { PLACEHOLDER_URL } from '../../constants/constants'
+import { CART_MESSAGES, WISHLIST_MESSAGES } from '../../constants/messageConstants'
 
 const Wishlist = () => {
   const [discounts, setDiscounts] = useState({});
@@ -17,7 +16,7 @@ const Wishlist = () => {
   const offers = off?.offers
   const products = data?.wishlist
   const [update] = useUpdateWishlistMutation()
-  const dispatch = useDispatch()
+  const [addToCart] = useAddToCartMutation()
 
   useEffect(() => {
     refetch()
@@ -60,31 +59,23 @@ const Wishlist = () => {
 
     setDiscounts(newDiscounts);
     setSalesPrices(newSalesPrices);
-  }, [products, offers]);
+  }, [products, offers, refetch]);
 
 
   //ADD TO CART 
-  const cartHandler = (product) => {
-
-    const finalPrice = salesPrices[product._id] || product.price;
-    dispatch(addToCart({
-      ...product,
-      originalPrice: product.price,
-      discountedPrice: finalPrice,
-      discount: (product.price - finalPrice), qty: 1
-    }));
-    toast.success('Item added to cart');
+  const cartHandler = async (product) => {
+    await addToCart({ productId: product._id, qty: 1 }).unwrap()
+    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
     removeHandler(product)
-
   };
 
   //remove from wishlist
   const removeHandler = async (productId) => {
     try {
-      const res = await update({ productId, }).unwrap();
+      await update({ productId, }).unwrap();
       refetch();
-    } catch (error) {
-      toast.error("Error removing product:");
+    } catch {
+      toast.error(WISHLIST_MESSAGES.REMOVE_FAILURE);
     }
 
   }
@@ -97,7 +88,7 @@ const Wishlist = () => {
           <Row>
             {products?.map((product) => {
               const productImages = product?.productId?.pdImage?.length
-                ? product?.productId?.pdImage.map((img) => `${IMG_URL}${img}`)
+                ? product?.productId?.pdImage.map((img) => `${img}`)
                 : [`${PLACEHOLDER_URL}`];
               return (
                 <Col key={product?.productId?._id} lg={4} md={4} className='mb-4'>
@@ -177,7 +168,6 @@ const Wishlist = () => {
                           onClick={() => { removeHandler(product?.productId?._id) }}
                         >
                           <FaTrash
-
                           />
                         </Button>
                       </div>
@@ -187,7 +177,6 @@ const Wishlist = () => {
               );
             })}
           </Row>
-
         </Container>
       </section>
     </>

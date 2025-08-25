@@ -1,7 +1,8 @@
 .heading {
   color: #cc664E;
 }
-body{
+
+body {
   min-height: 100vh;
 }
 
@@ -151,7 +152,8 @@ body{
   border-top: 1px solid #e9e9eb;
   padding-top: 20px;
 }
-.sidebar{
+
+.sidebar {
   position: fixed;
   top: 0;
   left: 0;

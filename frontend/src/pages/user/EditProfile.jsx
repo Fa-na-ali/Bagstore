@@ -5,15 +5,16 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { updateProfile } from '../../redux/features/auth/authSlice';
+import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const EditProfile = () => {
-    const { data, refetch } = useProfileQuery()
+    const { data } = useProfileQuery()
     const user = data?.user
     const navigate = useNavigate()
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+    const [resendOtp] = useResendOtpMutation();
     const dispatch = useDispatch()
 
     useEffect(() => {
@@ -28,14 +29,15 @@ const EditProfile = () => {
     //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (name.length > 25)
+            return toast.error(USER_MESSAGES.USER_NAME_VALIDATION)
         try {
             await resendOtp({ email: user.email }).unwrap();
-            toast.info("OTP sent to your email. Please verify.");
+            toast.info(USER_MESSAGES.USER_OTP_SENT);
             dispatch(updateProfile({ name, email, phone }))
             navigate(`/verify-email?email=${user.email}`)
-
         } catch (error) {
-            toast.error(error?.data?.message || "Failed to send OTP");
+            toast.error(error?.data?.message || USER_MESSAGES.USER_OTP_SENT_FAILURE);
         }
     };
 

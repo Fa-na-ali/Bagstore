@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import AdminSidebar from '../../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
 import {
@@ -7,16 +7,12 @@ import {
   Col,
   Card,
   ListGroup,
-  ProgressBar,
   Spinner,
   Button,
-  Dropdown,
-  Badge,
   Form
 } from 'react-bootstrap';
 import { Chart } from 'chart.js/auto';
 import { useGetDashboardDataQuery } from '../../../redux/api/dashboardApiSlice';
-import { IMG_URL } from '../../../redux/constants';
 
 //to get months
 const getMonthName = (monthIndex) => {
@@ -348,7 +344,7 @@ const AdminDashboard = () => {
                         {dashboardData.topSellingProducts.map((product, index) => (
                           <ListGroup.Item key={index} className="d-flex align-items-center">
                             <img
-                              src={`${IMG_URL}${product.productInfo?.pdImage[0]}`}
+                              src={`${product.productInfo?.pdImage[0]}`}
                               alt={product.productInfo?.name}
                               width={50}
                               height={50}

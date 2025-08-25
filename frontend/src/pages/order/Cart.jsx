@@ -1,44 +1,47 @@
-import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, Form, Image } from "react-bootstrap";
 import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { removeFromCart, syncCartWithDatabase, updateCartItemQuantity, } from "../../redux/features/cart/cartSlice";
-import { useGetProductsByIdsQuery } from "../../redux/api/productApiSlice";
-import { IMG_URL } from "../../redux/constants";
+import { useLoadCartQuery, useRemoveFromCartMutation, useUpdateCartMutation } from "../../redux/api/productApiSlice";
+import { toast } from 'react-toastify'
 
 const Cart = () => {
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const cart = useSelector((state) => state.cart);
-  const { cartItems } = cart;
   const maximum = 5
-  const productIds = cartItems.map((item) => item._id);
-  const { data: latestProducts } = useGetProductsByIdsQuery(productIds);
-
-  useEffect(() => {
-    if (latestProducts) {
-      dispatch(syncCartWithDatabase(latestProducts?.products));
-    }
-  }, [latestProducts, dispatch]);
+  const [removeCart] = useRemoveFromCartMutation();
+  const { data, refetch } = useLoadCartQuery()
+  const cartItems = data?.carts || []
+  console.log(cartItems)
+  const [updateCart] = useUpdateCartMutation()
 
   //out of stock
   const isAnyItemOutOfStock = () => {
-    return cartItems.some((item) => item.quantity === 0
+    return cartItems.some((item) => item.qty === 0
 
     );
   };
 
+  const removeFromCart = async (id) => {
+    try {
+      await removeCart(id);
+      refetch()
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to remove from cart");
+    }
+  }
+
   //update quantity
-  const updateQuantityHandler = (product, qty) => {
-    const maxAllowed = Math.min(maximum, product?.quantity);
-    if (qty < 1 || qty > maxAllowed) {
+  const updateQuantityHandler = async (product, qty) => {
+    const maxAllowed = Math.min(maximum, product?.originalQuantity);
+    if (qty > maxAllowed) {
       toast.error(`You can only add up to ${maxAllowed} units of this product`);
       return;
     }
 
-    dispatch(updateCartItemQuantity({ productId: product._id, qty }))
+    if (qty >= 1) {
+      await updateCart({ cartId: product._id, qty }).unwrap();
+      refetch()
+    }
 
   };
 
@@ -46,6 +49,8 @@ const Cart = () => {
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
   const tax = subtotal * 0.05;
   const total = subtotal - discount + tax;
+
+  if (data?.length === 0) return <h5>Your cart is empty</h5>
 
   return (
     <section className="bg-light my-5">
@@ -63,7 +68,7 @@ const Cart = () => {
                       <Col lg={5}>
                         <div className="d-flex">
                           <Image
-                            src={`${IMG_URL}${item.pdImage[0]}`}
+                            src={`${item.image}`}
                             className="border rounded me-3"
                             style={{ width: "96px", height: "96px" }}
                           />
@@ -83,11 +88,11 @@ const Cart = () => {
                           <Form.Control
                             type="number"
                             min="1"
-                            max={Math.min(maximum, item.quantity)}
+                            max={Math.min(maximum, item.originalQuantity)}
                             value={item.qty}
                             onChange={(e) => {
                               let value = Number(e.target.value);
-                              if (value >= 1 && value <= Math.min(maximum, item.quantity)) {
+                              if (value >= 1 && value <= Math.min(maximum, item.originalQuantity)) {
                                 updateQuantityHandler(item, value);
                               }
                             }}
@@ -95,19 +100,20 @@ const Cart = () => {
                             className="text-center"
                           />
                           <Button variant="primary" className="px-3 ms-2" onClick={() => updateQuantityHandler(item, item.qty + 1)}
-                            disabled={item.qty >= Math.min(maximum, item.quantity)}>
+                            disabled={item.qty >= Math.min(maximum, item.originalQuantity)}>
                             <FaPlus />
+
                           </Button>
                         </div>
                       </Col>
                       <Col>
                         <p className="text-muted py-2 ms-5">
-                          {item.originalPrice !== item.discountedPrice ? (
+                          {item.discount !== 0 ? (
                             <>
                               <span className="text-decoration-line-through text-muted me-2">
-                                ₹{item.originalPrice}
+                                ₹{item.price}
                               </span>
-                              <span className="text-success fw-bold">₹{item.discountedPrice.toFixed(2)}</span>
+                              <span className="text-success fw-bold">₹{(item.price - item.discount).toFixed(2)}</span>
                             </>
                           ) : (
                             <span>₹{item.price}</span>
@@ -116,7 +122,7 @@ const Cart = () => {
                         </p></Col>
                       <Col lg className="d-flex justify-content-sm-center justify-content-md-start justify-content-lg-center justify-content-xl-end mb-2">
                         <div className="float-md-end">
-                          <Button variant="primary" className="border  ms-2" onClick={() => dispatch(removeFromCart(item._id))}>
+                          <Button variant="primary" className="border  ms-2" onClick={() => removeFromCart(item._id)}>
                             <FaTrash />
                           </Button>
                         </div>

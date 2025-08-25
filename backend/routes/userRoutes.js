@@ -7,10 +7,8 @@ const { userSignup,
     deleteUser,
     updateUser,
     forgotPassword,
-    verifyOtpPassword,
     resendOtp,
     googleLogin,
-    getAllUsers,
     fetchUsers,
     getCurrentUserProfile,
     addAddress,
@@ -25,12 +23,13 @@ const { userSignup,
 const { authorizeAdmin, authenticate, blockDisabledUsers } = require('../middlewares/authMiddleware')
 const generaterefreshToken = require('../middlewares/generateRefreshToken')
 const { verifyOtp, verifyOtpPass } = require('../middlewares/verifyOtp')
-const imageUpload = require("../imageUpload")
+const { imageUpload } = require('../config/cloudConfig')
 const { addCoupon, getCoupons, deleteCoupon, getCouponById, editCoupon, getAllCouponsUser, applyCoupon, removeCoupon } = require('../controllers/couponController')
 const { createOffer, getoffers, editOffer, deleteOffer, getOfferById, getAllOffers } = require('../controllers/offerController')
 const { createPayment, verifyPayment, retryPayment, verifyRetryPayment } = require('../controllers/razorpayController')
 const { loadSalesReport, getSalesReport, loadDashboard } = require('../controllers/dashboardController')
 const { getReferrals, getReferralCode } = require('../controllers/referralController')
+
 
 //user routes
 router.route('/register').post(userSignup)

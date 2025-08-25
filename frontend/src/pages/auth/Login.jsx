@@ -11,6 +11,7 @@ import { useLoginMutation } from "../../redux/api/usersApiSlice";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
 import { GoogleWrapper } from "../../App";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 //Validation schema
 const validationSchema = yup.object().shape({
@@ -41,13 +42,13 @@ const Login = () => {
           navigate("/");
         }
         if (!res.user.isExist)
-          toast.error("You are blocked");
+          toast.error(USER_MESSAGES.USER_BLOCK_MSG);
 
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error(USER_MESSAGES.USER_LOGIN_ERROR);
       }
     } catch (err) {
-      toast.error(err.data?.message || "Login failed. Please check your credentials.");
+      toast.error(err.data?.message || `${USER_MESSAGES.USER_LOGIN_FAILURE}`);
     }
   };
 
@@ -97,7 +98,7 @@ const Login = () => {
 
                       <Link to="/forgot-password" className="text-decoration-none">Forgot Password?</Link>
                       <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link to="/register" className="text-decoration-none">Register here</Link>
                       </p>
                       <p className="text-center" style={{ color: "#393f81" }}>or</p>

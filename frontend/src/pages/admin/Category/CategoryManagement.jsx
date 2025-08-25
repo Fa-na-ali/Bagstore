@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, } from 'react';
 import { useDeleteCategoryMutation, useSearchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import Ttable from '../../../components/Ttable'
 import AdminSidebar from '../../../components/AdminSidebar';
@@ -6,9 +6,12 @@ import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'reac
 import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
+import debounce from 'lodash.debounce';
+import { CATEGORY_MESSAGES } from '../../../constants/messageConstants';
 
 const CategoryManagement = () => {
 
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   let { data, refetch: load, error, isLoading } = useSearchCategoriesQuery({ keyword: searchTerm, page: currentPage });
@@ -22,14 +25,22 @@ const CategoryManagement = () => {
   ];
 
   useEffect(() => {
-    if (categories)
-      load()
 
-  }, [load]);
+    const debouncedResults = debounce(() => {
+      setSearchTerm(inputValue);
+    }, 500);
 
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
+    debouncedResults()
+
+    return () => {
+      debouncedResults.cancel();
+    };
+
+  }, [inputValue]);
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -44,10 +55,10 @@ const CategoryManagement = () => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteCategory(id);
-        toast.success(" Deleted Successfully")
+        toast.success(CATEGORY_MESSAGES.CATEGORY_DLT_SUCCESS)
         load();
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${CATEGORY_MESSAGES.CATEGORY_DLT_FAILURE}`);
       }
     }
   };
@@ -73,18 +84,15 @@ const CategoryManagement = () => {
                 <Col lg={3}></Col>
                 <Col lg={3} className="d-flex justify-content-end gap-3">
                   <InputGroup className="mb-3">
-                    <Form onSubmit={searchHandler} method="GET" className="d-flex">
+                    <Form className="d-flex">
                       <FormControl
                         type="search"
                         placeholder="Search"
                         aria-label="Search"
                         aria-describedby="search-addon"
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value) }}
+                        value={inputValue}
+                        onChange={handleChange}
                       />
-                      <Button type='submit' variant="outline-primary" id="search-addon">
-                        Search
-                      </Button>
                     </Form>
                   </InputGroup>
                 </Col>

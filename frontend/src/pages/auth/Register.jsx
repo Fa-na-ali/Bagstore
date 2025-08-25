@@ -8,11 +8,12 @@ import { useSelector } from "react-redux";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useRegisterMutation } from "../../redux/api/usersApiSlice";
 import { GoogleWrapper } from "../../App";
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 
 //  Yup validation schema
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Name is required"),
+  name: yup.string().max(25, "Name must be atmost 25 characters long").required("Name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
   phone: yup
     .string()
@@ -54,7 +55,7 @@ const Register = () => {
   //Handle form submission
   const submitHandler = async (data) => {
     try {
-      const res = await registerUser({
+      await registerUser({
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -62,12 +63,11 @@ const Register = () => {
         confirmPassword: data.confirmPassword,
         referCode: data.referCode
       }).unwrap();
-      toast.success("User successfully registered");
+      toast.success(USER_MESSAGES.USER_REGISTER_SUCCESS);
       navigate(`/verify-otp?email=${data.email}`);
-      toast.success("OTP has been sent to your email.");
-
+      toast.success(USER_MESSAGES.USER_OTP_SENT);
     } catch (err) {
-      toast.error(err.data?.message || "Registration failed");
+      toast.error(err.data?.message || `${USER_MESSAGES.USER_REGISTER_FAILURE}`);
     }
   };
 

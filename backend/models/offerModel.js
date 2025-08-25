@@ -42,7 +42,7 @@ const Offer = mongoose.model('Offer', Schema);
 cron.schedule('0 * * * *', async () => {
     try {
         const now = new Date();
-        const updated = await Offer.updateMany(
+        await Offer.updateMany(
             { expiry: { $lt: now }, status: true },
             { $set: { status: false } }
         );

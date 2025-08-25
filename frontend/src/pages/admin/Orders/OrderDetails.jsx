@@ -4,27 +4,41 @@ import { Container, Row, Col, Card, Button, Table, Image, Form } from "react-boo
 import { useGetOrderDetailsQuery, useSetItemStatusMutation } from '../../../redux/api/ordersApiSlice';
 import AdminSidebar from '../../../components/AdminSidebar'
 import { toast } from 'react-toastify'
-import { IMG_URL } from '../../../redux/constants';
+import { io } from 'socket.io-client';
+import { ORDER_MESSAGES } from '../../../constants/messageConstants';
+
+const socket = io(import.meta.env.VITE_SOCKET_URL);
 
 
 const OrderDetails = () => {
 
   const { id } = useParams();
-  const { data: order, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
+  const { data, refetch, error, isLoading, } = useGetOrderDetailsQuery(id);
+  const order = data?.order
   const [itemStatuses, setItemStatuses] = useState({});
-
-  const [orderStatus, setOrderStatus] = useState(order?.status);
   const [setItemStatus] = useSetItemStatusMutation();
 
   useEffect(() => {
+    socket.on('orderStatusUpdated', (updatedOrder) => {
+      if (updatedOrder.orderId === id) {
+        toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS);
+        refetch();
+      }
+    });
+    return () => {
+      socket.off('orderStatusUpdated');
+    };
+  }, [id, refetch]);
+
+  useEffect(() => {
     if (order?.items) {
-      const initialStatuses = order.items.reduce((acc, item) => {
+      const initialStatuses = order?.items?.reduce((acc, item) => {
         acc[item._id] = item.status;
         return acc;
       }, {});
       setItemStatuses(initialStatuses);
     }
-  }, [order?.items]);
+  }, [order]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) {
@@ -42,10 +56,6 @@ const OrderDetails = () => {
     );
   }
 
-  const handleOrderStatusChange = (newStatus) => {
-    setOrderStatus(newStatus);
-  };
-
   const handleItemStatusChange = (itemId, newStatus) => {
     setItemStatuses((prevStatuses) => ({
       ...prevStatuses,
@@ -57,9 +67,9 @@ const OrderDetails = () => {
     try {
       await setItemStatus({ status, item, id });
       refetch()
-      toast.success("Item status updated successfully")
+      toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS)
     } catch (error) {
-      console.error("Error updating item status:", error);
+      toast.error(error?.data?.message || ORDER_MESSAGES.ORDER_STATUS_UPDATE_FAILURE);
     }
   };
 
@@ -80,7 +90,7 @@ const OrderDetails = () => {
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Customer</h6>
-                  <p className="text-muted">{order?.userId.name}</p>
+                  <p className="text-muted">{order?.userId?.name}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Order Date</h6>
@@ -90,7 +100,7 @@ const OrderDetails = () => {
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Email</h6>
-                  <p className="text-muted">{order?.userId.email}</p>
+                  <p className="text-muted">{order?.userId?.email}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Shipping Price</h6>
@@ -100,7 +110,7 @@ const OrderDetails = () => {
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Phone</h6>
-                  <p className="text-muted">{order?.userId.phone}</p>
+                  <p className="text-muted">{order?.userId?.phone}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Payment Method</h6>
@@ -110,12 +120,12 @@ const OrderDetails = () => {
               <Row className="pt-1">
                 <Col xs={6} className="mb-3">
                   <h6>Address</h6>
-                  <p className="text-muted">{address.houseName},{address.town},{address.street},
-                    {address.state}, {address.zipcode}, {address.country}</p>
+                  <p className="text-muted">{address?.houseName},{address?.town},{address?.street},
+                    {address?.state}, {address?.zipcode}, {address?.country}</p>
                 </Col>
                 <Col xs={6} className="mb-3">
                   <h6>Total Price</h6>
-                  <p className="text-muted">{order?.totalPrice.toFixed(2)}</p>
+                  <p className="text-muted">{order?.totalPrice?.toFixed(2)}</p>
                 </Col>
               </Row>
               <hr className="mt-0 mb-4" />
@@ -134,19 +144,19 @@ const OrderDetails = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {order.items.map((item) => (
+                  {order?.items?.map((item) => (
                     <tr key={item._id}>
                       <td>
                         <div className="d-flex align-items-center">
                           <Image
-                            src={`${IMG_URL}${item.product.pdImage[0]}`}
+                            src={`${item?.product?.pdImage[0]}`}
                             className="img-fluid rounded-3"
                             style={{ width: "120px" }}
                             alt="Book"
                           />
                           <div className="flex-column ms-4">
-                            <p className="mb-2">{item.product.name}</p>
-                            <p className="mb-0">{item.product.color}</p>
+                            <p className="mb-2">{item?.product?.name}</p>
+                            <p className="mb-0">{item?.product?.color}</p>
                           </div>
                         </div>
                       </td>
@@ -155,13 +165,13 @@ const OrderDetails = () => {
                       </td>
 
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{item.product.price}</p>
+                        <p className="mb-0 fw-bold">{item?.product?.price}</p>
                       </td>
                       <td className="align-middle">
                         <p className="mb-0 fw-bold">{item.discount.toFixed(2)}</p>
                       </td>
                       <td className="align-middle">
-                        <p className="mb-0 fw-bold">{(item.product.price - item.discount) * item.qty.toFixed(2)}</p>
+                        <p className="mb-0 fw-bold">{((item?.product?.price - item.discount) * item.qty).toFixed(2)}</p>
                       </td>
                       <td className="align-middle">
                         {(item.status === "Cancelled") || (item.status === "Returned") || (item.status === "Delivered") ? (

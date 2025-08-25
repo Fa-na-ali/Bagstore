@@ -1,5 +1,5 @@
+import { WALLET_URL } from "../../constants/constants";
 import { apiSlice } from "./apiSlice";
-import { WALLET_URL } from "../constants";
 
 export const walletApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

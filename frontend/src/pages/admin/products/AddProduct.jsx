@@ -10,6 +10,7 @@ import AdminSidebar from '../../../components/AdminSidebar';
 import { toast } from 'react-toastify';
 import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
+import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
 
 
 const AddProduct = () => {
@@ -37,12 +38,13 @@ const AddProduct = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!name) newErrors.name = 'Name of Product is required';
+    if (!name || name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
     if (!category) newErrors.category = 'Category is required';
-    if (!description) newErrors.description = 'Description is required';
+    if (!description || description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
     if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
     if (!color) newErrors.color = 'Color is required';
-    if (!brand) newErrors.brand = 'Brand is required';
+    if (!brand || brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
+    if (!size || size.length > 20) newErrors.size = "Size is required"
     if (quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
     if (files.length === 0) newErrors.files = 'At least one image is required';
     setErrors(newErrors);
@@ -65,7 +67,7 @@ const AddProduct = () => {
 
             const file = new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
 
-            setCroppedImages((prevImages) => [...prevImages, file]); 
+            setCroppedImages((prevImages) => [...prevImages, file]);
           }
         }, "image/webp");
       }
@@ -91,17 +93,17 @@ const AddProduct = () => {
       productData.append("color", color);
       productData.append("size", size);
       if (croppedImages.length === 0) {
-        toast.error("Please upload at least one image.");
+        toast.error(PRODUCT_MESSAGES.IMG_UPLOAD_MSG);
         return;
       }
       croppedImages.forEach((file) => {
         productData.append('pdImage', file);
       });
-      const { data } = await addProduct(productData).unwrap()
-      toast.success('Product added successfully!');
+      await addProduct(productData).unwrap()
+      toast.success(PRODUCT_MESSAGES.PRODUCT_ADD_SUCCESS);
       navigate('/admin/products')
     } catch (error) {
-      toast.error(error?.data?.message || 'Failed to add product');
+      toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_ADD_FAILURE}`);
     }
   };
 

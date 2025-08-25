@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
-import { CONTACT_URL } from '../../redux/constants';
+import { CONTACT_URL } from '../../constants/constants';
 
 const Contact = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -45,7 +45,7 @@ const Contact = () => {
                 <Row className="mb-5">
                     <Col>
                         <h2 className='text-center heading'>CONTACT US</h2>
-                        <p className='caption'>If you have any questions, concerns, or feedback, we'd love to hear from you. Reach out to us through the following channels:</p>
+                        <p className='caption'>If you have any questions, concerns, or feedback, we&apos;d love to hear from you. Reach out to us through the following channels:</p>
                         <ul className='caption'>
                             <li>Email: <a href="mailto:appx102@gmail.com">bagbelle@gmail.com</a></li>
                             <li>Phone: +91 8732190329</li>

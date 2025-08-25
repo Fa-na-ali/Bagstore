@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Alert, Spinner } from "react-bootstrap";
 import { useGetAllCouponsUserQuery } from "../../redux/api/usersApiSlice";
+import { PropTypes } from "prop-types";
 
 const CouponModal = ({ show, handleClose }) => {
   const { data, refetch, error, isLoading } = useGetAllCouponsUserQuery();
@@ -34,7 +35,7 @@ const CouponModal = ({ show, handleClose }) => {
         ) : (
           data?.coupons?.map((coupon) => (
             <div key={coupon._id} className="p-3 border rounded mb-2 d-flex justify-content-between align-items-center">
-              <div>
+              <div>a
                 <strong>{coupon.name}</strong> - {coupon.discount}% off
                 <p className="text-muted">{coupon.description}</p>
               </div>
@@ -52,5 +53,10 @@ const CouponModal = ({ show, handleClose }) => {
     </Modal>
   );
 };
+
+CouponModal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+}
 
 export default CouponModal;

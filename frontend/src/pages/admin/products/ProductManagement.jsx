@@ -6,14 +6,18 @@ import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
 import { useDeleteProductMutation, useGetProductsQuery, } from '../../../redux/api/productApiSlice';
+import debounce from 'lodash.debounce';
+import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
 
 const ProductManagement = () => {
+
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   let { data, refetch: load, error, isLoading } = useGetProductsQuery({ keyword: searchTerm, page: currentPage });
   const [deleteProduct] = useDeleteProductMutation();
   const products = data?.products || [];
-  
+
   //  columns for the category table
   const columns = [
     { key: "name", label: "Product Name" },
@@ -26,13 +30,22 @@ const ProductManagement = () => {
   ];
 
   useEffect(() => {
-    if (products)
-      load()
-  }, [load]);
 
-  const searchHandler = (e) => {
-    e.preventDefault();
-    refetch();
+    const debouncedResults = debounce(() => {
+      setSearchTerm(inputValue);
+    }, 500);
+
+    debouncedResults()
+
+    return () => {
+      debouncedResults.cancel();
+    };
+
+  }, [inputValue]);
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+    setCurrentPage(1);
   };
 
   if (isLoading) return <p>Loading...</p>;
@@ -40,17 +53,17 @@ const ProductManagement = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-  
+
   // on delete
   const handleDelete = async (id) => {
     if (window.confirm("Do you want to delete")) {
       try {
         await deleteProduct(id);
-        toast.success(" Deleted Successfully")
+        toast.success(PRODUCT_MESSAGES.PRODUCT_DLT_SUCCESS)
         load();
 
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error(err?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_DLT_FAILURE}`);
       }
     }
   };
@@ -77,18 +90,15 @@ const ProductManagement = () => {
                 <Col lg={3}></Col>
                 <Col lg={3} className="d-flex justify-content-end gap-3">
                   <InputGroup className="mb-3">
-                    <Form onSubmit={searchHandler} method="GET" className="d-flex">
+                    <Form className="d-flex">
                       <FormControl
                         type="search"
                         placeholder="Search"
                         aria-label="Search"
                         aria-describedby="search-addon"
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value) }}
+                        value={inputValue}
+                        onChange={handleChange}
                       />
-                      <Button type='submit' variant="outline-primary" id="search-addon">
-                        Search
-                      </Button>
                     </Form>
                   </InputGroup>
                 </Col>

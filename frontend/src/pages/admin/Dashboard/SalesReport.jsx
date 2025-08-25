@@ -14,14 +14,15 @@ import {
 import { useGetSalesReportQuery } from '../../../redux/api/dashboardApiSlice';
 import * as XLSX from 'xlsx';
 import 'jspdf-autotable';
-import * as pdfMake from 'pdfmake/build/pdfmake';
+import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
-import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../redux/constants';
+import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../constants/constants';
+
 
 // Initialize pdfMake
 if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
-  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+  pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
 } else {
   pdfMake.vfs = {
     Roboto: {
@@ -41,11 +42,12 @@ const SalesReport = () => {
   const tableRef = useRef(null);
 
   const {
-    data: reportData,
+    data: report,
     isLoading,
     isFetching,
     refetch
   } = useGetSalesReportQuery({ filter, startDate, endDate });
+  const reportData = report?.reportData
 
   useEffect(() => {
     setShowDateInputs(filter === 'custom');
@@ -399,11 +401,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Coupon Discounts:</span>
-                      <span className="fw-medium">₹{reportData.couponDiscounts.toFixed(2)}</span>
+                      <span className="fw-medium">₹{reportData?.couponDiscounts?.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Sales Count:</span>
-                      <span className="fw-medium">{reportData.overallSalesCount.toFixed(2)}</span>
+                      <span className="fw-medium">{reportData?.overallSalesCount?.toFixed(2)}</span>
                     </div>
                   </Col>
                   <Col md={6}>
@@ -413,11 +415,11 @@ const SalesReport = () => {
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Overall Discount:</span>
-                      <span className="fw-medium">₹{reportData.overallDiscount.toFixed(2)}</span>
+                      <span className="fw-medium">₹{reportData?.overallDiscount?.toFixed(2)}</span>
                     </div>
                     <div className="d-flex justify-content-between mb-2">
                       <span className="text-muted">Net Revenue:</span>
-                      <span className="fw-bold text-success">₹{reportData.netRevenue.toFixed(2)}</span>
+                      <span className="fw-bold text-success">₹{reportData?.netRevenue?.toFixed(2)}</span>
                     </div>
                   </Col>
                 </Row>

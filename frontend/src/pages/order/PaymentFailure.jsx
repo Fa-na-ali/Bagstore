@@ -1,5 +1,5 @@
 import { Container, Row, Col, Card, Button, } from "react-bootstrap";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import RetryButton from "../../components/RetryButton";
 
 const PaymentFailure = () => {
@@ -35,7 +35,6 @@ const PaymentFailure = () => {
           </Row>
         </Container>
       </section>
-
     </>
   )
 }

@@ -1,11 +1,13 @@
+import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navbar, Nav, Badge, Container, Form, FormControl } from 'react-bootstrap';
+import { Navbar, Nav, Badge, Container, } from 'react-bootstrap';
 import { FaUser, FaShoppingCart, FaHeart, FaSignOutAlt } from 'react-icons/fa';
 import logo from "../assets/images/2.png"
 import '../pages/auth/register.css'
 import { logout } from "../redux/features/auth/authSlice";
 import { useLogoutMutation } from '../redux/api/usersApiSlice';
+import { useLoadCartQuery } from '../redux/api/productApiSlice';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -13,10 +15,12 @@ const Header = () => {
 
     // Get user info from Redux state
     const { userInfo } = useSelector((state) => state.auth);
-    const id = (userInfo?._id) ? userInfo?._id : userInfo?.user._id
-    const cart = useSelector((state) => state.cart);
-    const { cartItems } = cart;
     const [logoutApiCall] = useLogoutMutation();
+    const isLoggedIn = !!userInfo;
+    const { data } = useLoadCartQuery(undefined, {
+        skip: !isLoggedIn,
+    });
+    const cartItems = data?.carts || []
 
     const logoutHandler = async () => {
         try {
@@ -56,16 +60,6 @@ const Header = () => {
                                 <Nav.Link as={Link} to="/about" className='caption'>About</Nav.Link>
                                 <Nav.Link as={Link} to="/contact" className='caption'>Contact</Nav.Link>
                             </Nav>
-
-                            {/* <Form className="mx-auto" style={{ maxWidth: "20rem", flex: 1 }}>
-                                <FormControl
-                                    type="search"
-                                    placeholder="Search"
-                                    aria-label="Search"
-                                    className="rounded-0"
-                                />
-                            </Form> */}
-
                             <Nav>
                                 {userInfo ? (
                                     <Nav.Link

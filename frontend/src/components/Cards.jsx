@@ -2,24 +2,23 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { toast } from 'react-toastify';
-import { addToCart } from '../redux/features/cart/cartSlice';
-import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
+import { useAddToCartMutation, useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
-import { IMG_URL, PLACEHOLDER_URL } from '../redux/constants';
+import { CART_MESSAGES, WISHLIST_MESSAGES } from '../constants/messageConstants';
+import { PropTypes } from "prop-types";
+import { PLACEHOLDER_URL } from '../constants/constants';
 
 const Cards = ({ products }) => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const items = products || products?.all
   const [likedProducts, setLikedProducts] = useState({});
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
-  const { data: wishlistData, refetch } = useGetWishlistQuery()
+  const { data: wishlistData } = useGetWishlistQuery()
   const [update] = useUpdateWishlistMutation()
+  const [addToCart] = useAddToCartMutation()
 
   useEffect(() => {
     if (wishlistData && wishlistData.wishlist) {
@@ -31,16 +30,9 @@ const Cards = ({ products }) => {
     }
   }, [wishlistData]);
 
-  const cartHandler = (product) => {
-    const finalPrice = salesPrices[product._id] || product.price;
-    dispatch(addToCart({
-      ...product,
-      originalPrice: product.price,
-      discountedPrice: finalPrice,
-      discount: (product.price - finalPrice), qty: 1
-    }));
-    toast.success('Item added to cart');
-
+  const cartHandler = async (product) => {
+    await addToCart({ productId: product._id, qty: 1 }).unwrap();
+    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
   };
 
   useEffect(() => {
@@ -93,20 +85,18 @@ const Cards = ({ products }) => {
       if (isLiked) {
 
         const res = await update({ productId, color }).unwrap();
-        console.log("res", res)
         if (res.status === 'success')
-          toast.success("Added to Wishlist")
+          toast.success(WISHLIST_MESSAGES.ADD_SUCCESS)
       } else {
 
         const res = await update({ productId, color }).unwrap();
         console.log("res", res)
-        toast.success("Removed from Wishlist")
+        toast.success(WISHLIST_MESSAGES.REMOVE_SUCCESS)
 
       }
 
     } catch (error) {
-      console.error('Error updating wishlist:', error);
-      toast.error('Failed to update wishlist');
+      toast.error(error.message || `${WISHLIST_MESSAGES.UPDATE_FAILURE}`);
       setLikedProducts((prev) => ({ ...prev, [productId]: !isLiked }));
     }
   };
@@ -116,7 +106,7 @@ const Cards = ({ products }) => {
       <Row>
         {products?.map((product) => {
           const productImages = product.pdImage?.length
-            ? product.pdImage.map((img) => `${IMG_URL}${img}`)
+            ? product.pdImage.map((img) => `${img}`)
             : [`${PLACEHOLDER_URL}`];
 
           return (
@@ -210,5 +200,25 @@ const Cards = ({ products }) => {
     </>
   );
 };
+
+Cards.propTypes = {
+  products: PropTypes.arrayOf(
+    PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      price: PropTypes.number.isRequired,
+      pdImage: PropTypes.arrayOf(PropTypes.string),
+      quantity: PropTypes.number.isRequired,
+      color: PropTypes.string.isRequired,
+      category: PropTypes.shape({
+        _id: PropTypes.string,
+        name: PropTypes.string,
+        offer: PropTypes.string,
+        isExist: PropTypes.bool
+      }),
+    })
+  ).isRequired,
+};
+
 
 export default Cards;

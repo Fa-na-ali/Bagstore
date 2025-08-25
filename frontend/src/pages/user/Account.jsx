@@ -2,13 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { Container, Row, Col, Card, Button, Image as BootstrapImage, Form, Modal } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useDeleteAddressMutation, useDeleteUserImageMutation, useProfileQuery, useUploadImageMutation } from "../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import { IMG_URL } from "../../redux/constants";
-
+import { USER_MESSAGES } from "../../constants/messageConstants";
 
 const Account = () => {
 
@@ -25,10 +24,9 @@ const Account = () => {
     const [croppingIndex, setCroppingIndex] = useState(null);
     const [deleteImage] = useDeleteUserImageMutation();
 
-
     useEffect(() => {
         if (user?.image) {
-            setFiles(user.image.map((img) => `${IMG_URL}${img}`));
+            setFiles(user.image.map((img) => `${img}`));
         }
         refetch();
     }, [refetch, user]);
@@ -38,10 +36,10 @@ const Account = () => {
         if (window.confirm("Are you sure you want to delete this address?")) {
             try {
                 await deleteAddress(id).unwrap();
-                toast.success("Address deleted successfully!");
+                toast.success(USER_MESSAGES.USER_ADDRESS_DLT_SUCCESS);
                 refetch();
             } catch (error) {
-                toast.error("Error deleting address.");
+                toast.error(error?.data?.message || USER_MESSAGES.USER_ADDRESS_DLT_FAILURE);
             }
         }
     };
@@ -72,14 +70,11 @@ const Account = () => {
 
                         const file = new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
                         const objectURL = URL.createObjectURL(file);
-
                         setCroppedImages((prevImages) => {
                             const updatedImages = [...prevImages];
                             updatedImages[croppingIndex] = objectURL;
                             return updatedImages;
                         });
-
-
                     }
                 }, "image/webp");
             }
@@ -102,11 +97,11 @@ const Account = () => {
         );
         convertedFiles.forEach((file) => userData.append("image", file));
         try {
-            const { data } = await upload({ id: user?._id, userData }).unwrap()
-            toast.success('Profile pic added successfully!');
+            await upload({ id: user?._id, userData }).unwrap()
+            toast.success(USER_MESSAGES.USER_PIC_SUCCESS);
             refetch();
         } catch (error) {
-            toast.error(error?.data?.message || 'Failed to edit product');
+            toast.error(error?.data?.message || USER_MESSAGES.USER_PIC_EDIT_FAILURE);
         }
     };
 
@@ -120,11 +115,10 @@ const Account = () => {
 
             setFiles((prevImages) => prevImages.filter((_, i) => i !== index));
 
-        } catch (error) {
-            toast.error("Error deleting image:");
+        } catch {
+            toast.error(USER_MESSAGES.USER_PIC_DLT_FAILURE);
         }
     };
-
 
     return (
         <>

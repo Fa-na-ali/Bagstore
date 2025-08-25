@@ -5,14 +5,14 @@ import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-boo
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { toast } from "react-toastify";
-import { IMG_URL } from "../../redux/constants";
 import RetryButton from "../../components/RetryButton";
+import { ORDER_MESSAGES } from "../../constants/messageConstants";
 
 pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
 
 const OrderDetail = () => {
   const { id } = useParams();
-  const { data: order, refetch, isLoading, isError } = useGetOrderByIdQuery(id);
+  const { data, refetch, isLoading, isError } = useGetOrderByIdQuery(id);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -21,7 +21,7 @@ const OrderDetail = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cancelOrder] = useCancelOrderMutation();
   const [returnOrder] = useReturnOrderMutation();
-
+  const order = data?.order
   if (isLoading) return <p>Loading...</p>;
   if (isError || !order) return <p>Error fetching order details.</p>;
 
@@ -33,17 +33,17 @@ const OrderDetail = () => {
   };
 
   //cancel order
-  const handleCancelOrder = async (orderId, item) => {
+  const handleCancelOrder = async () => {
     try {
       setShowReasonModal(false);
-      const response = await cancelOrder({
+      await cancelOrder({
         orderId: selectedOrder,
         item: selectedProduct,
         cancelReason: selectedReason,
       }).unwrap();
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to cancel order. Please try again.");
+      toast.error(error?.data?.message || `${ORDER_MESSAGES.ORDER_CANCEL_FAILURE}`);
     }
 
   };
@@ -64,10 +64,10 @@ const OrderDetail = () => {
         returnReason: selectedReason,
       }).unwrap();
       if (response)
-        toast.success("Return request sent")
+        toast.success(ORDER_MESSAGES.ORDER_RETURN_MSG)
       refetch();
     } catch (error) {
-      toast.error(error)
+      toast.error(error || `${ORDER_MESSAGES.ORDER_RETURN_FAILURE}`)
     }
   };
 
@@ -113,7 +113,6 @@ const OrderDetail = () => {
             widths: ['*', 'auto'],
             body: [
               ['Subtotal :', `₹${(order.totalPrice).toFixed(2)}`],
-              //['Shipping Fee:', payment.delivery_fee > 0 ? `₹${payment.delivery_fee.toFixed(2)}` : 'Free'],
               ['Tax:', '₹3.00'],
               ['Total:', `₹${order.totalPrice.toFixed(2)}`],
             ],
@@ -159,7 +158,7 @@ const OrderDetail = () => {
                       <Row className="align-items-center">
                         <Col md={1}>
                           <Image
-                            src={`${IMG_URL}${item?.product?.pdImage[0]}`}
+                            src={`${item?.product?.pdImage[0]}`}
                             className="img-fluid"
                             alt={item?.product?.name}
                           />

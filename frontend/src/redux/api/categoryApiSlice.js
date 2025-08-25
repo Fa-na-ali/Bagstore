@@ -1,6 +1,6 @@
 
+import { CATEGORY_URL } from "../../constants/constants";
 import { apiSlice } from "./apiSlice";
-import { CATEGORY_URL } from "../constants";
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,7 +10,7 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: newCategory,
       }),
-
+      invalidatesTags: ["Category"],
     }),
     updateCategory: builder.mutation({
       query: ({ id, ...data }) => ({
@@ -18,12 +18,14 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["Category"],
     }),
     deleteCategory: builder.mutation({
       query: (id) => ({
         url: `${CATEGORY_URL}/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Category"],
     }),
     specificCategories: builder.query({
       query: (id) => ({

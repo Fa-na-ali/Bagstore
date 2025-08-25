@@ -2,6 +2,7 @@ import { useRetryPaymentMutation, useVerifyRetryPaymentMutation } from '../redux
 import { Button, } from "react-bootstrap";
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router";
+import PropTypes from 'prop-types';
 
 const RetryButton = ({ orderId }) => {
 
@@ -22,7 +23,7 @@ const RetryButton = ({ orderId }) => {
                     text: "Failed to create retry payment order.",
                 });
             }
-        } catch (err) {
+        } catch {
             Swal.fire({
                 icon: "error",
                 title: "Payment Error",
@@ -62,7 +63,7 @@ const RetryButton = ({ orderId }) => {
                             text: "Verification failed.",
                         });
                     }
-                } catch (error) {
+                } catch {
                     Swal.fire({
                         icon: "error",
                         title: "Payment Error",
@@ -87,6 +88,10 @@ const RetryButton = ({ orderId }) => {
 
         </>
     )
+}
+
+RetryButton.propTypes = {
+    orderId: PropTypes.string.isRequired,
 }
 
 export default RetryButton

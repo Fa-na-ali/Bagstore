@@ -1,7 +1,8 @@
 import { apiSlice } from "./apiSlice";
-import { USERS_URL } from "../constants";
+import { USERS_URL } from "../../constants/constants";
 
 export const userApiSlice = apiSlice.injectEndpoints({
+  tagTypes: ['User'],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
@@ -88,7 +89,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/${id}/${index}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Product"], 
+      invalidatesTags: ["Product"],
     }),
 
     getUsers: builder.query({
@@ -103,6 +104,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/${userId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ['User'],
     }),
     getUserDetails: builder.query({
       query: (id) => ({

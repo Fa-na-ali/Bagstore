@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --ext js,jsx,ts,tsx --fix",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -22,7 +23,9 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "keep-react": "^1.6.1",
+    "lodash.debounce": "^4.0.8",
     "pdfmake": "^0.2.18",
+    "prop-types": "^15.8.1",
     "razorpay": "^2.9.6",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.9",
@@ -36,6 +39,7 @@
     "react-router": "^7.1.2",
     "react-router-dom": "^7.1.2",
     "react-toastify": "^11.0.3",
+    "socket.io-client": "^4.8.1",
     "sweetalert2": "^11.17.2",
     "xlsx": "^0.18.5",
     "yup": "^1.6.1"
