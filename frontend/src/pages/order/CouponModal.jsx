@@ -55,8 +55,8 @@ const CouponModal = ({ show, handleClose }) => {
 };
 
 CouponModal.propTypes = {
-  show:PropTypes.bool.isRequired,
-  handleClose:PropTypes.func.isRequired,
+  show: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
 }
 
 export default CouponModal;

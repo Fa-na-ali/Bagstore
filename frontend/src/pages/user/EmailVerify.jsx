@@ -71,7 +71,7 @@ const EmailVerify = () => {
     try {
       const res = await verifyOtp({ email, otp: otpCode }).unwrap();
       if (res) {
-        const result = await update({ name: updatedUser.name, email:updatedUser.email, phone: updatedUser.phone }).unwrap();
+        const result = await update({ name: updatedUser.name, email: updatedUser.email, phone: updatedUser.phone }).unwrap();
         dispatch(setCredentials({ ...result }));
         toast.success(USER_MESSAGES.USER_EMAIL_VERIFY);
         refetch();

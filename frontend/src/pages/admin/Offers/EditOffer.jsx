@@ -21,7 +21,7 @@ const EditOffer = () => {
         minAmount: "",
     });
     const [errors, setErrors] = useState({});
-    const { data} = useGetOfferByIdQuery(id);
+    const { data } = useGetOfferByIdQuery(id);
     const offer = data?.offer
     const [update] = useUpdateOfferMutation();
 

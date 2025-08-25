@@ -13,7 +13,7 @@ const UserManagement = () => {
   const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  let { data,error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
+  let { data, error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
   const user = data?.user || [];
   const [deleteUser] = useDeleteUserMutation();
 

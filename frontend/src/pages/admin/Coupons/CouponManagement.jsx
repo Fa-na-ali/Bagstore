@@ -64,7 +64,7 @@ const CouponManagement = () => {
         load();
 
       } catch (err) {
-        toast.error(err?.data?.message ||`${COUPON_MESSAGES.COUPON_DLT_FAILURE}` );
+        toast.error(err?.data?.message || `${COUPON_MESSAGES.COUPON_DLT_FAILURE}`);
       }
     }
   };

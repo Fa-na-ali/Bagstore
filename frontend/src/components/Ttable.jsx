@@ -79,7 +79,7 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                           </Link>
                         )
                       )}
-                      {(naming !== "wallets" && naming!=="orders") &&  (
+                      {(naming !== "wallets" && naming !== "orders") && (
                         <Button variant="link" className="text-danger p-0" title="Delete" onClick={() => onDelete(item._id)}>
                           <FaTrash />
                         </Button>

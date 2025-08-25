@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useGetWishlistQuery, useUpdateWishlistMutation } from '../../redux/api/productApiSlice'
+import { useAddToCartMutation, useGetWishlistQuery, useUpdateWishlistMutation } from '../../redux/api/productApiSlice'
 import { Badge, Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { FaTrash } from 'react-icons/fa'
 import { Link } from 'react-router'
-import { useDispatch } from 'react-redux'
-import { addToCart } from '../../redux/features/cart/cartSlice'
 import { toast } from 'react-toastify'
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice'
 import { PLACEHOLDER_URL } from '../../constants/constants'
@@ -18,7 +16,7 @@ const Wishlist = () => {
   const offers = off?.offers
   const products = data?.wishlist
   const [update] = useUpdateWishlistMutation()
-  const dispatch = useDispatch()
+  const [addToCart] = useAddToCartMutation()
 
   useEffect(() => {
     refetch()
@@ -61,28 +59,20 @@ const Wishlist = () => {
 
     setDiscounts(newDiscounts);
     setSalesPrices(newSalesPrices);
-  }, [products, offers,refetch]);
+  }, [products, offers, refetch]);
 
 
   //ADD TO CART 
-  const cartHandler = (product) => {
-
-    const finalPrice = salesPrices[product._id] || product.price;
-    dispatch(addToCart({
-      ...product,
-      originalPrice: product.price,
-      discountedPrice: finalPrice,
-      discount: (product.price - finalPrice), qty: 1
-    }));
+  const cartHandler = async (product) => {
+    await addToCart({ productId: product._id, qty: 1 }).unwrap()
     toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
     removeHandler(product)
-
   };
 
   //remove from wishlist
   const removeHandler = async (productId) => {
     try {
-       await update({ productId, }).unwrap();
+      await update({ productId, }).unwrap();
       refetch();
     } catch {
       toast.error(WISHLIST_MESSAGES.REMOVE_FAILURE);
@@ -178,7 +168,6 @@ const Wishlist = () => {
                           onClick={() => { removeHandler(product?.productId?._id) }}
                         >
                           <FaTrash
-
                           />
                         </Button>
                       </div>
@@ -188,7 +177,6 @@ const Wishlist = () => {
               );
             })}
           </Row>
-
         </Container>
       </section>
     </>

@@ -44,7 +44,6 @@ const Password = () => {
         if (!validatePassword(newPassword, confirmPassword)) {
             return;
         }
-
         try {
             const response = await resetPassword({ email, newPassword, confirmPassword }).unwrap();
             toast.success(response.message);

@@ -60,7 +60,7 @@ const MyOrder = () => {
       }).unwrap();
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message ||ORDER_MESSAGES.ORDER_CANCEL_FAILURE);
+      toast.error(error?.data?.message || ORDER_MESSAGES.ORDER_CANCEL_FAILURE);
     }
 
   };
@@ -84,7 +84,7 @@ const MyOrder = () => {
         toast.success(ORDER_MESSAGES.ORDER_RETURN_MSG)
       refetch();
     } catch (error) {
-      toast.error(error||`${ORDER_MESSAGES.ORDER_RETURN_FAILURE}`)
+      toast.error(error || `${ORDER_MESSAGES.ORDER_RETURN_FAILURE}`)
 
     }
   };

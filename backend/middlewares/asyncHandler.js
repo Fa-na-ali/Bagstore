@@ -4,7 +4,7 @@ const STATUS_CODES = require('../statusCodes');
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch((error) => {
         let statusCode
-         logger.error(error); 
+        logger.error(error);
         if (error.name === "TokenExpiredError") {
             statusCode = STATUS_CODES.UNAUTHORIZED;
         }

@@ -35,7 +35,6 @@ const PaymentFailure = () => {
           </Row>
         </Container>
       </section>
-
     </>
   )
 }

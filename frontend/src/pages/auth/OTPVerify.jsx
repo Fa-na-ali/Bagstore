@@ -68,7 +68,6 @@ const OTPVerify = () => {
     try {
       const res = await verifyOtp({ email, otp: otpCode }).unwrap();
       toast.success(USER_MESSAGES.USER_OTP_SUCCESS);
-
       dispatch(setCredentials({ ...res }));
       if (res.user.isAdmin) {
         navigate("/admin/dashboard");

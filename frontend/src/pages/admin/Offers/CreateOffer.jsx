@@ -6,7 +6,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useAddOfferMutation } from "../../../redux/api/usersApiSlice";
 import { useNavigate } from "react-router";
 import { OFFER_MESSAGES } from "../../../constants/messageConstants";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const CreateOffer = () => {
     const [formData, setFormData] = useState({

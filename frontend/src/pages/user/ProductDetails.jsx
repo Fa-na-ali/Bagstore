@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { lazy, Suspense } from 'react';
-import { useFetchRelatedProductsQuery, useGetProductByIdQuery } from '../../redux/api/productApiSlice';
+import { useAddToCartMutation, useFetchRelatedProductsQuery, useGetProductByIdQuery } from '../../redux/api/productApiSlice';
 import { useParams } from 'react-router';
 import { Row, Col, Container, Button, Image } from 'react-bootstrap'
 import { toast } from 'react-toastify';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/features/cart/cartSlice';
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice';
 import { CART_MESSAGES } from '../../constants/messageConstants';
 
@@ -13,7 +11,6 @@ const Cards = lazy(() => import('../../components/Cards'));
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const dispatch = useDispatch()
   const { data, isLoading, isError } = useGetProductByIdQuery(id);
   const product = data?.product
   const [quantity, setQuantity] = useState(1);
@@ -22,8 +19,7 @@ const ProductDetails = () => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
   const { data: products } = useFetchRelatedProductsQuery(id)
-  console.log(data)
-  console.log(products)
+  const [addToCart] = useAddToCartMutation()
 
   useEffect(() => {
     if (product && offers) {
@@ -33,14 +29,12 @@ const ProductDetails = () => {
       let productDiscount = 0;
       let categoryDiscount = 0;
 
-      // Product Offer Discount
       offers.forEach((offer) => {
         if (offer.name === product.offer) {
           productDiscount = offer.discount;
         }
       });
 
-      // Category Offer Discount
       if (product.category && product.category.offer) {
         offers.forEach((offer) => {
           if (offer.type === "category" && offer.name === product.category.offer) {
@@ -49,11 +43,9 @@ const ProductDetails = () => {
         });
       }
 
-      // Apply the highest discount
       const finalDiscount = Math.max(productDiscount, categoryDiscount);
       newDiscounts = finalDiscount;
 
-      // Calculate Sales Price
       if (finalDiscount !== 0) {
         newSalesPrices = product.price - (finalDiscount / 100) * product.price;
       }
@@ -68,14 +60,10 @@ const ProductDetails = () => {
   if (!product) return <div>Product not found.</div>;
 
   //add to cart
-  const addToCartHandler = () => {
-    dispatch(addToCart({
-      ...product,
-      originalPrice: product.price,
-      discountedPrice: salesPrices,
-      discount: (product.price - salesPrices), qty: 1
-    }));
+  const addToCartHandler = async () => {
+    await addToCart({ productId: product._id, qty: 1 }).unwrap();
     toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
+
   };
 
   return (
@@ -84,9 +72,7 @@ const ProductDetails = () => {
       <section className='background'>
         <Container className=" py-5 ">
           <Row>
-
             <Col md={6} className="mb-4">
-
               <Image
                 id="mainImage"
                 src={`${product.pdImage[0]}`}
@@ -96,8 +82,6 @@ const ProductDetails = () => {
                 className="mb-3 zoom-image"
                 style={{ width: "500px", height: "500px", }}
               />
-
-
               <div className="d-flex">
                 {product.pdImage.slice(0, 5).map((image, index) => (
                   <Image
@@ -112,8 +96,6 @@ const ProductDetails = () => {
                 ))}
               </div>
             </Col>
-
-
             <Col md={6}>
               <h2 className="mb-3 caption">{product.name}</h2>
               <p className="text-muted mb-4 caption">ID: {product._id}</p>
@@ -162,7 +144,6 @@ const ProductDetails = () => {
                   )}
                 </div>
               </div>
-
               <div className="mb-4">
                 <label htmlFor="quantity" className="form-label caption">
                   Quantity
@@ -183,30 +164,20 @@ const ProductDetails = () => {
                 disabled={product?.quantity <= 0 || !product?.category?.isExist}>
                 <i className="bi bi-cart-plus"></i> Add to Cart
               </Button>
-              {/* <Button variant="outline-secondary" size="lg" className="mb-3">
-                <i className="bi bi-heart"></i> Add to Wishlist
-              </Button> */}
-
             </Col>
           </Row>
           <Row>
-
             <div className='text-center py-5'>
               <h4 className='mt-4 mb-5 heading'><strong>RELATED PRODUCTS</strong></h4>
               <Suspense fallback={<div>Loading Related Products...</div>}>
                 <Cards
                   products={products?.relatedProducts}
-
                 />
               </Suspense>
             </div>
-
-
           </Row>
         </Container>
-
       </section>
-
     </>
   )
 }

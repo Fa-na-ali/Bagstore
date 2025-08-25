@@ -24,7 +24,7 @@ const EditProduct = () => {
 
   const { data, refetch } = useGetProductByIdQuery(id);
   const product = data?.product
-  const [update,{ isLoading}] = useUpdateProductMutation();
+  const [update, { isLoading }] = useUpdateProductMutation();
   const { data: datas } = useFetchCategoriesQuery();
   const categories = datas?.all
   const [deleteImage] = useDeleteImageMutation();
@@ -169,9 +169,9 @@ const EditProduct = () => {
 
     try {
       await update({ id: product?._id, formData: productData }).unwrap()
-        toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
-        refetch();
-        navigate('/admin/products')
+      toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
+      refetch();
+      navigate('/admin/products')
     } catch (error) {
       toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_UPDATE_FAILURE}`);
     }

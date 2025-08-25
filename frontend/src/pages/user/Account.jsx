@@ -24,7 +24,6 @@ const Account = () => {
     const [croppingIndex, setCroppingIndex] = useState(null);
     const [deleteImage] = useDeleteUserImageMutation();
 
-
     useEffect(() => {
         if (user?.image) {
             setFiles(user.image.map((img) => `${img}`));
@@ -71,14 +70,11 @@ const Account = () => {
 
                         const file = new File([blob], `image-${Date.now()}.webp`, { type: "image/webp" });
                         const objectURL = URL.createObjectURL(file);
-
                         setCroppedImages((prevImages) => {
                             const updatedImages = [...prevImages];
                             updatedImages[croppingIndex] = objectURL;
                             return updatedImages;
                         });
-
-
                     }
                 }, "image/webp");
             }
@@ -101,11 +97,9 @@ const Account = () => {
         );
         convertedFiles.forEach((file) => userData.append("image", file));
         try {
-            const { data } = await upload({ id: user?._id, userData }).unwrap()
-            if (data) {
-                toast.success(USER_MESSAGES.USER_PIC_SUCCESS);
-                refetch();
-            }
+            await upload({ id: user?._id, userData }).unwrap()
+            toast.success(USER_MESSAGES.USER_PIC_SUCCESS);
+            refetch();
         } catch (error) {
             toast.error(error?.data?.message || USER_MESSAGES.USER_PIC_EDIT_FAILURE);
         }
@@ -125,7 +119,6 @@ const Account = () => {
             toast.error(USER_MESSAGES.USER_PIC_DLT_FAILURE);
         }
     };
-
 
     return (
         <>

@@ -63,11 +63,10 @@ const VerifyOTPPass = () => {
         }
 
         try {
-            const res = await verifyOtp({ email, otp: otpCode }).unwrap();
-            if (res) {
-                toast.success(USER_MESSAGES.USER_OTP_SUCCESS);
-                navigate(`/reset-password?email=${email}`)
-            }
+            await verifyOtp({ email, otp: otpCode }).unwrap();
+            toast.success(USER_MESSAGES.USER_OTP_SUCCESS);
+            navigate(`/reset-password?email=${email}`)
+
         } catch (err) {
             toast.error(err?.data?.message || `${USER_MESSAGES.USER_OTP_FAILURE}`);
         }

@@ -14,7 +14,6 @@ import { toast } from 'react-toastify';
 import {
   useGetReferralCodeMutation,
   useGetReferralDetailsQuery,
-
 } from '../../redux/api/usersApiSlice';
 import { USER_MESSAGES } from '../../constants/messageConstants';
 
@@ -25,14 +24,12 @@ const Referrals = () => {
   useEffect(() => {
     if (referralData)
       refetch()
-  }, [refetch,referralData])
-
+  }, [refetch, referralData])
 
   const handleGetReferral = async () => {
     try {
       await generateCode().unwrap();
-      refetch(); 
-
+      refetch();
     } catch {
       toast.error(USER_MESSAGES.USER_REFERRAL_CODE_ERROR);
     }

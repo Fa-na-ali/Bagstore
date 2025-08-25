@@ -36,7 +36,7 @@ const OrderDetail = () => {
   const handleCancelOrder = async () => {
     try {
       setShowReasonModal(false);
-       await cancelOrder({
+      await cancelOrder({
         orderId: selectedOrder,
         item: selectedProduct,
         cancelReason: selectedReason,
@@ -113,7 +113,6 @@ const OrderDetail = () => {
             widths: ['*', 'auto'],
             body: [
               ['Subtotal :', `₹${(order.totalPrice).toFixed(2)}`],
-              //['Shipping Fee:', payment.delivery_fee > 0 ? `₹${payment.delivery_fee.toFixed(2)}` : 'Free'],
               ['Tax:', '₹3.00'],
               ['Total:', `₹${order.totalPrice.toFixed(2)}`],
             ],

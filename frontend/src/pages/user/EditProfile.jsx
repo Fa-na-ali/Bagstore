@@ -8,7 +8,7 @@ import { updateProfile } from '../../redux/features/auth/authSlice';
 import { USER_MESSAGES } from '../../constants/messageConstants';
 
 const EditProfile = () => {
-    const { data} = useProfileQuery()
+    const { data } = useProfileQuery()
     const user = data?.user
     const navigate = useNavigate()
     const [name, setName] = useState("");
@@ -36,7 +36,6 @@ const EditProfile = () => {
             toast.info(USER_MESSAGES.USER_OTP_SENT);
             dispatch(updateProfile({ name, email, phone }))
             navigate(`/verify-email?email=${user.email}`)
-
         } catch (error) {
             toast.error(error?.data?.message || USER_MESSAGES.USER_OTP_SENT_FAILURE);
         }

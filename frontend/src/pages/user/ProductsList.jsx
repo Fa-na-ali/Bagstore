@@ -18,7 +18,7 @@ const ProductsList = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const { data} = useFilterProductsQuery({
+  const { data } = useFilterProductsQuery({
     search: searchTerm,
     categories: selectedCategories,
     colors: selectedColors,
@@ -79,7 +79,7 @@ const ProductsList = () => {
             <Col lg={3}></Col>
             <Col lg={3} className="d-flex justify-content-end gap-3">
               <InputGroup className="mb-3">
-                <Form  className="d-flex">
+                <Form className="d-flex">
                   <FormControl
                     type="search"
                     placeholder="Search"

@@ -3,35 +3,37 @@ import { lazy, Suspense } from 'react';
 import { Container, Row, Col, Card, Button, Form, Image, Modal } from "react-bootstrap";
 import { FaTrash, } from "react-icons/fa";
 import { SiRazorpay } from "react-icons/si";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { useApplyCouponMutation, useInitiatePaymentMutation, useProfileQuery, useRemoveCouponMutation } from "../../redux/api/usersApiSlice";
-import { clearCartItems, removeFromCart, savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
+import { savePaymentMethod, saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import { BsWallet2 } from "react-icons/bs";
 import { useCreateOrderMutation } from "../../redux/api/ordersApiSlice";
 import { toast } from 'react-toastify'
 import { useRef } from "react";
 import { CART_MESSAGES, COUPON_MESSAGES, ORDER_MESSAGES, PAYMENT_MESSAGES } from "../../constants/messageConstants";
+import { useLoadCartQuery, useRemoveFromCartMutation } from "../../redux/api/productApiSlice";
 
 const CouponModal = lazy(() => import("./CouponModal"));
 
 const Checkout = () => {
 
-  const cart = useSelector((state) => state.cart);
+  const { data, refetch: loading } = useLoadCartQuery()
   const { data: user, refetch } = useProfileQuery()
-  const { cartItems } = cart;
+  const [removeCart] = useRemoveFromCartMutation();
+  const cartItems = data?.carts || []
   const address = user?.user?.address || [];
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const couponDiscountRef = useRef(0);
-  const formattedItems = cart?.cartItems.map(item => ({
-    product: item._id,
+  const formattedItems = cartItems.map(item => ({
+    product: item.product,
     qty: item.qty,
-    discount: item.discount,
-    discountedPrice: item.discountedPrice,
+    discount: (item.discount).toFixed(2),
+    discountedPrice: (item.price - item.discount).toFixed(2),
     name: item.name,
     price: item.price,
-    category: item.category.name
+    category: item.category,
   }));
 
   const [initiatePayment] = useInitiatePaymentMutation();
@@ -185,6 +187,15 @@ const Checkout = () => {
       toast.error(error?.data?.message || PAYMENT_MESSAGES.PAYMENT_INITIALIZATION_FAILURE);
     }
   };
+  //remove from cart
+  const removeFromCart = async (id) => {
+    try {
+      await removeCart(id);
+      loading()
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to remove from cart");
+    }
+  }
 
   //placing order
   const handlePlaceOrder = async (razorpay_order_id, razorpay_payment_id, razorpay_signature, status) => {
@@ -214,40 +225,13 @@ const Checkout = () => {
       }).unwrap();
       const id = res?.createdOrder?._id
       if (id) {
-        dispatch(clearCartItems());
         toast.success(ORDER_MESSAGES.ORDER_SUCCESS);
-
         navigate(`/order-success?id=${id}`);
+        loading();
       }
       else {
         toast.error(res?.message);
       }
-      // if (status === "Success" && cart?.paymentMethod === "Razorpay") {
-
-      //   const verifyData = await verifyPayment({
-      //     razorpay_order_id,
-      //     razorpay_payment_id,
-      //     razorpay_signature,
-      //   }).unwrap();
-
-      //   if (verifyData.status === "success") {
-
-      //     toast.success("Order Placed successfully");
-      //     navigate(`/order-success?id=${id}`);
-      //   }
-
-      // } else if (status === "Failed") {
-
-      //   toast.success("Order Placed successfully");
-      //   navigate(`/mine`);
-
-      // } else {
-      //   if (id) {
-      //     toast.success("Order Placed successfully");
-      //     navigate(`/order-success?id=${id}`);
-      //   }
-
-      // }
     } catch (error) {
       console.log(error)
       toast.error(error.data?.message || "Failed to place order");
@@ -288,7 +272,7 @@ const Checkout = () => {
                               <div className="d-flex flex-row align-items-center">
                                 <div>
                                   <Image
-                                    src={`${item.pdImage[0]}`}
+                                    src={`${item.image}`}
                                     className="img-fluid rounded-3"
                                     alt="Shopping item"
                                     style={{ width: "65px" }}
@@ -304,18 +288,18 @@ const Checkout = () => {
                                   <h5 className="fw-normal mb-0">{item.qty}</h5>
                                 </div>
                                 <div style={{ width: "150px" }}>
-                                  {item.originalPrice !== item.discountedPrice ? (
+                                  {item.discount !== 0 ? (
                                     <>
                                       <span className="text-decoration-line-through text-muted me-2">
-                                        ₹{item.originalPrice}
+                                        ₹{item.price}
                                       </span>
-                                      <span className="text-success fw-bold">₹{item.discountedPrice.toFixed(2)}</span>
+                                      <span className="text-success fw-bold">₹{(item.price - item.discount).toFixed(2)}</span>
                                     </>
                                   ) : (
                                     <span>₹{item.price}</span>
                                   )}
                                 </div>
-                                <Button variant="link" className="text-danger p-5" onClick={() => dispatch(removeFromCart(item._id))}>
+                                <Button variant="link" className="text-danger p-5" onClick={() => removeFromCart(item._id)}>
                                   <FaTrash size={18} />
                                 </Button>
                               </div>

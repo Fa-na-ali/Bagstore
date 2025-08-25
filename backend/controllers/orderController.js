@@ -8,6 +8,7 @@ const STATUS_CODES = require('../statusCodes');
 const Wallet = require('../models/wallet');
 const Coupon = require('../models/couponModel');
 const asyncHandler = require('../middlewares/asyncHandler');
+const Cart = require('../models/cartModel')
 
 async function generateOrderId() {
   const { nanoid } = await import("nanoid");
@@ -19,8 +20,6 @@ const generateOrderNumber = async () => Math.random().toString(36).substring(2, 
 //create order
 const createOrder = asyncHandler(async (req, res) => {
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const orderId = await generateOrderId();
     const orderNumber = await generateOrderNumber()
@@ -29,8 +28,7 @@ const createOrder = asyncHandler(async (req, res) => {
       res.status(STATUS_CODES.NOT_FOUND)
       throw new Error("No items in the order");
     }
-
-    const user = await User.findById(userId).session(session)
+    const user = await User.findById(userId)
 
     if (!user) {
       res.status(STATUS_CODES.NOT_FOUND)
@@ -47,13 +45,13 @@ const createOrder = asyncHandler(async (req, res) => {
         res.status(STATUS_CODES.BAD_REQUEST)
         throw new Error(`Invalid quantity for product ${item.product}`);
       }
-      const product = await Product.findById(item.product).session(session);
+      const product = await Product.findById(item.product);
       if (!product || product.quantity < item.qty) {
         throw new Error(`Insufficient stock for product: ${product.name}`);
       }
 
       product.quantity -= item.qty;
-      await product.save({ session });
+      await product.save();
 
       validatedItems.push({ product: item.product, qty: item.qty, status: "Pending", discount: item.discount, name: item.name, price: item.price, category: item.category });
     }
@@ -74,7 +72,7 @@ const createOrder = asyncHandler(async (req, res) => {
         type: "Debit",
         description: `Order Payment - ${orderNumber}`,
       });
-      await wallet.save({ session });
+      await wallet.save();
     }
 
     let payment = new Payment({
@@ -95,7 +93,7 @@ const createOrder = asyncHandler(async (req, res) => {
     if (!isNaN(couponDiscount)) {
       payment.couponDiscount = couponDiscount;
     }
-    await payment.save({session})
+    await payment.save()
 
     const order = new Order({
       orderId,
@@ -108,25 +106,25 @@ const createOrder = asyncHandler(async (req, res) => {
       paymentId: payment._id,
       shippingPrice,
       status: "Not completed",
-      totalPrice:totalPrice+shippingPrice,
+      totalPrice: totalPrice + shippingPrice,
       couponId,
       couponDiscount,
       totalDiscount,
       tax
     });
 
-    const createdOrder = await order.save({ session });
+    const createdOrder = await order.save();
 
     if (user.coupon) {
       const coupon = await Coupon.findById(user.coupon);
       if (coupon && !coupon.usedUsers.includes(user._id)) {
         coupon.usedUsers.push(user._id);
         coupon.limit -= 1;
-        await coupon.save({ session });
+        await coupon.save();
       }
 
       user.coupon = null;
-      await user.save({ session });
+      await user.save();
     }
 
     // await Promise.all(
@@ -142,16 +140,14 @@ const createOrder = asyncHandler(async (req, res) => {
     await Payment.updateOne(
       { _id: payment._id },
       { $set: { orderId: createdOrder._id } },
-      { session }
     )
-  
-    await session.commitTransaction();
-    session.endSession();
+    await Cart.deleteMany({
+      user: user._id
+    });
+    
     return res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
   } catch (error) {
 
-    await session.abortTransaction();
-    session.endSession();
     res.status(STATUS_CODES.BAD_REQUEST).json({ status: "error", message: error.message });
   }
 });

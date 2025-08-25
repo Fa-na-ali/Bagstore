@@ -1,4 +1,4 @@
-import { Card, Badge,} from 'react-bootstrap';
+import { Card, Badge, } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useGetTransactionQuery } from '../../../redux/api/walletApiSlice';
@@ -11,7 +11,7 @@ const TransactionDetail = () => {
   if (!transactions || !transactions.transaction) return <p>Transaction not found</p>;
 
 
-  const { transaction: trxs} = transactions;
+  const { transaction: trxs } = transactions;
   const trx = trxs.transaction
   const { user } = transactions;
 
@@ -110,8 +110,8 @@ const TransactionDetail = () => {
                 <div className="mb-4">
                   <span className="fw-bold text-dark d-block mb-2">Transaction Related To:</span>
                   <span className={`badge rounded-pill p-2 ${trxs.transactionType === 'Order Returned' ? 'bg-warning text-dark' :
-                      trxs.transactionType === 'Order Cancelled' ? 'bg-danger' :
-                        trxs.transactionType === 'Debited' ? 'bg-info text-dark' : 'bg-secondary'
+                    trxs.transactionType === 'Order Cancelled' ? 'bg-danger' :
+                      trxs.transactionType === 'Debited' ? 'bg-info text-dark' : 'bg-secondary'
                     }`}>
                     {trxs.transactionType}
                   </span>

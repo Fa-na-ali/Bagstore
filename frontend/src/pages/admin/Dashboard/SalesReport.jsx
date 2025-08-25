@@ -17,7 +17,7 @@ import 'jspdf-autotable';
 import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
-import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT }  from '../../../constants/constants';
+import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../constants/constants';
 
 
 // Initialize pdfMake
@@ -48,7 +48,7 @@ const SalesReport = () => {
     refetch
   } = useGetSalesReportQuery({ filter, startDate, endDate });
   const reportData = report?.reportData
-  
+
   useEffect(() => {
     setShowDateInputs(filter === 'custom');
   }, [filter]);

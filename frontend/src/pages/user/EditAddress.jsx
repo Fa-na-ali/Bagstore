@@ -8,7 +8,7 @@ import { USER_MESSAGES } from '../../constants/messageConstants';
 const EditAddress = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { data} = useGetAddressQuery(id)
+    const { data } = useGetAddressQuery(id)
     const address = data?.address
     const [updateAddress] = useUpdateAddressMutation()
     const [formData, setFormData] = useState({

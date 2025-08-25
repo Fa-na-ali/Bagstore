@@ -55,7 +55,7 @@ const Register = () => {
   //Handle form submission
   const submitHandler = async (data) => {
     try {
-      const res = await registerUser({
+      await registerUser({
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -63,11 +63,9 @@ const Register = () => {
         confirmPassword: data.confirmPassword,
         referCode: data.referCode
       }).unwrap();
-      if (res) {
-        toast.success(USER_MESSAGES.USER_REGISTER_SUCCESS);
-        navigate(`/verify-otp?email=${data.email}`);
-        toast.success(USER_MESSAGES.USER_OTP_SENT);
-      }
+      toast.success(USER_MESSAGES.USER_REGISTER_SUCCESS);
+      navigate(`/verify-otp?email=${data.email}`);
+      toast.success(USER_MESSAGES.USER_OTP_SENT);
     } catch (err) {
       toast.error(err.data?.message || `${USER_MESSAGES.USER_REGISTER_FAILURE}`);
     }

@@ -91,7 +91,7 @@ const RetryButton = ({ orderId }) => {
 }
 
 RetryButton.propTypes = {
-    orderId:PropTypes.string.isRequired,
+    orderId: PropTypes.string.isRequired,
 }
 
 export default RetryButton

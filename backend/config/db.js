@@ -4,11 +4,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-//database connectio
-
-const dbConnect = async() => {
+//database connection
+const dbConnect = async () => {
     try {
-        
+
         await mongoose.connect(URI)
         console.log("Connected to database")
 

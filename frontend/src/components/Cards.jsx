@@ -4,8 +4,7 @@ import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { toast } from 'react-toastify';
-import { addToCart } from '../redux/features/cart/cartSlice';
-import { useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
+import { useAddToCartMutation, useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
 import { useGetAllOffersToAddQuery } from '../redux/api/usersApiSlice';
 import { CART_MESSAGES, WISHLIST_MESSAGES } from '../constants/messageConstants';
 import { PropTypes } from "prop-types";
@@ -14,12 +13,12 @@ import { PLACEHOLDER_URL } from '../constants/constants';
 const Cards = ({ products }) => {
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
-  const dispatch = useDispatch();
   const [likedProducts, setLikedProducts] = useState({});
   const [discounts, setDiscounts] = useState({});
   const [salesPrices, setSalesPrices] = useState({})
   const { data: wishlistData } = useGetWishlistQuery()
   const [update] = useUpdateWishlistMutation()
+  const [addToCart] = useAddToCartMutation()
 
   useEffect(() => {
     if (wishlistData && wishlistData.wishlist) {
@@ -31,16 +30,9 @@ const Cards = ({ products }) => {
     }
   }, [wishlistData]);
 
-  const cartHandler = (product) => {
-    const finalPrice = salesPrices[product._id] || product.price;
-    dispatch(addToCart({
-      ...product,
-      originalPrice: product.price,
-      discountedPrice: finalPrice,
-      discount: (product.price - finalPrice), qty: 1
-    }));
+  const cartHandler = async (product) => {
+    await addToCart({ productId: product._id, qty: 1 }).unwrap();
     toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
-
   };
 
   useEffect(() => {

@@ -8,7 +8,7 @@ export const WISHLIST_MESSAGES = {
     ADD_SUCCESS: 'Added to Wishlist',
     REMOVE_SUCCESS: 'Removed from Wishlist',
     UPDATE_FAILURE: 'Failed to update wishlist',
-    REMOVE_FAILURE:"Error removing product:"
+    REMOVE_FAILURE: "Error removing product:"
 };
 
 export const CATEGORY_MESSAGES = {
@@ -86,11 +86,11 @@ export const USER_MESSAGES = {
     USER_ADDRESS_ADD_SUCCESS: 'Address added successfully!',
     USER_ADDRESS_ADD_FAILURE: 'Failed to add address',
     USER_PASSWORD_CHANGE_FAILURE: "Something went wrong with password change",
-    USER_ADDRESS_EDIT_SUCCESS:"Address Edited successfully!",
-    USER_ADDRESS_EDIT_FAILURE:"Failed to update address",
-    USER_NAME_VALIDATION:"Name must be maximum of 25 characters long",
-    USER_EMAIL_VERIFY:"Email verified & User updated!",
-    USER_REFERRAL_CODE_ERROR:"Failed to generate code",
+    USER_ADDRESS_EDIT_SUCCESS: "Address Edited successfully!",
+    USER_ADDRESS_EDIT_FAILURE: "Failed to update address",
+    USER_NAME_VALIDATION: "Name must be maximum of 25 characters long",
+    USER_EMAIL_VERIFY: "Email verified & User updated!",
+    USER_REFERRAL_CODE_ERROR: "Failed to generate code",
 
 }
 export const PAYMENT_MESSAGES = {

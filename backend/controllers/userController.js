@@ -420,6 +420,7 @@ const updateUser = asyncHandler(async (req, res) => {
 const addAddress = asyncHandler(async (req, res) => {
 
     const userId = req.user._id;
+
     const { name, houseName, town, street, state, zipcode, country, phone } = req.body
     if (!name || !houseName || !town || !street || !state || !zipcode || !country || !phone) {
         res.status(STATUS_CODES.BAD_REQUEST)

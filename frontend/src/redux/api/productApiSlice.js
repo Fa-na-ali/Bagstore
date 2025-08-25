@@ -3,6 +3,7 @@ import { PRODUCT_URL, UPLOAD_URL } from "../../constants/constants";
 import { apiSlice } from "./apiSlice";
 
 export const productApiSlice = apiSlice.injectEndpoints({
+  tagTypes: ["Cart"],
   endpoints: (builder) => ({
     getProducts: builder.query({
       query: ({ keyword, page }) => ({
@@ -130,6 +131,35 @@ export const productApiSlice = apiSlice.injectEndpoints({
       },
       providesTags: ["Product"],
     }),
+    addToCart: builder.mutation({
+      query: ({ productId, qty }) => ({
+        url: `${PRODUCT_URL}/add-to-cart`,
+        method: "POST",
+        body: { productId, qty },
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+    removeFromCart: builder.mutation({
+      query: (id) => ({
+        url: `${PRODUCT_URL}/remove-cart/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+    loadCart: builder.query({
+      query: () => `${PRODUCT_URL}/cart`,
+      providesTags: ["Cart"],
+      keepUnusedDataFor: 5,
+    }),
+    updateCart: builder.mutation({
+      query: ({ cartId, qty }) => ({
+        url: `${PRODUCT_URL}/update-cart`,
+        method: "POST",
+        body: { cartId, qty },
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+
   }),
 });
 
@@ -151,4 +181,8 @@ export const {
   useUpdateWishlistMutation,
   useGetWishlistQuery,
   useRemoveFromWishlistMutation,
+  useAddToCartMutation,
+  useRemoveFromCartMutation,
+  useLoadCartQuery,
+  useUpdateCartMutation,
 } = productApiSlice;

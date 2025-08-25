@@ -22,13 +22,11 @@ const AddAddress = () => {
         e.preventDefault();
 
         try {
-            const { data } = await addAddress({
+            await addAddress({
                 name, houseName, town, street, state, zipcode, country, phone
             }).unwrap();
-            if (data) {
-                toast.success(USER_MESSAGES.USER_ADDRESS_ADD_SUCCESS);
-                navigate(-1);
-            }
+            toast.success(USER_MESSAGES.USER_ADDRESS_ADD_SUCCESS);
+            navigate(-1);
         } catch (error) {
             toast.error(error?.data?.message || `${USER_MESSAGES.USER_ADDRESS_ADD_FAILURE}`);
         }

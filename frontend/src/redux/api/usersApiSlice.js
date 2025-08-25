@@ -89,7 +89,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/${id}/${index}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Product"], 
+      invalidatesTags: ["Product"],
     }),
 
     getUsers: builder.query({

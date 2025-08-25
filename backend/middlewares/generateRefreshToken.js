@@ -1,7 +1,7 @@
 const User = require("../models/userModel");
 const STATUS_CODES = require("../statusCodes");
 const asyncHandler = require("./asyncHandler");
-const jwt = require("jsonwebtoken"); 
+const jwt = require("jsonwebtoken");
 
 const generaterefreshToken = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;

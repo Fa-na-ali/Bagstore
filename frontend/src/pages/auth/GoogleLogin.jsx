@@ -16,6 +16,7 @@ const GoolgeLogin = () => {
                 const result = await googleAuth(authResult.code);
                 const { _id, email, name, isAdmin, isExist, address, refreshToken } = result?.data?.user;
                 const token = result?.data?.token;
+                console.log(token)
                 const obj = { _id, email, name, isAdmin, isExist, address, token, refreshToken };
                 console.log(obj)
                 dispatch(setCredentials(obj));
@@ -35,9 +36,9 @@ const GoolgeLogin = () => {
                 toast.error(USER_MESSAGES.USER_LOGIN_ERROR)
             }
         } catch (e) {
-           if (e.response?.data?.message) {
-           toast.error(e.response.data.message||`${USER_MESSAGES.USER_LOGIN_ERROR}`);
-    }
+            if (e.response?.data?.message) {
+                toast.error(e.response.data.message || `${USER_MESSAGES.USER_LOGIN_ERROR}`);
+            }
         }
     };
 
