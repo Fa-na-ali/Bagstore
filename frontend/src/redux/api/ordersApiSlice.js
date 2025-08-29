@@ -9,6 +9,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: order,
       }),
+      invalidatesTags: ["Order"],  
     }),
 
     getMyOrders: builder.query({
@@ -68,7 +69,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         params.append("page", page);
         return `${ORDERS_URL}/admin/orders?${params.toString()}`
       },
-      providesTags: ["Orders"],
+      providesTags: ["Order"],
 
     }),
 
@@ -77,7 +78,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         url: `${ORDERS_URL}/admin/orders/edit/${id}`,
         method: "GET",
       }),
-      providesTags: ["Orders"],
+      providesTags: ["Order"],
       keepUnusedDataFor: 5,
     }),
   }),
