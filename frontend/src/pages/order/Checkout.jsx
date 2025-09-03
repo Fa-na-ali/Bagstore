@@ -214,13 +214,15 @@ const Checkout = () => {
         items: formattedItems,
         shippingAddress: selectedAddress,
         paymentMethod: selectedPayment,
-        shippingPrice: total >= 700 ? 0 : 50,
+        shippingPrice: shipping,
         couponId: couponId || null,
         razorpay_order_id,
         paymentStatus: status,
         couponDiscount: couponDiscountRef.current.toFixed(2),
         totalPrice: total.toFixed(2),
         tax: tax.toFixed(2),
+        originalTotalPrice: subtotal.toFixed(2),
+        offerDiscount: discount.toFixed(2),
         totalDiscount: totalDiscount.toFixed(2),
       }).unwrap();
       const id = res?.createdOrder?._id
@@ -233,7 +235,6 @@ const Checkout = () => {
         toast.error(res?.message);
       }
     } catch (error) {
-      console.log(error)
       toast.error(error.data?.message || "Failed to place order");
     }
   };
@@ -242,7 +243,9 @@ const Checkout = () => {
   const discount = cartItems.reduce((acc, item) => acc + item.discount * item.qty, 0);
   const totalDiscount = discount + couponDiscount
   const tax = subtotal * 0.05;
-  const total = subtotal - (discount + couponDiscount) + tax;
+  const totalPrice = subtotal - (discount + couponDiscount) + tax;
+  const shipping = totalPrice >= 700 ? 0 : 50
+  const total = totalPrice + shipping
   const id = selectedAddress
 
   return (
@@ -253,7 +256,6 @@ const Checkout = () => {
             <Card>
               <Card.Body className="p-4">
                 <Row>
-                  {/* Shopping Cart Section */}
                   <Col lg={7}>
                     <div className="d-flex justify-content-between align-items-center mb-4">
                       <div>

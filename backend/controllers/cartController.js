@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const asyncHandler = require('../middlewares/asyncHandler');
 const User = require('../models/userModel');
 const Product = require('../models/productModel');
@@ -19,6 +18,7 @@ const addToCart = asyncHandler(async (req, res) => {
     }
 
     const product = await Product.findOne({ _id: productId });
+
     if (!product) {
         res.status(STATUS_CODES.NOT_FOUND)
         throw new Error('Product not found');
@@ -40,35 +40,33 @@ const addToCart = asyncHandler(async (req, res) => {
             }
         })
     }
-    const price = offer
-        ? (qty * product.price - Math.ceil(product.price * offer.discount / 100))
-        : qty * product.price;
-
+    
     let cartOptions;
     if (offer) {
         cartOptions = {
             user: user.id,
             product: product._id,
             name: product.name,
-            price: price,
+            price: product.price,
             category: category.name,
             qty,
             originalQuantity: product.quantity,
             color: product.color,
             image: product.pdImage[0],
-            discount: qty * Math.ceil(product.price * offer.discount / 100),
+            discount: (qty * (product.price * offer.discount / 100)).toFixed(2),
         };
     } else {
         cartOptions = {
             user: user.id,
             product: product._id,
             name: product.name,
-            price: price,
+            price: product.price,
             category: category.name,
             qty,
             originalQuantity: product.quantity,
             color: product.color,
             image: product.pdImage[0],
+            discount: 0
         };
     }
 

@@ -57,6 +57,8 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                         ) :
                           col.key === "userId" || col.key === "category" ? (
                             item.userId?.name || item.category?.name
+                          ) : (col.key === "createdAt" || col.key === "expiry" || col.key === "transactionDate") ? (
+                            new Date(item[col.key]).toLocaleString()
                           ) : (
                             item[col.key]
                           )}

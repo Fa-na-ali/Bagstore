@@ -9,7 +9,6 @@ import { ORDER_MESSAGES } from '../../../constants/messageConstants';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
-
 const OrderDetails = () => {
 
   const { id } = useParams();
@@ -21,7 +20,7 @@ const OrderDetails = () => {
   useEffect(() => {
     socket.on('orderStatusUpdated', (updatedOrder) => {
       if (updatedOrder.orderId === id) {
-        toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS);
+        //toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS);
         refetch();
       }
     });
@@ -93,7 +92,7 @@ const OrderDetails = () => {
                     </Col>
                     <Col xs={6} className="mb-3">
                       <h6>Order Date</h6>
-                      <p className="text-muted">{order?.createdAt}</p>
+                      <p className="text-muted">{new Date(order?.createdAt).toLocaleDateString()}</p>
                     </Col>
                   </Row>
                   <Row className="pt-1">
@@ -114,6 +113,16 @@ const OrderDetails = () => {
                     <Col xs={6} className="mb-3">
                       <h6>Payment Method</h6>
                       <p className="text-muted">{order?.paymentMethod}</p>
+                    </Col>
+                  </Row>
+                  <Row className="pt-1">
+                    <Col xs={6} className="mb-3">
+                      <h6>Coupon Discount</h6>
+                      <p className="text-muted">{order?.couponDiscount}</p>
+                    </Col>
+                    <Col xs={6} className="mb-3">
+                      <h6>Tax</h6>
+                      <p className="text-muted">{order?.tax}</p>
                     </Col>
                   </Row>
                   <Row className="pt-1">
@@ -187,13 +196,7 @@ const OrderDetails = () => {
                                 >
                                   Approve
                                 </Button>
-                                {/* <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleReturnAction(item._id, "rejected")}
-                            >
-                              Reject
-                            </Button> */}
+
                               </div>
                             ) : (
                               <Form.Select

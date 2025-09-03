@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { FaHeart } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { toast } from 'react-toastify';
 import { useAddToCartMutation, useGetWishlistQuery, useUpdateWishlistMutation } from '../redux/api/productApiSlice';
@@ -30,11 +29,6 @@ const Cards = ({ products }) => {
     }
   }, [wishlistData]);
 
-  const cartHandler = async (product) => {
-    await addToCart({ productId: product._id, qty: 1 }).unwrap();
-    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
-  };
-
   useEffect(() => {
     if (!products || !offers) return;
 
@@ -60,10 +54,8 @@ const Cards = ({ products }) => {
         });
       }
 
-
       const finalDiscount = Math.max(productDiscount, categoryDiscount);
       newDiscounts[product._id] = finalDiscount;
-
 
       if (finalDiscount !== 0) {
         newSalesPrices[product._id] = product.price - (finalDiscount / 100) * product.price;
@@ -75,6 +67,11 @@ const Cards = ({ products }) => {
     setDiscounts(newDiscounts);
     setSalesPrices(newSalesPrices);
   }, [products, offers]);
+
+  const cartHandler = async (product) => {
+    await addToCart({ productId: product._id, qty: 1 }).unwrap();
+    toast.success(CART_MESSAGES.ADD_TO_CART_SUCCESS);
+  };
 
 
   const toggleLike = async (productId, color) => {
@@ -89,8 +86,7 @@ const Cards = ({ products }) => {
           toast.success(WISHLIST_MESSAGES.ADD_SUCCESS)
       } else {
 
-        const res = await update({ productId, color }).unwrap();
-        console.log("res", res)
+        await update({ productId, color }).unwrap();
         toast.success(WISHLIST_MESSAGES.REMOVE_SUCCESS)
 
       }

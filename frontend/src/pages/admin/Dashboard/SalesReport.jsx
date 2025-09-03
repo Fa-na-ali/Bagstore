@@ -61,33 +61,39 @@ const SalesReport = () => {
     if (!reportData?.orders) return;
 
     const body = [
-      ['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)'],
+      ['Product Name', 'Sold', 'Price', 'Offer Discounts', 'Revenue (₹)'],
       ...reportData.orders.map(order => [
         order.productName,
         order.soldCount,
-        order.returnedCount,
-        `₹${order.productDiscounts}`,
+        order.productPrice,
+        `₹${order.productDiscounts.toFixed(2)}`,
         `₹${order.revenue}`
       ])
     ];
 
     const orderDetailsBody = [
       [
-        'Date', 'Email', 'Payment Method',
+        'Date', 'Email', 'Product', 'Category', 'Qty', 'Price', 'Discount', 'Payment Method',
         'Coupon Discount', 'Shipping Price', 'Tax',
-        'Total Discount', 'Subtotal', 'Products'
       ],
-      ...reportData.detailedOrders.map(order => [
-        new Date(order.orderDate).toLocaleString(),
-        order.userEmail,
-        order.paymentMethod,
-        `₹${order.couponDiscount}`,
-        `₹${order.shippingPrice}`,
-        `₹${order.tax.toFixed(2)}`,
-        `₹${order.totalDiscount}`,
-        `₹${order.totalPrice}`,
-        order.items.map(item => `${item.name} (${item.category}), Qty:${item.qty}, Price:₹${item.price}`).join('\n')
-      ])
+      ...reportData.detailedOrders.flatMap(order =>
+        order.items
+          .filter(item => item.status === "Delivered")
+          .map(item => [
+            new Date(order.orderDate).toLocaleString(),
+            order.userEmail,
+            item.name,
+            item.category,
+            item.qty,
+            `₹${item.price.toFixed(2)}`,
+            `₹${item.discount?.toFixed(2) || 0}`,
+            // `${order.shippingAddress.houseName}, ${order.shippingAddress.town}, ${order.shippingAddress.street}, ${order.shippingAddress.state}`,
+            order.paymentMethod,
+            `₹${order.couponDiscount.toFixed(2)}`,
+            `₹${order.shippingPrice}`,
+            `₹${order.tax.toFixed(2)}`
+          ])
+      )
     ];
 
     const docDefinition = {
@@ -127,7 +133,7 @@ const SalesReport = () => {
         {
           table: {
             headerRows: 1,
-            widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', '*'],
+            widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', '*', 'auto', 'auto', 'auto',],
             body: orderDetailsBody,
           },
           // layout: 'lightHorizontalLines'
@@ -158,11 +164,11 @@ const SalesReport = () => {
     if (!reportData?.orders) return;
 
     // First sheet: Sales Report
-    const salesHeaders = ['Product Name', 'Sold', 'Returns', 'Offer Discounts', 'Revenue (₹)'];
+    const salesHeaders = ['Product Name', 'Sold', 'Price', 'Offer Discounts', 'Revenue (₹)'];
     const salesData = reportData.orders.map(order => [
       order.productName,
       order.soldCount,
-      order.returnedCount,
+      order.productPrice,
       order.productDiscounts,
       order.revenue
     ]);
@@ -175,29 +181,36 @@ const SalesReport = () => {
 
     // Second sheet: Order Details
     const orderHeaders = [
-      'Order Date', 'Email', 'Payment Method',
-      'Coupon Discount', 'Shipping Price', 'Tax',
-      'Total Discount', 'Subtotal', 'Products'
+      'Order Date', 'Email', 'Product', 'Category', 'Qty', 'Price',
+      'Discount', 'Shipping Address', 'Payment Method',
+      'Coupon Discount', 'Shipping Price', 'Tax'
     ];
-    const orderData = reportData.detailedOrders.map(order => [
-      new Date(order.orderDate).toLocaleString(),
-      order.userEmail,
-      order.paymentMethod,
-      order.couponDiscount,
-      order.shippingPrice,
-      order.tax,
-      order.totalDiscount,
-      order.totalPrice,
-      order.items.map(item => `${item.name} (${item.category}) x${item.qty} @ ₹${item.price}`).join(', ')
-    ]);
+
+    const orderData = [];
+    reportData.detailedOrders.forEach(order => {
+      order.items.forEach(item => {
+        orderData.push([
+          new Date(order.orderDate).toLocaleString(),
+          order.userEmail,
+          item.name,
+          item.category,
+          item.qty,
+          item.price,
+          item.discount || 0,
+          `${order.shippingAddress.houseName}, ${order.shippingAddress.street}, ${order.shippingAddress.town}, ${order.shippingAddress.state}`,
+          order.paymentMethod,
+          order.couponDiscount,
+          order.shippingPrice,
+          order.tax
+        ]);
+      });
+    });
 
     const wb = XLSX.utils.book_new();
 
-    // Add Sales Report
     const salesSheet = XLSX.utils.aoa_to_sheet([salesHeaders, ...salesData, ...summaryData]);
     XLSX.utils.book_append_sheet(wb, salesSheet, 'Sales Report');
 
-    // Add Order Details
     const orderSheet = XLSX.utils.aoa_to_sheet([orderHeaders, ...orderData]);
     XLSX.utils.book_append_sheet(wb, orderSheet, 'Order Details');
 
@@ -293,7 +306,7 @@ const SalesReport = () => {
                     <tr>
                       <th>Product Name</th>
                       <th>Sold</th>
-                      <th>Returns</th>
+                      <th>Product Price</th>
                       <th>Offer Discounts</th>
                       <th>
                         <OverlayTrigger placement="top" overlay={revenueTooltip}>
@@ -314,7 +327,7 @@ const SalesReport = () => {
                         <tr key={index}>
                           <td>{order.productName}</td>
                           <td>{order.soldCount}</td>
-                          <td>{order.returnedCount}</td>
+                          <td>{order.productPrice.toFixed(2)}</td>
                           <td>₹{order.productDiscounts.toFixed(2)}</td>
                           <td>₹{order.revenue.toFixed(2)}</td>
                         </tr>
@@ -339,48 +352,46 @@ const SalesReport = () => {
                           {/* <th>Order No.</th> */}
                           {/* <th>Ordered By</th> */}
                           <th>Email</th>
+                          <th>Product</th>
+                          <th>Category</th>
+                          <th>Qty</th>
+                          <th>Price</th>
+                          <th>Discount</th>
                           <th>Shipping Address</th>
                           <th>Payment Method</th>
                           <th>Coupon Discount</th>
                           <th>Shipping Price</th>
                           <th>Tax</th>
-                          <th>Total Discount</th>
-                          <th>Subtotal</th>
-                          {/* <th>Net Total</th> */}
-                          <th>Products</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {reportData.detailedOrders.map((order, index) => (
-                          <tr key={index}>
-                            <td>{new Date(order.orderDate).toLocaleString()}</td>
-                            {/* <td>{order.orderNumber}</td> */}
-                            {/* <td>{order.userName}</td> */}
-                            <td>{order.userEmail}</td>
-                            <td>
-                              {order.shippingAddress.houseName},<br />
-                              {order.shippingAddress.town}, {order.shippingAddress.street},<br />
-                              {order.shippingAddress.state}
-                            </td>
-                            <td>{order.paymentMethod}</td>
-                            <td>₹{order.couponDiscount.toFixed(2)}</td>
-                            <td>₹{order.shippingPrice}</td>
-                            <td>₹{order.tax.toFixed(2)}</td>
-                            <td>₹{order.totalDiscount.toFixed(2)}</td>
-                            <td>₹{order.totalPrice.toFixed(2)}</td>
-                            {/* <td>₹{order.totalPrice + order.tax + order.shippingPrice - order.totalDiscount - order.couponDiscount}</td> */}
-                            <td>
-                              <ul className="text-start">
-                                {order.items.map((item, i) => (
-                                  <li key={i}>
-                                    {item.name} ({item.category}), Qty: {item.qty}, Price: ₹{item.price.toFixed(2)}
-                                  </li>
-                                ))}
-                              </ul>
-                            </td>
-                          </tr>
-                        ))}
+                        {reportData.detailedOrders.map((order, index) =>
+                          order.items
+                            .filter((item) => item.status === "Delivered")
+                            .map((item, i) => (
+                              <tr key={`${index}-${i}`}>
+
+                                <td>{new Date(order.orderDate).toLocaleString()}</td>
+                                <td>{order.userEmail}</td>
+                                <td>{item.name}</td>
+                                <td>{item.category}</td>
+                                <td>{item.qty}</td>
+                                <td>₹{item.price.toFixed(2)}</td>
+                                <td>₹{item.discount.toFixed(2)}</td>
+                                <td>
+                                  {order.shippingAddress.houseName},<br />
+                                  {order.shippingAddress.town}, {order.shippingAddress.street},<br />
+                                  {order.shippingAddress.state}
+                                </td>
+                                <td>{order.paymentMethod}</td>
+                                <td>₹{order.couponDiscount.toFixed(2)}</td>
+                                <td>₹{order.shippingPrice}</td>
+                                <td>₹{order.tax.toFixed(2)}</td>
+                              </tr>
+                            ))
+                        )}
                       </tbody>
+
                     </Table>
                   </div>
                 </>

@@ -112,8 +112,11 @@ const OrderDetail = () => {
           table: {
             widths: ['*', 'auto'],
             body: [
-              ['Subtotal :', `₹${(order.totalPrice).toFixed(2)}`],
-              ['Tax:', '₹3.00'],
+              ['Subtotal :', `₹${(order.originalTotalPrice).toFixed(2)}`],
+              ['Offer :', `-₹${(order.offerDiscount).toFixed(2)}`],
+              [' Coupon Discount:', `-₹${(order.couponDiscount).toFixed(2)}`],
+              ['Tax:', `₹${(order.tax).toFixed(2)}`],
+              ['Shipping:', `₹${(order.shippingPrice).toFixed(2)}`],
               ['Total:', `₹${order.totalPrice.toFixed(2)}`],
             ],
           },
@@ -286,7 +289,7 @@ const OrderDetail = () => {
                   <hr />
                   <div className="d-flex justify-content-between mb-2 caption">
                     <span><strong>Subtotal:</strong></span>
-                    <span>₹{(order.totalPrice - order.shippingPrice - order.tax).toFixed(2)}</span>
+                    <span>₹{(order.originalTotalPrice - order.offerDiscount).toFixed(2)}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2 caption">
                     <span><strong>Shipping:</strong></span>
@@ -297,8 +300,8 @@ const OrderDetail = () => {
                     <span>₹{order.tax.toFixed(2)}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-2 caption">
-                    <span><strong>Discount:</strong></span>
-                    <span className="text-danger">-₹{order.totalDiscount.toFixed(2)}</span>
+                    <span><strong>Coupon Discount:</strong></span>
+                    <span className="text-danger">-₹{order.couponDiscount.toFixed(2)}</span>
                   </div>
                   <hr />
                   <div className="d-flex justify-content-between fw-bold caption">

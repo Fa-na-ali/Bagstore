@@ -6,6 +6,9 @@ import { useNavigate } from 'react-router';
 import RetryButton from '../../components/RetryButton';
 import debounce from 'lodash.debounce';
 import { ORDER_MESSAGES } from '../../constants/messageConstants';
+import { io } from 'socket.io-client';
+
+const socket = io(import.meta.env.VITE_SOCKET_URL);
 
 const MyOrder = () => {
   const [inputValue, setInputValue] = useState('');
@@ -21,6 +24,17 @@ const MyOrder = () => {
   const [returnOrder] = useReturnOrderMutation();
   const navigate = useNavigate()
   const orders = result?.orders
+
+  useEffect(() => {
+    socket.on('orderStatusUpdated', () => {
+      toast.success(ORDER_MESSAGES.ORDER_STATUS_UPDATE_SUCCESS);
+      refetch();
+    });
+    return () => {
+      socket.off('orderStatusUpdated');
+    };
+  }, [refetch]);
+
   useEffect(() => {
 
     const debouncedResults = debounce(() => {
@@ -137,12 +151,14 @@ const MyOrder = () => {
                         orders?.map((order) => (
                           <div key={order._id}>
                             <h5>Order ID: {order.orderId}</h5>
+                            <p>Coupon Discount: ₹{order.couponDiscount}</p>
+                            <p>Tax: ₹{order.tax}</p>
                             <p>Total Price: ₹{order.totalPrice}</p>
                             {order.paymentStatus === "Failed" ? (<div className="d-flex justify-content-center mb-4">
                               <RetryButton orderId={order._id} />
                             </div>) : ""
                             }
-                            <hr />
+
                             {order?.items?.length > 0 ? (
                               order.items.map((item) => (
                                 <Card key={item?.product?._id} className="mb-3">

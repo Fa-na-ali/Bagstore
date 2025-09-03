@@ -10,8 +10,8 @@ import { Link } from "react-router";
 
 const AdminSidebar = () => {
   return (
-    <Navbar expand="lg" className="d-lg-block sidebar collapse vh-100 background-two postion-fixed top-0 start-0"
-    style={{ width: "250px", zIndex: 1000 }}>
+    <Navbar expand="lg" className="d-lg-block sidebar collapse  background-two postion-fixed top-0 start-0"
+      style={{ width: "250px", zIndex: 1000, minHeight: "100vh" }}>
       <Container fluid >
         <Nav className="flex-column  mt-5 ">
           <Nav.Link as={Link} to='/admin/dashboard' className="py-2 ripple text-white">

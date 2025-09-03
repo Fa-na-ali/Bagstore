@@ -7,7 +7,6 @@ const getSalesReportData = async (filter, startDate, endDate) => {
   let matchConditions = {
     $or: [
       { "items.status": "Delivered" },
-      { "items.status": "Returned" }
     ],
     paymentStatus: "Success"
   };
@@ -87,7 +86,6 @@ const getSalesReportData = async (filter, startDate, endDate) => {
       $match: {
         $or: [
           { "items.status": "Delivered" },
-          { "items.status": "Returned" }
         ]
       }
     },
@@ -127,6 +125,15 @@ const getSalesReportData = async (filter, startDate, endDate) => {
             ]
           }
         },
+        productPrice: {
+          $sum: {
+            $cond: [
+              { $eq: ["$items.status", "Delivered"] },
+              { $multiply: ["$items.price", "$items.qty"] },
+              0
+            ]
+          }
+        },
         revenue: {
           $sum: {
             $cond: [
@@ -151,6 +158,7 @@ const getSalesReportData = async (filter, startDate, endDate) => {
         soldCount: 1,
         returnedCount: 1,
         productDiscounts: 1,
+        productPrice: 1,
         revenue: 1
       }
     }
@@ -231,12 +239,14 @@ const getSalesReportData = async (filter, startDate, endDate) => {
 
   const totalCouponDiscount = couponStats[0]?.totalCouponDiscount || 0;
   const totalProductDiscounts = result.reduce((sum, item) => sum + item.productDiscounts, 0);
+  const totalProductPrice = result.reduce((sum, item) => sum + item.productPrice, 0);
   const totalRevenue = result.reduce((sum, item) => sum + item.revenue, 0);
   const totalSold = result.reduce((sum, item) => sum + item.soldCount, 0);
 
   return {
     orders: result,
     offerDiscounts: totalProductDiscounts.toFixed(2),
+    productPrice: totalProductPrice,
     couponDiscounts: totalCouponDiscount,
     overallSalesCount: totalSold,
     orderCount: couponStats[0]?.totalOrders || 0,

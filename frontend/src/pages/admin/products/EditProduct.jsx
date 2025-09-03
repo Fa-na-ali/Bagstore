@@ -21,22 +21,23 @@ const EditProduct = () => {
   const navigate = useNavigate();
   const { data: off } = useGetAllOffersToAddQuery()
   const offers = off?.offers
-
   const { data, refetch } = useGetProductByIdQuery(id);
   const product = data?.product
   const [update, { isLoading }] = useUpdateProductMutation();
   const { data: datas } = useFetchCategoriesQuery();
   const categories = datas?.all
   const [deleteImage] = useDeleteImageMutation();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(0);
-  const [category, setCategory] = useState("");
-  const [offer, setOffer] = useState("")
-  const [quantity, setQuantity] = useState(0);
-  const [brand, setBrand] = useState("");
-  const [color, setColor] = useState("");
-  const [size, setSize] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: 0,
+    category: "",
+    offer: "",
+    quantity: 0,
+    brand: "",
+    color: "",
+    size: "",
+  });
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
   const [croppedImages, setCroppedImages] = useState([]);
@@ -47,38 +48,43 @@ const EditProduct = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!name || name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
-    if (!category) newErrors.category = 'Category is required';
-    if (!description || description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
-    if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
-    if (!color) newErrors.color = 'Color is required';
-    if (!brand || brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
-    if (!size || size.length > 20) newErrors.size = "Size is required"
-    if (quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
+    if (!formData.name || formData.name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
+    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.description || formData.description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
+    if (!formData.price || formData.price <= 0) newErrors.price = 'Price must be greater than 0';
+    if (!formData.color) newErrors.color = 'Color is required';
+    if (!formData.brand || formData.brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
+    if (!formData.size || formData.size.length > 20) newErrors.size = "Size is required"
+    if (formData.quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
     if (files.length === 0) newErrors.files = 'At least one image is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   useEffect(() => {
-    if (product) {
-      setName(product.name || "");
-      setDescription(product.description || "");
-      setPrice(product.price || 0);
-      setOffer(product.offer || "")
-      setCategory(product?.category?._id || "");
-      setQuantity(product.quantity || 1);
-      setBrand(product.brand || "");
-      setColor(product.color || "");
-      setSize(product.size || "");
-
+    if (product && !formData.name) {
+      setFormData({
+        name: product.name || "",
+        description: product.description || "",
+        price: product.price || 0,
+        category: product?.category?._id || "",
+        offer: product.offer || "",
+        quantity: product.quantity || 1,
+        brand: product.brand || "",
+        color: product.color || "",
+        size: product.size || "",
+      });
       if (product?.pdImage) {
         setFiles(product.pdImage);
       }
-
     }
+  }, [product]);
 
-  }, [product,]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+  };
+
 
   //on upload
   const handleFileChange = (e) => {
@@ -92,8 +98,8 @@ const EditProduct = () => {
   }
 
   //to remove image
-  const removeImage = async (id, index) => {
-
+  const removeImage = async (id, index, e) => {
+    e.preventDefault();
     try {
       if (index >= 0 && index < product?.pdImage.length) {
         await deleteImage({ id, index }).unwrap();
@@ -104,6 +110,7 @@ const EditProduct = () => {
     } catch (error) {
       console.error("Error deleting image:", error);
     }
+
   };
 
   //to crop
@@ -144,15 +151,15 @@ const EditProduct = () => {
       return;
     }
     const productData = new FormData();
-    productData.append("name", name);
-    productData.append("description", description);
-    productData.append("price", price);
-    productData.append("category", category);
-    productData.append("offer", offer);
-    productData.append("quantity", quantity);
-    productData.append("brand", brand);
-    productData.append("color", color);
-    productData.append("size", size);
+    productData.append("name", formData.name);
+    productData.append("description", formData.description);
+    productData.append("price", formData.price);
+    productData.append("category", formData.category);
+    productData.append("offer", formData.offer);
+    productData.append("quantity", formData.quantity);
+    productData.append("brand", formData.brand);
+    productData.append("color", formData.color);
+    productData.append("size", formData.size);
 
     let finalImages = croppedImages.length ? croppedImages : files;
 
@@ -170,7 +177,7 @@ const EditProduct = () => {
     try {
       await update({ id: product?._id, formData: productData }).unwrap()
       toast.success(PRODUCT_MESSAGES.PRODUCT_UPDATE_SUCCESS);
-      refetch();
+      refetch()
       navigate('/admin/products')
     } catch (error) {
       toast.error(error?.data?.message || `${PRODUCT_MESSAGES.PRODUCT_UPDATE_FAILURE}`);
@@ -191,8 +198,8 @@ const EditProduct = () => {
                   <Row className="mb-3 my-5">
                     <Form.Group as={Col} controlId="formName">
                       <Form.Label className='caption'>Name of Product</Form.Label>
-                      <Form.Control type="text" value={name}
-                        onChange={(e) => setName(e.target.value)}
+                      <Form.Control type="text" name="name" value={formData.name}
+                        onChange={handleChange}
                         isInvalid={!!errors.name} />
                       <Form.Control.Feedback type="invalid">
                         {errors.name}
@@ -201,8 +208,8 @@ const EditProduct = () => {
                     </Form.Group>
                     <Form.Group as={Col} controlId="formGridPrice">
                       <Form.Label className='caption'>Price</Form.Label>
-                      <Form.Control type="number" value={price}
-                        onChange={(e) => setPrice(e.target.value)}
+                      <Form.Control type="number" name="price" value={formData.price}
+                        onChange={handleChange}
                         isInvalid={!!errors.price}
                       />
                       <Form.Control.Feedback type="invalid">
@@ -213,8 +220,9 @@ const EditProduct = () => {
                     <Form.Group as={Col} controlId="formGridCategory">
                       <Form.Label className="caption">Category</Form.Label>
                       <Form.Select className="text-secondary"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
+                        value={formData.category}
+                        name="category"
+                        onChange={handleChange}
                         isInvalid={!!errors.category}
                       >
                         <option value=""></option>
@@ -233,8 +241,9 @@ const EditProduct = () => {
                   <Form.Group className="mb-3" controlId="formDesc">
                     <Form.Label className='caption'>Description</Form.Label>
                     <Form.Control type="text"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
                       isInvalid={!!errors.description}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -246,7 +255,7 @@ const EditProduct = () => {
 
                     <Form.Group as={Col} controlId="offer">
                       <Form.Label className="caption">Offer</Form.Label>
-                      <Form.Select name="offer" value={offer} onChange={(e) => setOffer(e.target.value)}>
+                      <Form.Select name="offer" value={formData.offer} onChange={handleChange}>
                         <option value="">None</option>
                         {offers
                           ?.filter((offer) => offer.type === "products")
@@ -260,8 +269,8 @@ const EditProduct = () => {
 
                     <Form.Group as={Col} controlId="formGridColor">
                       <Form.Label className='caption'>Color</Form.Label>
-                      <Form.Select className='text-secondary' value={color}
-                        onChange={(e) => setColor(e.target.value)}
+                      <Form.Select className='text-secondary' name="color" value={formData.color}
+                        onChange={handleChange}
                         isInvalid={!!errors.color}
                       >
                         <option value="">Choose...</option>
@@ -284,8 +293,8 @@ const EditProduct = () => {
 
                     <Form.Group as={Col} controlId="formGridBrand">
                       <Form.Label className='caption'>Brand</Form.Label>
-                      <Form.Control type="text" value={brand}
-                        onChange={(e) => setBrand(e.target.value)}
+                      <Form.Control type="text" name="brand" value={formData.brand}
+                        onChange={handleChange}
                         isInvalid={!!errors.brand}
                       />
                       <Form.Control.Feedback type="invalid">
@@ -298,21 +307,22 @@ const EditProduct = () => {
                     <div style={{ maxWidth: '300px' }}>
                       <Form.Label className="mb-2 caption" >Quantity</Form.Label>
                       <div className="d-flex align-items-center">
-                        <Button className="px-3 me-2 button-custom" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                        <Button className="px-3 me-2 button-custom" onClick={() => setFormData(prevData => ({ ...prevData, quantity: Math.max(0, prevData.quantity - 1) }))}>
                           <MdOutlineRemove />
                         </Button>
 
                         <Form.Control
                           type="number"
+                          name="quantity"
                           min="0"
-                          value={quantity}
-                          onChange={(e) => setQuantity(e.target.value)}
+                          value={formData.quantity}
+                          onChange={handleChange}
                           className="text-center"
                           style={{ width: '70px' }}
                           isInvalid={!!errors.quantity}
                         />
 
-                        <Button className="px-3 ms-2 button-custom" onClick={() => setQuantity(quantity + 1)}>
+                        <Button className="px-3 ms-2 button-custom" onClick={() => setFormData(prevData => ({ ...prevData, quantity: prevData.quantity + 1 }))}>
                           <MdOutlineAdd />
                         </Button>
                       </div>
@@ -323,8 +333,8 @@ const EditProduct = () => {
 
                     <Form.Group as={Col} controlId="formGridsize">
                       <Form.Label className='caption'>Size</Form.Label>
-                      <Form.Control type="string" value={size}
-                        onChange={(e) => setSize(e.target.value)}
+                      <Form.Control type="string" value={formData.size}
+                        onChange={handleChange}
                         isInvalid={!!errors.size}
                       />
                       <Form.Control.Feedback type="invalid">
@@ -353,7 +363,7 @@ const EditProduct = () => {
                             variant="danger"
                             size="sm"
                             className="position-absolute top-0 end-0"
-                            onClick={() => removeImage(product._id, index)}
+                            onClick={(e) => removeImage(product._id, index, e)}
                           >
                             <MdDelete />
                           </Button>

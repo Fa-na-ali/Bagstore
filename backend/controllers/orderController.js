@@ -23,7 +23,7 @@ const createOrder = asyncHandler(async (req, res) => {
   try {
     const orderId = await generateOrderId();
     const orderNumber = await generateOrderNumber()
-    let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, totalDiscount, tax } = req.body;
+    let { userId, items, shippingAddress, shippingPrice, paymentMethod, totalPrice, couponId, razorpay_order_id, paymentStatus, couponDiscount, originalTotalPrice, offerDiscount, totalDiscount, tax } = req.body;
     if (!items || items.length === 0) {
       res.status(STATUS_CODES.NOT_FOUND)
       throw new Error("No items in the order");
@@ -108,6 +108,8 @@ const createOrder = asyncHandler(async (req, res) => {
       status: "Not completed",
       totalPrice: totalPrice + shippingPrice,
       couponId,
+      originalTotalPrice,
+      offerDiscount,
       couponDiscount,
       totalDiscount,
       tax
@@ -144,7 +146,7 @@ const createOrder = asyncHandler(async (req, res) => {
     await Cart.deleteMany({
       user: user._id
     });
-    
+
     return res.status(STATUS_CODES.CREATED).json({ status: "success", createdOrder });
   } catch (error) {
 
@@ -230,12 +232,15 @@ const cancelOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    let refundAmount = item.qty * product.price;
-    if (item.discount) {
-      refundAmount -= item.discount
-    }
+    let refundAmount = item.qty * (product.price - item.discount);
+    let total = order.originalTotalPrice - order.offerDiscount
+    let PropotionalCouponDiscount = (refundAmount / total) * order.couponDiscount
+    let propotionalTax = (refundAmount / total) * order.tax
+    if (order.items.length > 1)
+      refundAmount = refundAmount - PropotionalCouponDiscount + propotionalTax
+    else
+      refundAmount = refundAmount - PropotionalCouponDiscount + propotionalTax + order.shippingPrice
     wallet.balance += refundAmount;
-
 
     wallet.transactions.push({
       amount: refundAmount,
@@ -353,10 +358,11 @@ const setItemStatus = asyncHandler(async (req, res) => {
       refundAmount = order.totalPrice
     }
     else {
-      refundAmount = item.qty * product.price;
-      if (item.discount) {
-        refundAmount -= item.discount
-      }
+      refundAmount = item.qty * (product.price - item.discount);
+      let total = order.originalTotalPrice - order.offerDiscount
+      let PropotionalCouponDiscount = (refundAmount / total) * order.couponDiscount
+      let propotionalTax = (refundAmount / total) * order.tax
+      refundAmount = refundAmount - PropotionalCouponDiscount + propotionalTax
     }
     await Payment.updateOne({ _id: order.paymentId }, { $set: { status: "Refund" } });
     await Wallet.updateOne({ userId: order.userId }, {
@@ -374,6 +380,12 @@ const setItemStatus = asyncHandler(async (req, res) => {
   }
 
   await order.save();
+  req.io.emit('orderStatusUpdated', {
+    orderId: order._id,
+    item: orderItem,
+    newStatus: status,
+    message: `item status updated`
+  });
   return res.status(STATUS_CODES.OK).json({ status: "success", message: `Order status updated successfully` });
 });
 
@@ -421,6 +433,12 @@ const returnOrder = asyncHandler(async (req, res) => {
   orderItem.returnReason = returnReason
   orderItem.status = "Return requested"
   await order.save()
+  req.io.emit('orderStatusUpdated', {
+    orderId: order._id,
+    item: orderItem,
+    newStatus: "Return requested",
+    message: `Return request for ${order._id}`
+  });
   return res.status(STATUS_CODES.OK).json({ status: "success", message: "Return request sent successfully" });
 });
 

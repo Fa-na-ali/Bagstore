@@ -40,7 +40,7 @@ const Wallet = () => {
         image: `${LOGO_URL}`,
         handler: async () => {
           const res = await updateWallet(amount).unwrap();
-          if (res.success) {
+          if (res.status === "success") {
             Swal.fire('Payment Successful!', 'Your payment has been processed successfully.', 'success');
             setAmount('');
             setShowInput(false);
