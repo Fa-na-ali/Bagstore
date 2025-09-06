@@ -3,7 +3,7 @@ import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from 'react-router';
 import { useChangePasswordMutation, } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
-import { USER_MESSAGES } from '../../constants/messageConstants';
+import { USER_MESSAGES, PASSWD_REGEX } from '../../constants/messageConstants';
 
 
 const ChangePassword = () => {
@@ -18,7 +18,6 @@ const ChangePassword = () => {
     //validations
     const validatePassword = (currentPassword, newPassword, confirmPassword) => {
         const errors = {};
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
         if (!currentPassword) {
             errors.currentPassword = "Current Password is required";
@@ -26,7 +25,7 @@ const ChangePassword = () => {
 
         if (!newPassword) {
             errors.newPassword = "New Password is required";
-        } else if (!passwordRegex.test(newPassword)) {
+        } else if (!PASSWD_REGEX.test(newPassword)) {
             errors.newPassword = "Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character";
         }
 

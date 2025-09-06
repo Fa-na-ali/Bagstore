@@ -3,7 +3,7 @@ import { Card, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useForgotPasswordMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
-import { USER_MESSAGES } from '../../constants/messageConstants';
+import { USER_MESSAGES, EMAIL_REGEX } from '../../constants/messageConstants';
 
 const ForgotPass = () => {
 
@@ -14,8 +14,8 @@ const ForgotPass = () => {
   //reset password
   const handleClick = async () => {
 
-    if (!email) {
-      toast.error(USER_MESSAGES.USER_VALIDATION_MSG);
+    if (!email || !EMAIL_REGEX.test(email)) {
+      toast.error(USER_MESSAGES.USER_VALIDATION_EMAIL);
       return;
     }
     try {

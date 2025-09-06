@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap'
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify'
 import { useGetAddressQuery, useUpdateAddressMutation } from '../../redux/api/usersApiSlice';
-import { USER_MESSAGES } from '../../constants/messageConstants';
+import { NAME_REGEX, PHONE_REGEX, USER_MESSAGES, ZIP_REGEX } from '../../constants/messageConstants';
 
 const EditAddress = () => {
     const { id } = useParams();
@@ -21,6 +21,21 @@ const EditAddress = () => {
         country: "",
         phone: "",
     });
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+        const newErrors = {};
+        if (!formData.name || formData.name.length > 25 || !NAME_REGEX.test(formData.name)) newErrors.name = 'Name must be atmost 25 characters long';
+        if (!formData.houseName || formData.houseName.length > 50 || !NAME_REGEX.test(formData.houseName)) newErrors.houseName = 'House Name must be atmost 50 characters long';
+        if (!formData.town || formData.town.length > 15 || !NAME_REGEX.test(formData.town)) newErrors.town = 'Town should be of atmost 15 characters long';
+        if (!formData.street || formData.street.length > 20 || !NAME_REGEX.test(formData.street)) newErrors.street = 'Street should be of atmost 20 characters long';
+        if (!formData.state) newErrors.state = 'State is required';
+        if (!formData.zipcode || !ZIP_REGEX.test(formData.zipcode)) newErrors.zipcode = 'Enetr a valid zipcode';
+        if (!formData.country) newErrors.country = "Country is required"
+        if (!formData.phone || !PHONE_REGEX.test(formData.phone)) newErrors.phone = 'Enter a valid phone number';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     useEffect(() => {
         if (address) {
@@ -44,6 +59,10 @@ const EditAddress = () => {
     //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validate()) {
+            return;
+        }
+
         try {
             await updateAddress({ id, ...formData }).unwrap();
             toast.success(USER_MESSAGES.USER_ADDRESS_EDIT_SUCCESS);
@@ -67,13 +86,19 @@ const EditAddress = () => {
                                             <Form.Label className='caption'>Name </Form.Label>
                                             <Form.Control type="text"
                                                 name="name" value={formData.name} onChange={handleChange}
-                                            />
+                                                isInvalid={!!errors.name} />
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.name}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                         <Form.Group as={Col} controlId="formName">
                                             <Form.Label className='caption'>House Name</Form.Label>
                                             <Form.Control type="text"
                                                 name="houseName" value={formData.houseName} onChange={handleChange}
-                                            />
+                                                isInvalid={!!errors.houseName} />
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.houseName}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                     </Row>
                                     <Row className="mb-3">
@@ -81,13 +106,19 @@ const EditAddress = () => {
                                             <Form.Label className='caption'>Town </Form.Label>
                                             <Form.Control type="text"
                                                 name="town" value={formData.town} onChange={handleChange}
-                                            />
+                                                isInvalid={!!errors.town} />
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.town}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                         <Form.Group as={Col} controlId="formName">
                                             <Form.Label className='caption'>Street</Form.Label>
                                             <Form.Control type="text"
                                                 name="street" value={formData.street} onChange={handleChange}
-                                            />
+                                                isInvalid={!!errors.street} />
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.street}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                     </Row>
                                     <Row className="mb-3">
@@ -95,12 +126,15 @@ const EditAddress = () => {
                                             <Form.Label className='caption'>Zipcode </Form.Label>
                                             <Form.Control type="text"
                                                 name="zipcode" value={formData.zipcode} onChange={handleChange}
-                                            />
+                                                isInvalid={!!errors.zipcode} />
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.zipcode}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                         <Form.Group as={Col} controlId="formName">
                                             <Form.Label className='caption'>State</Form.Label>
                                             <Form.Select className='text-secondary' name="state" value={formData.state}
-                                                onChange={handleChange}>
+                                                onChange={handleChange} isInvalid={!!errors.state}>
                                                 <option value="">Select state</option>
                                                 <option value="Andhra Pradesh">Andhra Pradesh</option>
                                                 <option value="Arunachal Pradesh">Arunachal Pradesh</option>
@@ -134,13 +168,16 @@ const EditAddress = () => {
                                                 <option value="Delhi">Delhi</option>
                                                 <option value="Jammu and Kashmir">Jammu and Kashmir</option>
                                             </Form.Select>
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.state}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                     </Row>
                                     <Row className="mb-3">
                                         <Form.Group as={Col} controlId="formName">
                                             <Form.Label className='caption'>Country</Form.Label>
                                             <Form.Select className='text-secondary' name="country" value={formData.country}
-                                                onChange={handleChange}>
+                                                onChange={handleChange} isInvalid={!!errors.country}>
                                                 <option value="">Select Country</option>
                                                 <option value="AF">Afghanistan</option>
                                                 <option value="AX">Åland Islands</option>
@@ -395,12 +432,18 @@ const EditAddress = () => {
                                                 <option value="ZM">Zambia</option>
                                                 <option value="ZW">Zimbabwe</option>
                                             </Form.Select>
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.country}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                         <Form.Group as={Col} controlId="formName">
                                             <Form.Label className='caption'>Phone</Form.Label>
                                             <Form.Control type="text"
                                                 name="phone" value={formData.phone} onChange={handleChange}
-                                            />
+                                                isInvalid={!!errors.phone} />
+                                            <Form.Control.Feedback type="invalid">
+                                                {errors.phone}
+                                            </Form.Control.Feedback>
                                         </Form.Group>
                                     </Row>
                                     <Button className='button-custom w-100 my-5' type="submit" >

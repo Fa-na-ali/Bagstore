@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSpecificCategoriesQuery, useUpdateCategoryMutation } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
-import { CATEGORY_MESSAGES } from '../../../constants/messageConstants';
+import { CATEGORY_MESSAGES, NAME_REGEX } from '../../../constants/messageConstants';
 
 const EditCategory = () => {
     const { id } = useParams();
@@ -30,7 +30,7 @@ const EditCategory = () => {
     const updateHandler = async (e, id) => {
         e.preventDefault();
 
-        if (!updatingName.trim() || updatingName.length > 15) {
+        if (!updatingName.trim() || updatingName.length > 15 || !NAME_REGEX.test(updatingName)) {
             toast.error(CATEGORY_MESSAGES.VALIDATION_MSG);
             return;
         }

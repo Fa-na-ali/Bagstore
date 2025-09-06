@@ -10,7 +10,7 @@ import AdminSidebar from '../../../components/AdminSidebar';
 import { toast } from 'react-toastify';
 import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
-import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
+import { NAME_REGEX, PRODUCT_MESSAGES, SIZE_REGEX } from '../../../constants/messageConstants';
 
 
 const AddProduct = () => {
@@ -38,13 +38,13 @@ const AddProduct = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!name || name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
+    if (!name || name.length > 25 || !NAME_REGEX.test(name)) newErrors.name = 'Name must be atmost 25 characters long';
     if (!category) newErrors.category = 'Category is required';
     if (!description || description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
     if (!price || price <= 0) newErrors.price = 'Price must be greater than 0';
     if (!color) newErrors.color = 'Color is required';
     if (!brand || brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
-    if (!size || size.length > 20) newErrors.size = "Size is required"
+    if (!size || size.length > 20 || !SIZE_REGEX.test(size)) newErrors.size = "Size is required"
     if (quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
     if (files.length === 0) newErrors.files = 'At least one image is required';
     setErrors(newErrors);

@@ -6,7 +6,7 @@ import { useAddCategoryMutation } from "../../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { useGetAllOffersToAddQuery } from "../../../redux/api/usersApiSlice";
-import { CATEGORY_MESSAGES } from "../../../constants/messageConstants";
+import { CATEGORY_MESSAGES, NAME_REGEX } from "../../../constants/messageConstants";
 
 const AddCategory = () => {
     const { data: off } = useGetAllOffersToAddQuery()
@@ -19,7 +19,7 @@ const AddCategory = () => {
     const handleCreateCategory = async (e) => {
         e.preventDefault();
 
-        if (!name.trim() || name.length > 15) {
+        if (!name.trim() || name.length > 15 || !NAME_REGEX.test(name)) {
             toast.error(CATEGORY_MESSAGES.VALIDATION_MSG);
             return;
         }

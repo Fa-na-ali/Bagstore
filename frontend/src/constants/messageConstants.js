@@ -66,6 +66,7 @@ export const USER_MESSAGES = {
     USER_DLT_SUCCESS: " Deleted Successfully",
     USER_DLT_FAILURE: "Failed to delete",
     USER_VALIDATION_MSG: "Please enter your email.",
+    USER_VALIDATION_EMAIL: "Enter a valid email",
     USER_OTP_SENT: "OTP sent to your email!",
     USER_OTP_SENT_FAILURE: "Failed to send OTP.",
     USER_BLOCK_MSG: "You are blocked",
@@ -98,3 +99,10 @@ export const PAYMENT_MESSAGES = {
 }
 
 export const ERROR_MESSAGE = "Error removing product"
+
+export const PASSWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const ZIP_REGEX = /^[1-9][0-9]{5}$/;
+export const PHONE_REGEX = /^\d{10}$/
+export const NAME_REGEX = /^[A-Za-z\s]+$/
+export const SIZE_REGEX = /^\d+Lx\d+Bx\d+Hcm$/i

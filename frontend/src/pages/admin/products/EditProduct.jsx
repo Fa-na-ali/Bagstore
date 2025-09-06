@@ -12,7 +12,7 @@ import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
-import { PRODUCT_MESSAGES } from '../../../constants/messageConstants';
+import { NAME_REGEX, PRODUCT_MESSAGES, SIZE_REGEX } from '../../../constants/messageConstants';
 
 
 const EditProduct = () => {
@@ -48,14 +48,14 @@ const EditProduct = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name || formData.name.length > 25) newErrors.name = 'Name must be atmost 25 characters long';
+    if (!formData.name || formData.name.length > 25 || !NAME_REGEX.test(formData.name)) newErrors.name = 'Name must be atmost 25 characters long';
     if (!formData.category) newErrors.category = 'Category is required';
     if (!formData.description || formData.description.length > 200) newErrors.description = 'Description should be of atmost 200 characters long';
     if (!formData.price || formData.price <= 0) newErrors.price = 'Price must be greater than 0';
     if (!formData.color) newErrors.color = 'Color is required';
     if (!formData.brand || formData.brand.length > 15) newErrors.brand = 'Brand must be of atmost 15 characters long';
-    if (!formData.size || formData.size.length > 20) newErrors.size = "Size is required"
-    if (formData.quantity <= 0) newErrors.quantity = 'Quantity must be greater than 0';
+    if (!formData.size || formData.size.length > 20 || !SIZE_REGEX.test(formData.size)) newErrors.size = "Size is required"
+    if (formData.quantity < 0) newErrors.quantity = 'Quantity must be greater than 0';
     if (files.length === 0) newErrors.files = 'At least one image is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -69,7 +69,7 @@ const EditProduct = () => {
         price: product.price || 0,
         category: product?.category?._id || "",
         offer: product.offer || "",
-        quantity: product.quantity || 1,
+        quantity: product.quantity || 0,
         brand: product.brand || "",
         color: product.color || "",
         size: product.size || "",
@@ -335,6 +335,7 @@ const EditProduct = () => {
                       <Form.Label className='caption'>Size</Form.Label>
                       <Form.Control type="string" value={formData.size}
                         onChange={handleChange}
+                        name="size"
                         isInvalid={!!errors.size}
                       />
                       <Form.Control.Feedback type="invalid">

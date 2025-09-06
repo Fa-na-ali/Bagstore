@@ -33,9 +33,11 @@ const Cart = () => {
   //update quantity
   const updateQuantityHandler = async (product, qty) => {
     const maxAllowed = Math.min(maximum, product?.originalQuantity);
-    if (qty > maxAllowed) {
-      toast.error(`You can only add up to ${maxAllowed} units of this product`);
-      return;
+    if (qty === product.originalQuantity) {
+      toast.error(`Product is out of stock`);
+    }
+    if (qty === maximum) {
+      toast.error(`You can only add up to ${maximum} units of this product`);
     }
 
     if (qty >= 1) {

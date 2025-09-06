@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { updateProfile } from '../../redux/features/auth/authSlice';
-import { USER_MESSAGES } from '../../constants/messageConstants';
+import { EMAIL_REGEX, NAME_REGEX, PHONE_REGEX, USER_MESSAGES } from '../../constants/messageConstants';
 
 const EditProfile = () => {
     const { data } = useProfileQuery()
@@ -14,8 +14,18 @@ const EditProfile = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
+    const [errors, setErrors] = useState({});
     const [resendOtp] = useResendOtpMutation();
     const dispatch = useDispatch()
+
+    const validate = () => {
+        const newErrors = {};
+        if (!name || name.length > 25 || !NAME_REGEX.test(name)) newErrors.name = 'Name must be atmost 25 characters long';
+        if (!email || !EMAIL_REGEX.test(email)) newErrors.email = 'Enter a valid email';
+        if (!phone || !PHONE_REGEX.test(phone)) newErrors.phone = 'Enter a valid phone number';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     useEffect(() => {
         if (user) {
@@ -29,8 +39,9 @@ const EditProfile = () => {
     //on submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (name.length > 25)
-            return toast.error(USER_MESSAGES.USER_NAME_VALIDATION)
+        if (!validate()) {
+            return;
+        }
         try {
             await resendOtp({ email: user.email }).unwrap();
             toast.info(USER_MESSAGES.USER_OTP_SENT);
@@ -55,21 +66,30 @@ const EditProfile = () => {
                                             <Form.Group controlId="name" className="w-100">
                                                 <Form.Label className='caption'>Name</Form.Label>
                                                 <Form.Control type="text" value={name}
-                                                    onChange={(e) => setName(e.target.value)} />
+                                                    onChange={(e) => setName(e.target.value)} isInvalid={!!errors.name} />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.name}
+                                                </Form.Control.Feedback>
                                             </Form.Group>
                                         </Row>
                                         <Row className="g-0 pt-2 w-100">
                                             <Form.Group controlId="name" className="w-100">
                                                 <Form.Label className='caption'>Email</Form.Label>
                                                 <Form.Control type="text" value={email}
-                                                    onChange={(e) => setEmail(e.target.value)} />
+                                                    onChange={(e) => setEmail(e.target.value)} isInvalid={!!errors.email} />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.email}
+                                                </Form.Control.Feedback>
                                             </Form.Group>
                                         </Row>
                                         <Row className="g-0 pt-2 w-100">
                                             <Form.Group controlId="name" className="w-100">
                                                 <Form.Label className='caption'>Phone</Form.Label>
                                                 <Form.Control type="text" value={phone}
-                                                    onChange={(e) => setPhone(e.target.value)} />
+                                                    onChange={(e) => setPhone(e.target.value)} isInvalid={!!errors.phone} />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {errors.phone}
+                                                </Form.Control.Feedback>
                                             </Form.Group>
                                         </Row>
                                         <Row className="g-0 pt-2 w-100">
