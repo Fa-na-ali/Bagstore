@@ -31,7 +31,7 @@ const Header = () => {
             console.error(error);
         }
     };
-    if (userInfo?.isAdmin) {
+    if (userInfo?.isAdmin || userInfo?.user?.isAdmin) {
         return null;
     }
     return (
