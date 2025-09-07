@@ -1,5 +1,6 @@
 import { Container, Row, Col, Card, Button, } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router";
+import Footer from "../../components/Footer";
 
 const OrderSuccess = () => {
 
