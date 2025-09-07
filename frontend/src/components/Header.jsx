@@ -7,10 +7,13 @@ import '../pages/auth/register.css'
 import { logout } from "../redux/features/auth/authSlice";
 import { useLogoutMutation } from '../redux/api/usersApiSlice';
 import { useLoadCartQuery } from '../redux/api/productApiSlice';
+import { useLocation } from "react-router-dom";
 
 const Header = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const location = useLocation();
+    const hideNavbarOnAdmin = location.pathname.startsWith("/admin");
 
     // Get user info from Redux state
     const { userInfo } = useSelector((state) => state.auth);
@@ -31,9 +34,11 @@ const Header = () => {
             console.error(error);
         }
     };
-    if (userInfo?.isAdmin || userInfo?.user?.isAdmin) {
+
+    if (hideNavbarOnAdmin) {
         return null;
     }
+
     return (
         <>
             <Navbar expand="lg" bg="white" className="sticky-top shadow shadow-sm">
