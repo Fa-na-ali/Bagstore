@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify'
 import { useGetAddressQuery, useUpdateAddressMutation } from '../../redux/api/usersApiSlice';
 import { NAME_REGEX, PHONE_REGEX, USER_MESSAGES, ZIP_REGEX } from '../../constants/messageConstants';
+import Footer from '../../components/Footer';
 
 const EditAddress = () => {
     const { id } = useParams();
@@ -455,7 +456,7 @@ const EditAddress = () => {
                     </Row>
                 </Container>
             </section>
-
+            <Footer />
         </>
     )
 }

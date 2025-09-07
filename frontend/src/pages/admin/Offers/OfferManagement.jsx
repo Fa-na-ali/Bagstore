@@ -5,9 +5,12 @@ import { Row, Col, Button, FormControl, InputGroup, Form, Container } from 'reac
 import { Link } from 'react-router';
 import { MdOutlineAdd } from "react-icons/md";
 import { toast } from 'react-toastify';
-import { useDeleteOfferMutation, useGetAllOffersQuery } from '../../../redux/api/usersApiSlice';
+import { useDeleteOfferMutation, useGetAllOffersQuery, useUnblockOfferMutation } from '../../../redux/api/usersApiSlice';
 import debounce from 'lodash.debounce';
 import { OFFER_MESSAGES } from '../../../constants/messageConstants';
+import Swal from "sweetalert2";
+import Footer from '../../../components/Footer';
+
 
 const OfferManagement = () => {
 
@@ -17,6 +20,8 @@ const OfferManagement = () => {
   let { data, refetch: load, error, isLoading } = useGetAllOffersQuery({ keyword: searchTerm, page: currentPage });
   const offers = data?.offers || [];
   const [deleteOffer] = useDeleteOfferMutation();
+  const [unblockOffer] = useUnblockOfferMutation()
+  const [off, setOff] = useState([])
 
   const columns = [
     { key: "name", label: "Offer Name" },
@@ -28,6 +33,13 @@ const OfferManagement = () => {
     { key: "createdAt", label: "created At" },
 
   ];
+
+  useEffect(() => {
+    if (offers) {
+      setOff(offers);
+    }
+  }, [offers]);
+
 
   useEffect(() => {
 
@@ -57,16 +69,56 @@ const OfferManagement = () => {
 
   // on delete
   const handleDelete = async (id) => {
-    if (window.confirm("Do you want to delete")) {
-      try {
-        await deleteOffer(id);
-        toast.success(OFFER_MESSAGES.OFFER_DLT_SUCCESS)
-        load();
+    Swal.fire({
+      title: "Do you want to delete?",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteOffer(id);
+          setOff((prev) =>
+            prev.map((off) =>
+              off._id === id ? { ...off, status: false } : off
+            )
+          );
+          toast.success(OFFER_MESSAGES.OFFER_DLT_SUCCESS)
 
-      } catch (err) {
-        toast.error(err?.data?.message || `${OFFER_MESSAGES.OFFER_DLT_FAILURE}`);
+        } catch (err) {
+          toast.error(err?.data?.message || `${OFFER_MESSAGES.OFFER_DLT_FAILURE}`);
+        }
       }
-    }
+    })
+  };
+
+  // on UNBLOCK
+  const handleUnblock = async (id) => {
+    Swal.fire({
+      title: "Do you want to unblock?",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await unblockOffer(id);
+          setOff((prev) =>
+            prev.map((off) =>
+              off._id === id ? { ...off, status: true } : off
+            )
+          );
+          toast.success(OFFER_MESSAGES.OFFER_UNBLOCK_SUCCESS)
+
+        } catch (err) {
+          toast.error(err?.data?.message || `${OFFER_MESSAGES.OFFER_UNBLOCK_FAILURE}`);
+        }
+      }
+    })
   };
 
 
@@ -75,22 +127,23 @@ const OfferManagement = () => {
       <div className="d-flex">
         <AdminSidebar />
         <div className="main-content-wrapper background-one flex-grow-1">
-          <Container fluid className="mt-4 p-4">
+          <Container fluid>
             <Row className="g-0">
-              <Col lg={12} >
+              <Col xs={12} lg={12} >
                 <h2 className='text-center my-5 heading'>OFFERS</h2>
-                <div className="table-title my-5">
+                <div className="table-title mb-4">
                   <Row className="align-items-center">
-                    <Col lg={6}>
+                    <Col
+                      xs={12}
+                      md={12}
+                      className="d-flex flex-column flex-md-row justify-content-between gap-2"
+                    >
                       <Link to="/admin/offers/add">
                         <Button className="me-2 button-custom">
                           <MdOutlineAdd /> <span>Add New</span>
                         </Button>
                       </Link>
-                    </Col>
-                    <Col lg={3}></Col>
-                    <Col lg={3} className="d-flex justify-content-end gap-3">
-                      <InputGroup className="mb-3">
+                      <InputGroup className="w-25 w-md-25">
                         <Form className="d-flex">
                           <FormControl
                             type="search"
@@ -108,9 +161,10 @@ const OfferManagement = () => {
                 {(offers) && (offers.length > 0) ? (
                   <Ttable
                     naming="offers"
-                    data={offers}
+                    data={off}
                     columns={columns}
                     onDelete={handleDelete}
+                    onUnblock={handleUnblock}
                     onPage={handlePageChange}
                     pageData={data}
                     currentPage={currentPage}
@@ -118,11 +172,10 @@ const OfferManagement = () => {
                 ) : (
                   <p>No coupons found</p>
                 )}
-
               </Col>
-              <Col lg={1} className=" background-one"></Col>
             </Row>
           </Container>
+          <Footer />
         </div>
       </div>
     </>

@@ -5,6 +5,7 @@ import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import { useFetchCategoriesQuery } from '../../redux/api/categoryApiSlice';
 import { useFilterProductsQuery } from '../../redux/api/productApiSlice';
 import debounce from 'lodash.debounce';
+import Footer from '../../components/Footer';
 
 const Cards = lazy(() => import('../../components/Cards'));
 
@@ -238,6 +239,7 @@ const ProductsList = () => {
           </div>
         </Container>
       </section>
+      <Footer />
     </>
   )
 }

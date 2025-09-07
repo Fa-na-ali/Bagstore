@@ -33,8 +33,10 @@ const getoffers = asyncHandler(async (req, res) => {
 
         }
         : {};
-    const count = await Offer.countDocuments({ ...keyword });
-    const offers = await Offer.find({ ...keyword }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
+    const count = await Offer.countDocuments({ ...keyword })
+    const offers = await Offer.find({ ...keyword })
+        .select("-__v -updatedAt -description")
+        .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
 
     return res.status(STATUS_CODES.OK).json({
         status: "success",
@@ -96,12 +98,32 @@ const deleteOffer = asyncHandler(async (req, res) => {
     }
 });
 
+//delete offer
+const unblockOffer = asyncHandler(async (req, res) => {
+
+    const { id } = req.params;
+    const offer = await Offer.findById({ _id: id });
+    if (offer) {
+        offer.status = true
+        await offer.save()
+        return res.status(STATUS_CODES.OK).json({
+            status: "success",
+            message: "Offer unblocked successfully"
+        });
+
+    }
+    else {
+        res.status(STATUS_CODES.NOT_FOUND)
+        throw new Error("Offer not found")
+    }
+});
+
 //get offer by id
 const getOfferById = asyncHandler(async (req, res) => {
 
     const { id } = req.params;
 
-    const offer = await Offer.findById(id);
+    const offer = await Offer.findById(id).select("-__v");
 
     if (!offer) {
         res.status(STATUS_CODES.NOT_FOUND)
@@ -138,4 +160,5 @@ module.exports = {
     editOffer,
     deleteOffer,
     getAllOffers,
+    unblockOffer
 }

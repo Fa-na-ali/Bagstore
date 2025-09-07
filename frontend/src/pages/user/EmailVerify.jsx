@@ -100,59 +100,62 @@ const EmailVerify = () => {
   };
 
   return (
-    <Container fluid className="vh-100 d-flex align-items-center justify-content-center background">
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <div className="text-center">
-            <h3 className="mb-4 heading">Enter OTP</h3>
-            <p>We have sent an OTP to your email: <strong>{email}</strong></p>
+    <>
+      <Container fluid className="vh-100 d-flex align-items-center justify-content-center background">
+        <Row className="justify-content-center">
+          <Col md={6}>
+            <div className="text-center">
+              <h3 className="mb-4 heading">Enter OTP</h3>
+              <p>We have sent an OTP to your email: <strong>{email}</strong></p>
 
-            <Form onSubmit={handleSubmit}>
-              <div className="d-flex justify-content-center gap-2 mb-3">
-                {otp.map((digit, index) => (
-                  <Form.Control
-                    key={index}
-                    type="text"
-                    className="text-center"
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                    }}
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => handleChange(index, e)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    ref={(el) => (inputRefs.current[index] = el)}
-                    required
-                  />
-                ))}
-              </div>
+              <Form onSubmit={handleSubmit}>
+                <div className="d-flex justify-content-center gap-2 mb-3">
+                  {otp.map((digit, index) => (
+                    <Form.Control
+                      key={index}
+                      type="text"
+                      className="text-center"
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                      }}
+                      maxLength="1"
+                      value={digit}
+                      onChange={(e) => handleChange(index, e)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      ref={(el) => (inputRefs.current[index] = el)}
+                      required
+                    />
+                  ))}
+                </div>
 
-              <Button type="submit" variant="primary" className="w-100 button-custom" disabled={isLoading}>
-                {isLoading ? "Verifying..." : "Verify"}
-              </Button>
-              <div className="mt-3">
-                {timer > 0 ? (
-                  <p className="text-muted">Resend OTP in <strong>{formatTime(timer)}</strong></p>
-                ) : (
+                <Button type="submit" variant="primary" className="w-100 button-custom" disabled={isLoading}>
+                  {isLoading ? "Verifying..." : "Verify"}
+                </Button>
+                <div className="mt-3">
+                  {timer > 0 ? (
+                    <p className="text-muted">Resend OTP in <strong>{formatTime(timer)}</strong></p>
+                  ) : (
 
-                  <Button
-                    variant="secondary"
-                    className="w-100 mt-2"
-                    onClick={handleResendOtp}
-                    disabled={isResending}
-                  >
-                    {isResending ? "Resending..." : "Resend OTP"}
-                  </Button>
-                )}
-              </div>
-            </Form>
-          </div>
-        </Col>
-      </Row>
-    </Container>
+                    <Button
+                      variant="secondary"
+                      className="w-100 mt-2"
+                      onClick={handleResendOtp}
+                      disabled={isResending}
+                    >
+                      {isResending ? "Resending..." : "Resend OTP"}
+                    </Button>
+                  )}
+                </div>
+              </Form>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+      <Footer />
+    </>
   );
 };
 

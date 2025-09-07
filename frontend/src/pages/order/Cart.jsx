@@ -3,6 +3,7 @@ import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { useLoadCartQuery, useRemoveFromCartMutation, useUpdateCartMutation } from "../../redux/api/productApiSlice";
 import { toast } from 'react-toastify'
+import Footer from "../../components/Footer";
 
 const Cart = () => {
 
@@ -55,123 +56,126 @@ const Cart = () => {
   if (data?.length === 0) return <h5>Your cart is empty</h5>
 
   return (
-    <section className="bg-light my-5">
-      <Container>
-        <Row>
-          <Col lg={9}>
-            <Card className="border shadow-0">
-              <Card.Body>
-                <h4 className="card-title mb-4">Your shopping cart</h4>
-                {cartItems.length === 0 ? (
-                  <h5 className="text-center text-muted">Your cart is empty</h5>
-                ) : (
-                  cartItems.map((item) => (
-                    <Row className="gy-3 mb-4" key={item._id}>
-                      <Col lg={5}>
-                        <div className="d-flex">
-                          <Image
-                            src={`${item.image}`}
-                            className="border rounded me-3"
-                            style={{ width: "96px", height: "96px" }}
-                          />
-                          <div>
-                            <p className="nav-link">{item.name}</p>
-                            <p className="text-muted">{item.color}</p>
+    <>
+      <section className="bg-light my-5">
+        <Container>
+          <Row>
+            <Col lg={9}>
+              <Card className="border shadow-0">
+                <Card.Body>
+                  <h4 className="card-title mb-4">Your shopping cart</h4>
+                  {cartItems.length === 0 ? (
+                    <h5 className="text-center text-muted">Your cart is empty</h5>
+                  ) : (
+                    cartItems.map((item) => (
+                      <Row className="gy-3 mb-4" key={item._id}>
+                        <Col lg={5}>
+                          <div className="d-flex">
+                            <Image
+                              src={`${item.image}`}
+                              className="border rounded me-3"
+                              style={{ width: "96px", height: "96px" }}
+                            />
+                            <div>
+                              <p className="nav-link">{item.name}</p>
+                              <p className="text-muted">{item.color}</p>
+                            </div>
                           </div>
-                        </div>
-                      </Col>
-                      <Col lg={3} md={6} className="mb-4 mb-lg-0">
+                        </Col>
+                        <Col lg={3} md={6} className="mb-4 mb-lg-0">
 
-                        <div className="d-flex mb-4" style={{ maxWidth: "300px" }}>
-                          <Button variant="primary" className="px-3 me-2" onClick={() => updateQuantityHandler(item, item.qty - 1)}
-                            disabled={item.qty <= 1}>
-                            <FaMinus />
-                          </Button>
-                          <Form.Control
-                            type="number"
-                            min="1"
-                            max={Math.min(maximum, item.originalQuantity)}
-                            value={item.qty}
-                            onChange={(e) => {
-                              let value = Number(e.target.value);
-                              if (value >= 1 && value <= Math.min(maximum, item.originalQuantity)) {
-                                updateQuantityHandler(item, value);
-                              }
-                            }}
+                          <div className="d-flex mb-4" style={{ maxWidth: "300px" }}>
+                            <Button variant="primary" className="px-3 me-2" onClick={() => updateQuantityHandler(item, item.qty - 1)}
+                              disabled={item.qty <= 1}>
+                              <FaMinus />
+                            </Button>
+                            <Form.Control
+                              type="number"
+                              min="1"
+                              max={Math.min(maximum, item.originalQuantity)}
+                              value={item.qty}
+                              onChange={(e) => {
+                                let value = Number(e.target.value);
+                                if (value >= 1 && value <= Math.min(maximum, item.originalQuantity)) {
+                                  updateQuantityHandler(item, value);
+                                }
+                              }}
 
-                            className="text-center"
-                          />
-                          <Button variant="primary" className="px-3 ms-2" onClick={() => updateQuantityHandler(item, item.qty + 1)}
-                            disabled={item.qty >= Math.min(maximum, item.originalQuantity)}>
-                            <FaPlus />
+                              className="text-center"
+                            />
+                            <Button variant="primary" className="px-3 ms-2" onClick={() => updateQuantityHandler(item, item.qty + 1)}
+                              disabled={item.qty >= Math.min(maximum, item.originalQuantity)}>
+                              <FaPlus />
 
-                          </Button>
-                        </div>
-                      </Col>
-                      <Col>
-                        <p className="text-muted py-2 ms-5">
-                          {item.discount !== 0 ? (
-                            <>
-                              <span className="text-decoration-line-through text-muted me-2">
-                                ₹{item.price}
-                              </span>
-                              <span className="text-success fw-bold">₹{(item.price - item.discount).toFixed(2)}</span>
-                            </>
-                          ) : (
-                            <span>₹{item.price}</span>
-                          )}
+                            </Button>
+                          </div>
+                        </Col>
+                        <Col>
+                          <p className="text-muted py-2 ms-5">
+                            {item.discount !== 0 ? (
+                              <>
+                                <span className="text-decoration-line-through text-muted me-2">
+                                  ₹{item.price}
+                                </span>
+                                <span className="text-success fw-bold">₹{(item.price - item.discount).toFixed(2)}</span>
+                              </>
+                            ) : (
+                              <span>₹{item.price}</span>
+                            )}
 
-                        </p></Col>
-                      <Col lg className="d-flex justify-content-sm-center justify-content-md-start justify-content-lg-center justify-content-xl-end mb-2">
-                        <div className="float-md-end">
-                          <Button variant="primary" className="border  ms-2" onClick={() => removeFromCart(item._id)}>
-                            <FaTrash />
-                          </Button>
-                        </div>
-                      </Col>
-                    </Row>
-                  ))
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-          <div className="col-lg-3">
-            <Card className="shadow-0 border">
-              <Card.Body>
-                <div className="d-flex justify-content-between">
-                  <p className="mb-2">Total price:</p>
-                  <p className="mb-2">₹{subtotal.toFixed(2)}</p>
-                </div>
-                <div className="d-flex justify-content-between">
-                  <p className="mb-2">Discount:</p>
-                  <p className="mb-2 text-success">-₹{discount.toFixed(2)}</p>
-                </div>
-                <div className="d-flex justify-content-between">
-                  <p className="mb-2">TAX:</p>
-                  <p className="mb-2">₹{tax.toFixed(2)}</p>
-                </div>
-                <hr />
-                <div className="d-flex justify-content-between">
-                  <p className="mb-2">Total price:</p>
-                  <p className="mb-2 fw-bold">₹{total.toFixed(2)}</p>
-                </div>
-                <div className="mt-3">
-                  <Button className="w-100 shadow-0 mb-2 button-custom"
-                    onClick={() => { navigate('/checkout') }}
-                    disabled={isAnyItemOutOfStock() || cartItems.length === 0}
-                  >
-                    CHECKOUT
-                  </Button>
-                  <Button variant="light" className="w-100 border mt-2">
-                    Back to shop
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </div>
-        </Row>
-      </Container>
-    </section>
+                          </p></Col>
+                        <Col lg className="d-flex justify-content-sm-center justify-content-md-start justify-content-lg-center justify-content-xl-end mb-2">
+                          <div className="float-md-end">
+                            <Button variant="primary" className="border  ms-2" onClick={() => removeFromCart(item._id)}>
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        </Col>
+                      </Row>
+                    ))
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <div className="col-lg-3">
+              <Card className="shadow-0 border">
+                <Card.Body>
+                  <div className="d-flex justify-content-between">
+                    <p className="mb-2">Total price:</p>
+                    <p className="mb-2">₹{subtotal.toFixed(2)}</p>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <p className="mb-2">Discount:</p>
+                    <p className="mb-2 text-success">-₹{discount.toFixed(2)}</p>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <p className="mb-2">TAX:</p>
+                    <p className="mb-2">₹{tax.toFixed(2)}</p>
+                  </div>
+                  <hr />
+                  <div className="d-flex justify-content-between">
+                    <p className="mb-2">Total price:</p>
+                    <p className="mb-2 fw-bold">₹{total.toFixed(2)}</p>
+                  </div>
+                  <div className="mt-3">
+                    <Button className="w-100 shadow-0 mb-2 button-custom"
+                      onClick={() => { navigate('/checkout') }}
+                      disabled={isAnyItemOutOfStock() || cartItems.length === 0}
+                    >
+                      CHECKOUT
+                    </Button>
+                    <Button variant="light" className="w-100 border mt-2">
+                      Back to shop
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            </div>
+          </Row>
+        </Container>
+      </section>
+      <Footer />
+    </>
   );
 };
 

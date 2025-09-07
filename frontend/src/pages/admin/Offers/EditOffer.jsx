@@ -7,6 +7,7 @@ import { useGetOfferByIdQuery, useUpdateOfferMutation } from "../../../redux/api
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import { OFFER_MESSAGES } from "../../../constants/messageConstants";
+import Footer from "../../../components/Footer";
 
 const EditOffer = () => {
     const { id } = useParams();
@@ -248,6 +249,7 @@ const EditOffer = () => {
                         </Col>
                     </Row>
                 </Container>
+                <Footer />
             </div>
         </div>
     );

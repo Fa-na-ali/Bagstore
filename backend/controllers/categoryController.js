@@ -1,6 +1,6 @@
 const Category = require("../models/categoryModel.js");
 const STATUS_CODES = require('../statusCodes.js');
-const { USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_NOT_FOUND } = require('../categoryMsgConstants.js');
+const { USR_NAME_RQD, CATEGORY_EXT, CATEGORY_DLT_MSG, CATEGORY_NOT_FOUND, CATEGORY_UNBLOCK_MSG } = require('../categoryMsgConstants.js');
 const asyncHandler = require('../middlewares/asyncHandler.js');
 
 //add category
@@ -67,6 +67,24 @@ const deleteCategory = asyncHandler(async (req, res) => {
 
 });
 
+//unblock category
+const unblockCategory = asyncHandler(async (req, res) => {
+
+  const category = await Category.findById(req.params.id);
+
+  if (!category) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(CATEGORY_NOT_FOUND)
+  }
+  category.isExist = true;
+  await category.save();
+  return res.status(STATUS_CODES.OK).json({
+    status: "success",
+    message: CATEGORY_UNBLOCK_MSG,
+  })
+
+});
+
 //All categories
 const listCategory = asyncHandler(async (req, res) => {
 
@@ -93,7 +111,7 @@ const listExistCategory = asyncHandler(async (req, res) => {
 const readCategory = asyncHandler(async (req, res) => {
 
   const id = req.params.id;
-  const category = await Category.findById({ _id: id });
+  const category = await Category.findById({ _id: id }).select("name isExist offer _id");
   return res.status(STATUS_CODES.OK).json({
     status: "success",
     category
@@ -115,7 +133,9 @@ const fetchCategories = asyncHandler(async (req, res) => {
     : {};
 
   const count = await Category.countDocuments({ ...keyword });
-  const categories = await Category.find({ ...keyword }).sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+  const categories = await Category.find({ ...keyword })
+    .select("name isExist _id")
+    .sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
   return res.status(STATUS_CODES.OK).json({
     status: "success",
     categories,
@@ -125,7 +145,6 @@ const fetchCategories = asyncHandler(async (req, res) => {
     hasMore: page < Math.ceil(count / pageSize),
   });
 });
-
 
 //search category
 const searchCategory = asyncHandler(async (req, res) => {
@@ -147,5 +166,6 @@ module.exports = {
   readCategory,
   listCategory,
   listExistCategory,
-  searchCategory
+  searchCategory,
+  unblockCategory
 };

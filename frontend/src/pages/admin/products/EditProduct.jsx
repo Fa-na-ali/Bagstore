@@ -13,6 +13,7 @@ import { MdDelete } from "react-icons/md";
 import { Image as BootstrapImage } from "react-bootstrap";
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 import { NAME_REGEX, PRODUCT_MESSAGES, SIZE_REGEX } from '../../../constants/messageConstants';
+import Footer from '../../../components/Footer';
 
 
 const EditProduct = () => {
@@ -190,7 +191,7 @@ const EditProduct = () => {
       <div className="d-flex">
         <AdminSidebar />
         <div className="main-content-wrapper background-one flex-grow-1">
-          <Container fluid className="mt-4 p-4">
+          <Container className="mt-4 p-4">
             <Row className="g-0">
               <Col lg={9} >
                 <h2 className='text-center my-5 heading'>EDIT PRODUCT</h2>
@@ -408,8 +409,8 @@ const EditProduct = () => {
                 </Button>
               </Modal.Footer>
             </Modal>
-
           </Container>
+          <Footer />
         </div>
       </div>
     </>

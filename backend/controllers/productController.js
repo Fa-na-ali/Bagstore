@@ -1,7 +1,7 @@
 const Product = require('../models/productModel')
 const mongoose = require('mongoose');
 const STATUS_CODES = require('../statusCodes');
-const { PRODUCT_ADDED, PRODUCT_NOT_FOUND, PRODUCT_DELETED, PRODUCT_INVALID, PRODUCT_IMG_DELETED } = require('../productMsgConstants');
+const { PRODUCT_ADDED, PRODUCT_NOT_FOUND, PRODUCT_DELETED, PRODUCT_INVALID, PRODUCT_IMG_DELETED, PRODUCT_UNBLOCKED } = require('../productMsgConstants');
 const User = require('../models/userModel');
 const { USER_NOT_MSG } = require('../messageConstants');
 const Wishlist = require('../models/wishlistModel');
@@ -151,7 +151,9 @@ const getQuantity = asyncHandler(async (req, res) => {
 const readProduct = asyncHandler(async (req, res) => {
 
   const id = req.params.id;
-  const product = await Product.findById({ _id: id }).populate("category")
+  const product = await Product.findById({ _id: id })
+    .select("name category price quantity color brand isExist _id pdImage size description offer")
+    .populate("category")
   return res.status(STATUS_CODES.OK).json({
     status: "success",
     product
@@ -173,7 +175,9 @@ const fetchProducts = asyncHandler(async (req, res) => {
     : {};
 
   const count = await Product.countDocuments({ ...keyword });
-  const products = await Product.find({ ...keyword }).populate("category", "name -_id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+  const products = await Product.find({ ...keyword })
+    .select("name category price quantity color brand isExist _id")
+    .populate("category", "name -_id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
   return res.status(STATUS_CODES.OK).json({
     status: "success",
     products,
@@ -307,7 +311,25 @@ const deleteProduct = asyncHandler(async (req, res) => {
   return res.status(STATUS_CODES.OK).json({
     status: "SUCCESS",
     message: PRODUCT_DELETED,
-    product
+  });
+});
+
+//unblock product
+const unblockProduct = asyncHandler(async (req, res) => {
+
+  const product = await Product.findByIdAndUpdate(
+    req.params.id,
+    { isExist: true },
+    { new: true }
+  );
+
+  if (!product) {
+    res.status(STATUS_CODES.NOT_FOUND)
+    throw new Error(PRODUCT_NOT_FOUND)
+  }
+  return res.status(STATUS_CODES.OK).json({
+    status: "SUCCESS",
+    message: PRODUCT_UNBLOCKED
   });
 });
 
@@ -404,6 +426,7 @@ module.exports = {
   updateWishlist,
   fetchWishlist,
   removeFromWishlist,
+  unblockProduct
 }
 
 

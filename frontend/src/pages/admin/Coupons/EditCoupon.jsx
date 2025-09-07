@@ -7,12 +7,13 @@ import { useGetCouponByIdQuery, useUpdateCouponMutation } from "../../../redux/a
 import { useNavigate, useParams } from "react-router";
 import { COUPON_MESSAGES } from "../../../constants/messageConstants";
 import { toast } from 'react-toastify'
+import Footer from "../../../components/Footer";
 
 const EditCoupon = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data } = useGetCouponByIdQuery(id);
+    const { data, refetch } = useGetCouponByIdQuery(id);
     const coupon = data?.coupon
     const [update] = useUpdateCouponMutation();
     const [errors, setErrors] = useState({});
@@ -50,6 +51,7 @@ const EditCoupon = () => {
 
     useEffect(() => {
         if (coupon) {
+            refetch()
             setFormData({
                 name: coupon.name || "",
                 description: coupon.description || "",
@@ -309,6 +311,7 @@ const EditCoupon = () => {
                         </Col>
                     </Row>
                 </Container>
+                <Footer />
             </div>
         </div>
     );

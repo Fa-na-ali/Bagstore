@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { useGetAllOffersToAddQuery } from "../../../redux/api/usersApiSlice";
 import { CATEGORY_MESSAGES, NAME_REGEX } from "../../../constants/messageConstants";
+import Footer from "../../../components/Footer";
 
 const AddCategory = () => {
     const { data: off } = useGetAllOffersToAddQuery()
@@ -41,10 +42,10 @@ const AddCategory = () => {
     };
 
     return (
-        <>
+        <div className="main-app-container">
             <div className="d-flex">
                 <AdminSidebar />
-                <div className="main-content-wrapper background-one flex-grow-1">
+                <div className="main-content-wrapper  flex-grow-1 h-100">
                     <Container fluid className="mt-4 p-4">
                         <Row className="g-0 ">
                             <Col lg={6}>
@@ -83,7 +84,8 @@ const AddCategory = () => {
                     </Container>
                 </div>
             </div>
-        </>
+            <Footer />
+        </div>
     );
 };
 

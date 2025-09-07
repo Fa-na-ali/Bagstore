@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { Col, Container, Row, InputGroup, Form, FormControl } from 'react-bootstrap'
 import AdminSidebar from '../../../components/AdminSidebar'
 import Ttable from '../../../components/Ttable'
-import { useDeleteUserMutation, useFetchUsersQuery } from '../../../redux/api/usersApiSlice'
+import { useDeleteUserMutation, useFetchUsersQuery, useUnblockUserMutation } from '../../../redux/api/usersApiSlice'
 import { toast } from 'react-toastify'
 import debounce from 'lodash.debounce'
 import { USER_MESSAGES } from '../../../constants/messageConstants'
-
+import Swal from "sweetalert2";
+import Footer from '../../../components/Footer'
 
 const UserManagement = () => {
 
@@ -16,6 +17,8 @@ const UserManagement = () => {
   let { data, error, isLoading } = useFetchUsersQuery({ keyword: searchTerm, page: currentPage });
   const user = data?.user || [];
   const [deleteUser] = useDeleteUserMutation();
+  const [unblockUser] = useUnblockUserMutation()
+  const [users, setUsers] = useState([]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -29,6 +32,12 @@ const UserManagement = () => {
     { key: "isExist", label: "Status" },
     { key: "isAdmin", label: "Is Admin" }
   ];
+
+  useEffect(() => {
+    if (data?.user) {
+      setUsers(data.user);
+    }
+  }, [data]);
 
   useEffect(() => {
 
@@ -55,15 +64,56 @@ const UserManagement = () => {
 
   // on delete
   const handleDelete = async (id) => {
-    if (window.confirm("Do you want to delete")) {
-      try {
-        await deleteUser(id);
-        toast.success(USER_MESSAGES.USER_DLT_SUCCESS)
+    Swal.fire({
+      title: "Do you want to delete?",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteUser(id);
+          setUsers((prev) =>
+            prev.map((u) =>
+              u._id === id ? { ...u, isExist: false } : u
+            )
+          );
+          toast.success(USER_MESSAGES.USER_DLT_SUCCESS)
 
-      } catch (err) {
-        toast.error(err?.data?.message || `${USER_MESSAGES.USER_DLT_FAILURE}`);
+        } catch (err) {
+          toast.error(err?.data?.message || `${USER_MESSAGES.USER_DLT_FAILURE}`);
+        }
       }
-    }
+    })
+  };
+
+  //unblock user
+  const handleUnblock = async (id) => {
+    Swal.fire({
+      title: "Do you want to unblock?",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await unblockUser(id);
+          setUsers((prev) =>
+            prev.map((u) =>
+              u._id === id ? { ...u, isExist: true } : u
+            )
+          );
+          toast.success(USER_MESSAGES.USER_UNBLOCK_SUCCESS)
+
+        } catch (err) {
+          toast.error(err?.data?.message || `${USER_MESSAGES.USER_UNBLOCK_FAILURE}`);
+        }
+      }
+    })
   };
 
   return (
@@ -71,19 +121,19 @@ const UserManagement = () => {
       <div className="d-flex">
         <AdminSidebar />
         <div className="main-content-wrapper background-one flex-grow-1">
-          <Container fluid className="mt-4 p-4">
+          <Container fluid>
             <Row className="g-0">
               <Col lg={12} >
                 <h2 className='text-center my-5 heading'>USERS</h2>
-                <div className="table-title my-5">
+                <div className="table-title mb-4">
                   <Row className="align-items-center">
-                    <Col lg={6}>
-
-                    </Col>
-                    <Col lg={3}></Col>
-                    <Col lg={3} className="d-flex justify-content-end gap-3">
+                    <Col
+                      xs={12}
+                      md={12}
+                      className="d-flex flex-column flex-md-row justify-content-between gap-2"
+                    >
                       <InputGroup className="mb-3">
-                        <Form className="d-flex">
+                        <Form className="w-25">
                           <FormControl
                             type="search"
                             placeholder="Search"
@@ -100,9 +150,10 @@ const UserManagement = () => {
                 {(user) && (user.length > 0) ? (
                   <Ttable
                     naming="user"
-                    data={user}
+                    data={users}
                     columns={columns}
                     onDelete={handleDelete}
+                    onUnblock={handleUnblock}
                     onPage={handlePageChange}
                     pageData={data}
                     currentPage={currentPage}
@@ -115,6 +166,7 @@ const UserManagement = () => {
               <Col lg={1} className=" background-one"></Col>
             </Row>
           </Container>
+          <Footer />
         </div>
       </div>
     </>

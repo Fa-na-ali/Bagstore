@@ -8,6 +8,8 @@ import { toast } from "react-toastify";
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { USER_MESSAGES } from "../../constants/messageConstants";
+import Swal from "sweetalert2";
+import Footer from "../../components/Footer";
 
 const Account = () => {
 
@@ -33,15 +35,24 @@ const Account = () => {
 
     //delete address
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this address?")) {
-            try {
-                await deleteAddress(id).unwrap();
-                toast.success(USER_MESSAGES.USER_ADDRESS_DLT_SUCCESS);
-                refetch();
-            } catch (error) {
-                toast.error(error?.data?.message || USER_MESSAGES.USER_ADDRESS_DLT_FAILURE);
+        Swal.fire({
+            title: "Are you sure?",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes",
+            cancelButtonText: "Cancel",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await deleteAddress(id).unwrap();
+                    toast.success(USER_MESSAGES.USER_ADDRESS_DLT_SUCCESS);
+                    refetch();
+                } catch (error) {
+                    toast.error(error?.data?.message || USER_MESSAGES.USER_ADDRESS_DLT_FAILURE);
+                }
             }
-        }
+        })
     };
 
     const handleFileChange = (e) => {
@@ -284,6 +295,7 @@ const Account = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+            <Footer />
         </>
     );
 };

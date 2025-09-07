@@ -18,6 +18,7 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import AdminSidebar from '../../../components/AdminSidebar';
 import { BOLD_URL_FONT, BOLDITALICS_URL_FONT, ITALICS_URL_FONT, NORMAL_URL_FONT } from '../../../constants/constants';
+import Footer from '../../../components/Footer';
 
 
 // Initialize pdfMake
@@ -440,6 +441,7 @@ const SalesReport = () => {
             </Col>
           </Row>
         </Container>
+        <Footer />
       </div>
     </div>
   );

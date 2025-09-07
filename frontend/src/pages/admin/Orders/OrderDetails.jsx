@@ -6,6 +6,7 @@ import AdminSidebar from '../../../components/AdminSidebar'
 import { toast } from 'react-toastify'
 import { io } from 'socket.io-client';
 import { ORDER_MESSAGES } from '../../../constants/messageConstants';
+import Footer from '../../../components/Footer';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
@@ -240,6 +241,7 @@ const OrderDetails = () => {
               </Col>
             </Row>
           </Container >
+          <Footer />
         </div>
       </div>
     </>

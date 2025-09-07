@@ -6,6 +6,7 @@ import { Row, Col, Container, Button, Image } from 'react-bootstrap'
 import { toast } from 'react-toastify';
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice';
 import { CART_MESSAGES } from '../../constants/messageConstants';
+import Footer from '../../components/Footer';
 
 const Cards = lazy(() => import('../../components/Cards'));
 
@@ -178,6 +179,7 @@ const ProductDetails = () => {
           </Row>
         </Container>
       </section>
+      <Footer />
     </>
   )
 }

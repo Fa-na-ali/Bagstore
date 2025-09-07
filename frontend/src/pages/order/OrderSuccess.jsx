@@ -37,6 +37,7 @@ const OrderSuccess = () => {
                     </Row>
                 </Container>
             </section>
+            <Footer />
         </>
     )
 }

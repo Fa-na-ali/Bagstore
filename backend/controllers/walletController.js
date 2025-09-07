@@ -20,11 +20,9 @@ const getWallets = asyncHandler(async (req, res) => {
                 _id: transaction._id,
                 transactionId: transaction.transactionId,
                 transactionDate: transaction.createdAt,
-                user: `${wallet.userId.name}`,
                 email: wallet.userId.email,
                 type: transaction.type,
                 amount: transaction.amount.toFixed(2),
-                description: transaction.description
             });
         });
     });

@@ -7,6 +7,7 @@ import { useAddCouponMutation } from "../../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { COUPON_MESSAGES } from "../../../constants/messageConstants";
+import Footer from "../../../components/Footer";
 
 const AddCoupon = () => {
     const [formData, setFormData] = useState({
@@ -290,6 +291,7 @@ const AddCoupon = () => {
                         </Col>
                     </Row>
                 </Container>
+                <Footer />
             </div>
         </div>
     );
