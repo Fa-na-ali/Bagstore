@@ -17,6 +17,8 @@ export const CATEGORY_MESSAGES = {
     CATEGORY_ADD_FAILURE: "Unexpected response, try again.",
     CATEGORY_DLT_SUCCESS: " Deleted Successfully",
     CATEGORY_DLT_FAILURE: "Failure in deletion",
+    CATEGORY_UNBLOCK_SUCCESS: " Unblocked Successfully",
+    CATEGORY_UNBLOCK_FAILURE: "Failure in unblock",
     CATEGORY_UPDATE_SUCCESS: "Category updated successfully!",
     CATEGORY_UPDATE_FAILURE: "Failed to update the category.",
 
@@ -26,6 +28,8 @@ export const COUPON_MESSAGES = {
     COUPON_ADD_FAILURE: "Failed to add coupon",
     COUPON_DLT_SUCCESS: "Deleted Successfully",
     COUPON_DLT_FAILURE: "Failure in deletion",
+    COUPON_UNBLOCK_SUCCESS: "Unblocked Successfully",
+    COUPON_UNBLOCK_FAILURE: "Failure in Unblock",
     COUPON_UPDATE_SUCCESS: 'Coupon Edited successfully!',
     COUPON_UPDATE_FAILURE: "Error updating coupon",
     COUPON_APPLY_SUCCESS: "",
@@ -38,7 +42,9 @@ export const OFFER_MESSAGES = {
     OFFER_UPDATE_SUCCESS: 'Offer Edited successfully!',
     OFFER_UPDATE_FAILURE: "Error updating offer",
     OFFER_DLT_SUCCESS: " Deleted Successfully",
-    OFFER_DLT_FAILURE: "Failed to delete"
+    OFFER_DLT_FAILURE: "Failed to delete",
+    OFFER_UNBLOCK_SUCCESS: " Unblocked Successfully",
+    OFFER_UNBLOCK_FAILURE: "Failed to unblock"
 }
 
 export const ORDER_MESSAGES = {
@@ -60,11 +66,15 @@ export const PRODUCT_MESSAGES = {
     PRODUCT_UPDATE_FAILURE: 'Failed to edit product',
     PRODUCT_DLT_SUCCESS: " Deleted Successfully",
     PRODUCT_DLT_FAILURE: "Failed to delete",
+    PRODUCT_UNBLOCK_SUCCESS: " Unblocked Successfully",
+    PRODUCT_UNBLOCK_FAILURE: "Failed to unblock",
 }
 
 export const USER_MESSAGES = {
     USER_DLT_SUCCESS: " Deleted Successfully",
+    USER_UNBLOCK_SUCCESS: "Unblocked successfully",
     USER_DLT_FAILURE: "Failed to delete",
+    USER_UNBLOCK_FAILURE: "Failed to unblock",
     USER_VALIDATION_MSG: "Please enter your email.",
     USER_VALIDATION_EMAIL: "Enter a valid email",
     USER_OTP_SENT: "OTP sent to your email!",

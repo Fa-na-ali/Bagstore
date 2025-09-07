@@ -13,6 +13,7 @@ import {
 } from 'react-bootstrap';
 import { Chart } from 'chart.js/auto';
 import { useGetDashboardDataQuery } from '../../../redux/api/dashboardApiSlice';
+import Footer from '../../../components/Footer';
 
 //to get months
 const getMonthName = (monthIndex) => {
@@ -368,6 +369,7 @@ const AdminDashboard = () => {
               </Col>
             </Row>
           </Container>
+          <Footer />
         </div>
       </div>
     </>

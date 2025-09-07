@@ -6,6 +6,7 @@ import sling from '../assets/images/sling1.webp'
 import handbag from '../assets/images/handbag.webp'
 import wallet from '../assets/images/wallet.webp'
 import { useGetNewProductsQuery } from '../redux/api/productApiSlice';
+import Footer from './Footer';
 
 const Cards = lazy(() => import('./Cards'));
 
@@ -59,6 +60,7 @@ const Home = () => {
 
         </Container>
       </section>
+      <Footer />
 
     </>
   )

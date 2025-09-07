@@ -64,8 +64,15 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: `${PRODUCT_URL}/${id}`,
         method: "DELETE",
       }),
-      providesTags: ["Product"],
     }),
+
+    UnblockProduct: builder.mutation({
+      query: (id) => ({
+        url: `${PRODUCT_URL}/${id}/unblock`,
+        method: "PUT",
+      }),
+    }),
+
     deleteImage: builder.mutation({
       query: ({ id, index }) => ({
         url: `${PRODUCT_URL}/${id}/${index}`,
@@ -185,4 +192,5 @@ export const {
   useRemoveFromCartMutation,
   useLoadCartQuery,
   useUpdateCartMutation,
+  useUnblockProductMutation,
 } = productApiSlice;

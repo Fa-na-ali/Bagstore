@@ -285,7 +285,7 @@ const fetchUsers = asyncHandler(async (req, res) => {
         : {};
 
     const count = await User.countDocuments({ ...keyword });
-    const user = await User.find({ ...keyword }).select("-password").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
+    const user = await User.find({ ...keyword }).select("name email phone isExist isAdmin _id").sort({ createdAt: -1 }).limit(pageSize).skip(pageSize * (page - 1));
     return res.status(STATUS_CODES.OK).json({
         status: "success",
         user,
@@ -590,6 +590,27 @@ const deleteUserImage = asyncHandler(async (req, res) => {
     });
 });
 
+//unblock user
+const unblockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+        id,
+        { $set: { isExist: true } },
+        { new: true }
+    ).select("name email phone isExist isAdmin _id")
+
+    if (!user) {
+        res.status(STATUS_CODES.NOT_FOUND)
+        throw new Error(USER_NOT_MSG)
+    }
+
+    return res.status(STATUS_CODES.OK).json({
+        status: "success",
+        message: "User unblocked successfully",
+    });
+});
+
 module.exports = {
     userSignup,
     userLogin,
@@ -613,4 +634,5 @@ module.exports = {
     uploadImage,
     deleteUserImage,
     generateReferralCode,
+    unblockUser
 }

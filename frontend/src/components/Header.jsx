@@ -31,7 +31,9 @@ const Header = () => {
             console.error(error);
         }
     };
-
+    if (userInfo?.isAdmin) {
+        return null;
+    }
     return (
         <>
             <Navbar expand="lg" bg="white" className="sticky-top shadow shadow-sm">

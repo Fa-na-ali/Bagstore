@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { useFetchCategoriesQuery } from '../../../redux/api/categoryApiSlice';
 import { useGetAllOffersToAddQuery } from '../../../redux/api/usersApiSlice';
 import { NAME_REGEX, PRODUCT_MESSAGES, SIZE_REGEX } from '../../../constants/messageConstants';
+import Footer from '../../../components/Footer';
 
 
 const AddProduct = () => {
@@ -304,6 +305,7 @@ const AddProduct = () => {
             </Modal.Footer>
           </Modal>
         </Container>
+        <Footer />
       </div>
     </div>
   );

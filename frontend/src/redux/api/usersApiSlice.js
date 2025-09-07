@@ -104,7 +104,12 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/${userId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ['User'],
+    }),
+    unblockUser: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/${id}/unblock`,
+        method: "PUT",
+      }),
     }),
     getUserDetails: builder.query({
       query: (id) => ({
@@ -201,7 +206,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/admin/coupons/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Coupons"],
+    }),
+
+    unblockCoupon: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/admin/coupons/${id}/unblock`,
+        method: "PUT",
+      }),
     }),
 
     getCouponById: builder.query({
@@ -260,7 +271,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/admin/offers/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Offer"],
+    }),
+
+    unblockOffer: builder.mutation({
+      query: (id) => ({
+        url: `${USERS_URL}/admin/offers/${id}/unblock`,
+        method: "PUT",
+      }),
     }),
 
     getOfferById: builder.query({
@@ -378,4 +395,7 @@ export const {
   useAddReferralCouponMutation,
   useGetReferralDetailsQuery,
   useGetReferralCodeMutation,
+  useUnblockUserMutation,
+  useUnblockCouponMutation,
+  useUnblockOfferMutation
 } = userApiSlice;

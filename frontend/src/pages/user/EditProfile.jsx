@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { updateProfile } from '../../redux/features/auth/authSlice';
 import { EMAIL_REGEX, NAME_REGEX, PHONE_REGEX, USER_MESSAGES } from '../../constants/messageConstants';
+import Footer from '../../components/Footer';
 
 const EditProfile = () => {
     const { data } = useProfileQuery()
@@ -104,7 +105,7 @@ const EditProfile = () => {
                     </Row>
                 </Container>
             </section>
-
+            <Footer />
         </>
     )
 }

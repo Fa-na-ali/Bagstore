@@ -4,6 +4,7 @@ import { useGetAllOrdersQuery } from '../../../redux/api/ordersApiSlice';
 import { Row, Col, FormControl, InputGroup, Form, Container } from 'react-bootstrap'
 import Ttable from '../../../components/Ttable';
 import debounce from 'lodash.debounce';
+import Footer from '../../../components/Footer';
 
 const OrderManagement = () => {
 
@@ -59,25 +60,29 @@ const OrderManagement = () => {
   const handleDelete = () => {
 
   }
+  const handleUnblock = () => {
+
+  }
 
   return (
     <>
       <div className="d-flex">
         <AdminSidebar />
         <div className="main-content-wrapper background-one flex-grow-1">
-          <Container fluid className="mt-4 p-4">
+          <Container fluid>
             <Row className="g-0">
-              <Col lg={12}>
+              <Col xs={12} lg={12}>
                 <h2 className='text-center my-5 heading'>ORDERS</h2>
-                <div className="table-title my-5">
+                <div className="table-title mb-4">
                   <Row className="align-items-center">
-                    <Col lg={6}>
-
-                    </Col>
-                    <Col lg={3} className='mb-3'>
+                    <Col
+                      xs={12}
+                      md={12}
+                      className="d-flex flex-column flex-md-row justify-content-between gap-2"
+                    >
                       <Form.Group>
-
                         <Form.Select
+                          className='w-100'
                           value={selectedSort}
                           onChange={(e) => {
                             setSelectedSort(e.target.value);
@@ -87,15 +92,10 @@ const OrderManagement = () => {
                           <option value="">Sort by</option>
                           <option value="Completed">Completed</option>
                           <option value="Not completed">Not completed</option>
-                          {/* <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                      <option value="returned">Returned</option> */}
                         </Form.Select>
                       </Form.Group>
-                    </Col>
-                    <Col lg={3} className="d-flex justify-content-end gap-3">
                       <InputGroup className="mb-3">
-                        <Form className="d-flex">
+                        <Form className=" w-25">
                           <FormControl
                             type="search"
                             placeholder="Search"
@@ -115,6 +115,7 @@ const OrderManagement = () => {
                     data={orders}
                     columns={columns}
                     onDelete={handleDelete}
+                    onUnblock={handleUnblock}
                     onPage={handlePageChange}
                     pageData={data}
                     currentPage={currentPage}
@@ -124,9 +125,9 @@ const OrderManagement = () => {
                 )}
 
               </Col>
-              <Col lg={1} className=" background-one"></Col>
             </Row>
           </Container>
+          <Footer />
         </div>
       </div>
     </>

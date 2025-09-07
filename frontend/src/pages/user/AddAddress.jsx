@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { useAddAddressMutation } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
 import { NAME_REGEX, PHONE_REGEX, USER_MESSAGES, ZIP_REGEX } from '../../constants/messageConstants';
+import Footer from '../../components/Footer';
 
 const AddAddress = () => {
     const [name, setName] = useState("")
@@ -434,6 +435,7 @@ const AddAddress = () => {
                     </Row>
                 </Container>
             </section>
+            <Footer />
         </>
     )
 }

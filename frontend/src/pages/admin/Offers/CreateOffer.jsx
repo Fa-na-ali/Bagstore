@@ -7,6 +7,7 @@ import { useAddOfferMutation } from "../../../redux/api/usersApiSlice";
 import { useNavigate } from "react-router";
 import { OFFER_MESSAGES } from "../../../constants/messageConstants";
 import { toast } from "react-toastify";
+import Footer from "../../../components/Footer";
 
 const CreateOffer = () => {
     const [formData, setFormData] = useState({
@@ -238,6 +239,7 @@ const CreateOffer = () => {
                         </Col>
                     </Row>
                 </Container>
+                <Footer />
             </div>
         </div>
     );

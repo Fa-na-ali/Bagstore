@@ -7,6 +7,7 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 import { toast } from "react-toastify";
 import RetryButton from "../../components/RetryButton";
 import { ORDER_MESSAGES } from "../../constants/messageConstants";
+import Footer from "../../components/Footer";
 
 pdfMake.vfs = pdfFonts?.pdfMake?.vfs || {};
 
@@ -379,6 +380,7 @@ const OrderDetail = () => {
           <Button variant="primary" onClick={handleReturnOrder} disabled={!selectedReason}>Submit Return</Button>
         </Modal.Footer>
       </Modal>
+      <Footer />
     </>
   );
 };

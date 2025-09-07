@@ -25,7 +25,12 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         url: `${CATEGORY_URL}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Category"],
+    }),
+    unblockCategory: builder.mutation({
+      query: (id) => ({
+        url: `${CATEGORY_URL}/${id}/unblock`,
+        method: "PUT",
+      }),
     }),
     specificCategories: builder.query({
       query: (id) => ({
@@ -57,5 +62,6 @@ export const {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useFetchCategoriesQuery,
-  useSpecificCategoriesQuery
+  useSpecificCategoriesQuery,
+  useUnblockCategoryMutation
 } = categoryApiSlice;

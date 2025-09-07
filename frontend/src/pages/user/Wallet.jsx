@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import { useCreateOrderWalletMutation, useGetMyWalletQuery, useGetRazorpayKeyQuery, useUpdateWalletMutation } from '../../redux/api/walletApiSlice';
 import { LOGO_URL, WALLET_IMG_URL } from '../../constants/constants';
+import Footer from '../../components/Footer';
 
 const Wallet = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -64,64 +65,67 @@ const Wallet = () => {
   };
 
   return (
-    <Container className="my-5 my-custom-min-height">
-      <h1 className="text-center mb-4 heading">MY WALLET</h1>
-      <Row className="mb-4">
-        <Col md={4}>
-          <Card bg="warning" text="dark" className="p-4">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center">
-                Gold Card <i className="fab fa-cc-mastercard fa-2x"></i>
-              </Card.Title>
-              <Card.Text className="wallet-balance fs-4">Rs.{(wallet?.balance ?? 0).toFixed(2)}</Card.Text>
-              <div className="d-flex justify-content-between">
-                <div>
-                  <div className="fw-bold">{userInfo?.name}</div>
+    <>
+      <Container className="my-5 my-custom-min-height">
+        <h1 className="text-center mb-4 heading">MY WALLET</h1>
+        <Row className="mb-4">
+          <Col md={4}>
+            <Card bg="warning" text="dark" className="p-4">
+              <Card.Body>
+                <Card.Title className="d-flex justify-content-between align-items-center">
+                  Gold Card <i className="fab fa-cc-mastercard fa-2x"></i>
+                </Card.Title>
+                <Card.Text className="wallet-balance fs-4">Rs.{(wallet?.balance ?? 0).toFixed(2)}</Card.Text>
+                <div className="d-flex justify-content-between">
+                  <div>
+                    <div className="fw-bold">{userInfo?.name}</div>
+                  </div>
+                  <img src={`${WALLET_IMG_URL}`} alt="Chip" width="40" />
                 </div>
-                <img src={`${WALLET_IMG_URL}`} alt="Chip" width="40" />
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={6}></Col>
+          <Col md={2} className="d-flex flex-column justify-content-center">
+            <Button className='button-custom' onClick={() => setShowInput(true)}>Add Money</Button>
+            {showInput && (
+              <div className="mt-2">
+                <Form.Control
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min="1"
+                />
+                <Button className="mt-2" onClick={handleAddMoney}>Submit</Button>
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6}></Col>
-        <Col md={2} className="d-flex flex-column justify-content-center">
-          <Button className='button-custom' onClick={() => setShowInput(true)}>Add Money</Button>
-          {showInput && (
-            <div className="mt-2">
-              <Form.Control
-                type="number"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                min="1"
-              />
-              <Button className="mt-2" onClick={handleAddMoney}>Submit</Button>
-            </div>
-          )}
-        </Col>
-      </Row>
+            )}
+          </Col>
+        </Row>
 
-      <div>
-        <h5 className='caption mt-5'>Recent Transactions</h5>
-        <hr />
-        {wallet?.transactions?.map((txn, idx) => (
-          <div key={idx} className="transaction-item d-flex justify-content-between align-items-center mb-2">
-            <div className="d-flex">
-              <div className="me-3">
-                <span className={txn.type === 'Credit' ? 'text-success' : 'text-danger'}>
-                  {txn.type === 'Credit' ? 'Credited' : 'Debited'}
-                </span>
+        <div>
+          <h5 className='caption mt-5'>Recent Transactions</h5>
+          <hr />
+          {wallet?.transactions?.map((txn, idx) => (
+            <div key={idx} className="transaction-item d-flex justify-content-between align-items-center mb-2">
+              <div className="d-flex">
+                <div className="me-3">
+                  <span className={txn.type === 'Credit' ? 'text-success' : 'text-danger'}>
+                    {txn.type === 'Credit' ? 'Credited' : 'Debited'}
+                  </span>
+                </div>
+                <div className="me-3">
+                  <h6>Rs. {txn.amount.toFixed(2)}</h6>
+                </div>
+                <p className="small">{txn.description}</p>
               </div>
-              <div className="me-3">
-                <h6>Rs. {txn.amount.toFixed(2)}</h6>
-              </div>
-              <p className="small">{txn.description}</p>
+              <div>{format(new Date(txn.createdAt), 'EEE, MMM dd, yyyy')}</div>
             </div>
-            <div>{format(new Date(txn.createdAt), 'EEE, MMM dd, yyyy')}</div>
-          </div>
-        ))}
-      </div>
-    </Container>
+          ))}
+        </div>
+      </Container>
+      <Footer />
+    </>
   );
 };
 

@@ -7,6 +7,7 @@ import { toast } from 'react-toastify'
 import { useGetAllOffersToAddQuery } from '../../redux/api/usersApiSlice'
 import { PLACEHOLDER_URL } from '../../constants/constants'
 import { CART_MESSAGES, WISHLIST_MESSAGES } from '../../constants/messageConstants'
+import Footer from '../../components/Footer'
 
 const Wishlist = () => {
   const [discounts, setDiscounts] = useState({});
@@ -179,6 +180,7 @@ const Wishlist = () => {
           </Row>
         </Container>
       </section>
+      <Footer />
     </>
   )
 }

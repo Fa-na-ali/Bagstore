@@ -1,5 +1,6 @@
 import { Container, Row, Col, Card } from "react-bootstrap";
 import icon from '../../assets/images/female.png'
+import Footer from "../../components/Footer";
 
 const About = () => {
     return (
@@ -54,6 +55,7 @@ const About = () => {
                     </section>
                 </Container>
             </main>
+            <Footer />
         </>
     );
 };

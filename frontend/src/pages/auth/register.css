@@ -5,7 +5,13 @@
 body {
   min-height: 100vh;
 }
+footer a {
+  text-decoration: none;
+}
 
+footer a:hover {
+  text-decoration: none; 
+}
 .background {
   background-color: #EDE6DF;
 }
@@ -53,9 +59,15 @@ body {
 }
 
 .footer-container {
+  width:100%;
+  margin-left:240px;          
+  padding:  40px 20px;   
+  color: #fff;
   background-color: #cc664E;
-
-
+}
+.footer-title {
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .footer-wrapper {
@@ -64,21 +76,30 @@ body {
   max-width: 1116px;
   flex-direction: column;
 }
+.footer-container a {
+  color: #bbb;
+  text-decoration: none;
+}
 
 .footer-content {
   align-self: center;
   width: 100%;
 }
+.footer-container a:hover {
+  color: #fff;
+}
 
 .footer-sections {
-  display: flex;
+ display: flex;
+  flex-wrap: wrap;   
   gap: 20px;
 }
 
 .main-section {
   display: flex;
   flex-direction: column;
-  width: 81%;
+  flex: 1;  
+  min-width: 250px; 
 }
 
 .content-grid {
@@ -113,9 +134,10 @@ body {
 }
 
 .footer-column {
-  display: flex;
+ display: flex;
   flex-direction: column;
-  width: 15%;
+  flex: 1;  
+  min-width: 150px;
 }
 
 .column-title {
@@ -151,41 +173,64 @@ body {
   border-top: 1px solid #e9e9eb;
   padding-top: 20px;
 }
+
+
+.sidebar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: #212529;
+  padding: 1rem;
+  z-index: 2;
+}
+
+
 .main-content-wrapper {
-  
-  width: 100%; 
-  padding-left: 1rem; 
-  flex-grow: 1;
+  margin-left:240px;
+  max-height:100vh
+}
+.main-app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; 
+}
+
+.d-flex {
+  flex-grow: 1; 
+  display: flex;
 }
 
 @media (max-width: 992px) {
   .main-content-wrapper {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 0; 
   }
 }
 
-
 @media (max-width: 991px) {
   .footer-container {
-    padding: 20px 20px;
+   margin-left:0;
+   width:100%;  
   }
 
   .footer-sections {
     flex-direction: column;
-    gap: 10px;
+    align-items: center;  
+    gap: 20px;
   }
 
-  .main-section {
-    width: 100%;
-  }
-
+  .main-section,
   .footer-column {
-    width: 100%;
+    width: 100% !important; 
+    max-width: 100%;
   }
-}
 
-a {
-  text-decoration: none;
-  color: #5c5f6a;
+  .brand-logo {
+    margin: 0 auto;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
 }

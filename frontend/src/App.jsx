@@ -42,6 +42,7 @@ import TransactionDetail from './pages/admin/Wallets/TransactionDetail';
 import Referrals from './pages/user/Referrals';
 import About from './pages/user/About';
 import Contact from './pages/user/Contact';
+import { Container } from 'react-bootstrap'
 
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard/AdminDashboard'))
 const SalesReport = lazy(() => import('./pages/admin/Dashboard/SalesReport'));
@@ -204,7 +205,7 @@ function App() {
         <main>
           <Outlet /> {/* This will render the current route's component */}
         </main>
-        <Footer />
+        {/* <Footer /> */}
       </ErrorBoundary>
     </>
   )

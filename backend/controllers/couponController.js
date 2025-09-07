@@ -47,7 +47,9 @@ const getCoupons = asyncHandler(async (req, res) => {
         }
         : {};
     const count = await Coupon.countDocuments({ ...keyword });
-    const coupons = await Coupon.find({ ...keyword }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
+    const coupons = await Coupon.find({ ...keyword })
+        .select("coupon_code name discount minAmount maxAmount expiry createdAt status isExist")
+        .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
 
     return res.status(STATUS_CODES.OK).json({
         status: "success",
@@ -93,23 +95,41 @@ const editCoupon = asyncHandler(async (req, res) => {
 
 //delete coupon
 const deleteCoupon = asyncHandler(async (req, res) => {
-
     const { id } = req.params;
-    const coupon = await Coupon.findById({ _id: id });
-    if (coupon) {
-        coupon.isExist = false
-        coupon.status = false
-        await coupon.save()
-        return res.status(STATUS_CODES.OK).json({
-            status: "success",
-            message: "Coupon deleted successfully"
-        });
+    const coupon = await Coupon.findById(id);
 
+    if (!coupon) {
+        res.status(STATUS_CODES.NOT_FOUND);
+        throw new Error("Coupon not found");
     }
-    else {
-        res.status(STATUS_CODES.NOT_FOUND)
-        throw new Error("Coupon not found",)
+
+    coupon.isExist = false;
+    coupon.status = false;
+    await coupon.save();
+
+    return res.status(STATUS_CODES.OK).json({
+        status: "success",
+        message: "Coupon deleted successfully",
+    });
+});
+
+//unblock  coupon
+const unblockCoupon = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const coupon = await Coupon.findById({ _id: id });
+    if (!coupon) {
+        res.status(STATUS_CODES.NOT_FOUND);
+        throw new Error("Coupon not found");
     }
+
+    coupon.isExist = true
+    coupon.status = true
+    await coupon.save()
+    return res.status(STATUS_CODES.OK).json({
+        status: "success",
+        message: "Coupon unblocked successfully"
+    });
 });
 
 //get coupon by id
@@ -117,7 +137,7 @@ const getCouponById = asyncHandler(async (req, res) => {
 
     const { id } = req.params;
 
-    const coupon = await Coupon.findById(id);
+    const coupon = await Coupon.findById(id).select("-users -usedUsers -__v");
 
     if (!coupon) {
         res.status(STATUS_CODES.NOT_FOUND)
@@ -255,5 +275,6 @@ module.exports = {
     getCouponById,
     getAllCouponsUser,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
+    unblockCoupon
 }

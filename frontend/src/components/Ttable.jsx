@@ -1,10 +1,9 @@
-import { FaEye } from "react-icons/fa";
 import { Table, Container, Button, Pagination, Badge } from "react-bootstrap";
-import { FaSort, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
+import { FaEye, FaSort, FaEdit, FaTrash, FaAngleDoubleLeft, FaAngleDoubleRight, FaUnlock } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { PropTypes } from "prop-types";
 
-const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage }) => {
+const Ttable = ({ naming, data, columns, onDelete, onUnblock, onPage, pageData, currentPage }) => {
   const totalPages = pageData?.pages || 1;
 
   return (
@@ -16,7 +15,7 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
 
           </div>
 
-          <Table bordered hover responsive>
+          <Table bordered hover responsive >
             <thead className="heading">
               <tr className="table-primary
               ">
@@ -81,11 +80,31 @@ const Ttable = ({ naming, data, columns, onDelete, onPage, pageData, currentPage
                           </Link>
                         )
                       )}
-                      {(naming !== "wallets" && naming !== "orders") && (
-                        <Button variant="link" className="text-danger p-0" title="Delete" onClick={() => onDelete(item._id)}>
-                          <FaTrash />
-                        </Button>
-                      )}
+                      {(naming === "user" ||
+                        naming === "products" ||
+                        naming === "offers" ||
+                        naming === "coupons" ||
+                        naming === "category") && (
+                          item.isExist ? (
+                            <Button
+                              variant="link"
+                              className="text-danger p-0"
+                              title="Block"
+                              onClick={() => onDelete(item._id)}
+                            >
+                              <FaTrash />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="link"
+                              className="text-success p-0"
+                              title="Unblock"
+                              onClick={() => onUnblock(item._id)}
+                            >
+                              <FaUnlock />
+                            </Button>
+                          )
+                        )}
                     </td>
                   </tr>
                 ))

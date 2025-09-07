@@ -7,6 +7,7 @@ import RetryButton from '../../components/RetryButton';
 import debounce from 'lodash.debounce';
 import { ORDER_MESSAGES } from '../../constants/messageConstants';
 import { io } from 'socket.io-client';
+import Footer from '../../components/Footer';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
@@ -317,7 +318,7 @@ const MyOrder = () => {
           <Button variant="primary" onClick={handleReturnOrder} disabled={!selectedReason}>Submit Return</Button>
         </Modal.Footer>
       </Modal>
-
+      <Footer />
     </>
   )
 }

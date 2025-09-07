@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { useChangePasswordMutation, } from '../../redux/api/usersApiSlice';
 import { toast } from 'react-toastify';
 import { USER_MESSAGES, PASSWD_REGEX } from '../../constants/messageConstants';
+import Footer from '../../components/Footer';
 
 
 const ChangePassword = () => {
@@ -118,6 +119,7 @@ const ChangePassword = () => {
                     </Form>
                 </Container>
             </section>
+            <Footer />
         </>
     )
 }
