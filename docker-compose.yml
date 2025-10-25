@@ -1,0 +1,72 @@
+
+services:
+  mongo:
+    image: mongo
+    container_name: bagstore-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    command: mongod --replSet rs0 --bind_ip_all
+    hostname: mongo  
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      app-network:
+        aliases:
+          - mongo  
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile   
+    container_name: bagstore-backend
+    ports:
+      - "5004:5004"
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+    environment:
+      - PORT=5004
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/bags?replicaSet=rs0
+      - FRONTEND_URL=http://localhost:8080
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - ACCESS_EXPIRY=12h
+      - REFRESH_EXPIRY=10d
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+      - CLOUD_NAME=${CLOUD_NAME}
+      - CLOUD_API_KEY=${CLOUD_API_KEY}
+      - CLOUD_API_SECRET=${CLOUD_API_SECRET}
+    volumes:
+      - ./backend:/app/backend
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      # args:
+      #   VITE_API_URL: "http://localhost:5004"      
+      #   VITE_SOCKET_URL: "http://localhost:5004"
+    container_name: bagstore-frontend
+    ports:
+      - "8080:80"
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
