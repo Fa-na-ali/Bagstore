@@ -2,3 +2,9 @@ node_modules
 frontend/node_modules
 
 **/.env*
+.env.backup
+
+*.log
+error.log
+
+*-audit.json

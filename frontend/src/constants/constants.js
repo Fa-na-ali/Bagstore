@@ -1,10 +1,10 @@
-export const BASE_URL = "";
-export const USERS_URL = "/api/user";
-export const CATEGORY_URL = "/api/category";
-export const PRODUCT_URL = "/api/products";
-export const UPLOAD_URL = "/api/upload";
-export const ORDERS_URL = "/api/orders";
-export const WALLET_URL = "/api/wallet";
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5004";
+export const USERS_URL = `${BASE_URL}/api/user`;
+export const CATEGORY_URL = `${BASE_URL}/api/category`;
+export const PRODUCT_URL = `${BASE_URL}/api/products`;
+export const UPLOAD_URL = `${BASE_URL}/api/upload`;
+export const ORDERS_URL = `${BASE_URL}/api/orders`;
+export const WALLET_URL = `${BASE_URL}/api/wallet`;
 export const PLACEHOLDER_URL = 'https://via.placeholder.com/300'
 export const NORMAL_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf'
 export const BOLD_URL_FONT = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf'
